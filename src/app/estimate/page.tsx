@@ -1395,8 +1395,8 @@ export default function EstimatePage() {
                 </p>
               </div>
 
-              {/* 폼 — 글래스모피즘 */}
-              <form onSubmit={handleQuickSubmit} className="mx-5 mb-5 rounded-2xl border border-white/50 bg-white/45 p-5 shadow-[0_8px_32px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl">
+              {/* 폼 */}
+              <form onSubmit={handleQuickSubmit} className="px-7 pb-7 pt-2">
                 <div className="space-y-3">
                   {[
                     { key: 'name',  label: '이름',   required: true,  value: quick.name,  placeholder: '홍길동' },
