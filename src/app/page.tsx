@@ -56,7 +56,7 @@ export default function HomePage() {
         {/* Right content */}
         <div className="relative z-10 flex flex-1 items-center px-6 lg:px-16">
           <div className={`w-full max-w-[560px] transition-all duration-1000 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
-            <p className="mb-4 text-[12px] font-bold tracking-[0.15em] text-[#2979FF]">APP DEVELOPMENT STUDIO</p>
+            <p className="mb-4 text-[12px] font-bold tracking-wide text-[#2979FF]">APP DEVELOPMENT STUDIO</p>
             <h1 className="text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
               <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">아이디어를</span><br />
               <span className="bg-gradient-to-r from-[#2979FF] to-[#82b1ff] bg-clip-text text-transparent">앱으로.</span>
@@ -88,7 +88,7 @@ export default function HomePage() {
       {/* Services */}
       <section id="services" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1100px] px-6">
-          <p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">SERVICES</p>
+          <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">SERVICES</p>
           <h2 className="mt-3 text-[36px] font-bold tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2>
 
           <div className="mt-14 grid gap-4 md:grid-cols-3">
@@ -113,7 +113,7 @@ export default function HomePage() {
       {/* Process */}
       <section id="process" className="border-t border-white/5 bg-white/[0.01] py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">PROCESS</p>
+          <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">PROCESS</p>
           <h2 className="mt-3 text-[32px] font-bold tracking-tight">우리가 일하는 방식</h2>
 
           <div className="mt-12 space-y-4">

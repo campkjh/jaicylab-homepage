@@ -91,7 +91,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]" />
         <div className="relative z-10 text-center px-6">
           <Reveal>
-            <p className="mb-4 text-[12px] font-bold tracking-[0.15em] text-white/30">APP DEVELOPMENT STUDIO</p>
+            <p className="mb-4 text-[12px] font-bold tracking-wide text-white/30">APP DEVELOPMENT STUDIO</p>
           </Reveal>
           <Reveal delay={200}>
             <h1 className="text-[44px] font-bold leading-[1.1] tracking-tight md:text-[72px]">
@@ -118,7 +118,7 @@ export default function AboutPage() {
       {/* 회사소개 */}
       <section id="회사소개" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1100px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">ABOUT US</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">ABOUT US</p></Reveal>
           <Reveal delay={100}><h2 className="mt-3 text-[36px] font-bold tracking-tight">작은 팀, 끝까지 가는 방식</h2></Reveal>
           <Reveal delay={200}>
             <p className="mt-6 max-w-[640px] text-[15px] leading-[1.9] text-white/40">
@@ -134,7 +134,7 @@ export default function AboutPage() {
             </div>
             <div className="w-full md:w-1/2 space-y-6">
               <Reveal>
-                <p className="text-[11px] font-bold tracking-[0.15em] text-white/20">OUR TRACK</p>
+                <p className="text-[11px] font-bold tracking-wide text-white/20">OUR TRACK</p>
                 <h3 className="mt-2 text-[24px] font-bold">스타트업과 함께 달려온<br />앱 개발 스튜디오</h3>
               </Reveal>
               <div className="grid grid-cols-2 gap-4">
@@ -177,7 +177,7 @@ export default function AboutPage() {
       {/* 서비스 */}
       <section id="서비스" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto max-w-[1100px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">SERVICES</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">SERVICES</p></Reveal>
           <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2></Reveal>
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {[
@@ -203,7 +203,7 @@ export default function AboutPage() {
       {/* 프로세스 */}
       <section id="프로세스" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">OUR PROCESS</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">OUR PROCESS</p></Reveal>
           <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight">Discovery — Design — Build — Grow</h2></Reveal>
           <div className="mt-12 grid gap-4 md:grid-cols-4">
             {[
@@ -230,7 +230,7 @@ export default function AboutPage() {
       {/* 비전 */}
       <section id="비전" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">WHY JAICYLAB?</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">WHY JAICYLAB?</p></Reveal>
           <Reveal delay={100}>
             <h2 className="mt-3 text-[32px] font-bold tracking-tight">&ldquo;빠르게 만들고,<br />오래 가는 제품으로&rdquo;</h2>
           </Reveal>
@@ -261,7 +261,7 @@ export default function AboutPage() {
       {/* 자료실 */}
       <section id="자료실" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">RESOURCES</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">RESOURCES</p></Reveal>
           <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold">자료실</h2></Reveal>
           <div className="mt-12 grid gap-3 md:grid-cols-2">
             {[
@@ -287,7 +287,7 @@ export default function AboutPage() {
       <section id="문의" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto grid max-w-[1000px] gap-12 px-6 md:grid-cols-[1fr_1.2fr]">
           <div>
-            <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">CONTACT</p></Reveal>
+            <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">CONTACT</p></Reveal>
             <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold">프로젝트 문의</h2></Reveal>
             <Reveal delay={200}>
               <p className="mt-4 text-[14px] leading-relaxed text-white/40">
