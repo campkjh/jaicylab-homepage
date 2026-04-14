@@ -478,27 +478,46 @@ const CATEGORIES: Category[] = [
   },
 ]
 
-// 아이콘 매핑 (iconKey → 컴포넌트)
-import type { LucideIcon } from 'lucide-react'
-const ICON_COMPONENTS: Record<string, LucideIcon> = {
-  Home, User, Scale, Hospital: Building2, Calendar, Building, Briefcase, Calculator, HardHat,
-  BookOpen, ShoppingBag, Shirt, ShoppingCart, Leaf, Gem, Repeat, Factory, Gavel, TrendingUp,
-  UtensilsCrossed, CalendarCheck, Receipt, Coffee, ChefHat, Utensils, Soup, Baby, Languages,
-  Terminal, GraduationCap, Award, Dumbbell, Heart, Brain, Apple, Dog, Stethoscope,
-  Users2, PartyPopper, MapPin, Church, CheckSquare, NotebookPen, Users, Kanban, FileText,
-  MessageCircle, SprayCan, Truck, Wrench, Plane,
-}
+// 커스텀 Toss식 SVG 아이콘
+import * as Pi from '@/components/PackageIcons'
 
-// 카테고리별 Toss식 파스텔 테마
-const CATEGORY_THEME: Record<string, { bg: string; bgActive: string; icon: string; shadow: string }> = {
-  business:     { bg: 'from-sky-50 to-sky-100',         bgActive: 'from-sky-400 to-sky-600',         icon: 'text-sky-500',       shadow: 'shadow-sky-200/60' },
-  commerce:     { bg: 'from-rose-50 to-rose-100',       bgActive: 'from-rose-400 to-rose-600',       icon: 'text-rose-500',      shadow: 'shadow-rose-200/60' },
-  food:         { bg: 'from-amber-50 to-amber-100',     bgActive: 'from-amber-400 to-amber-600',     icon: 'text-amber-500',     shadow: 'shadow-amber-200/60' },
-  education:    { bg: 'from-violet-50 to-violet-100',   bgActive: 'from-violet-400 to-violet-600',   icon: 'text-violet-500',    shadow: 'shadow-violet-200/60' },
-  health:       { bg: 'from-emerald-50 to-emerald-100', bgActive: 'from-emerald-400 to-emerald-600', icon: 'text-emerald-500',   shadow: 'shadow-emerald-200/60' },
-  community:    { bg: 'from-fuchsia-50 to-fuchsia-100', bgActive: 'from-fuchsia-400 to-fuchsia-600', icon: 'text-fuchsia-500',   shadow: 'shadow-fuchsia-200/60' },
-  productivity: { bg: 'from-indigo-50 to-indigo-100',   bgActive: 'from-indigo-400 to-indigo-600',   icon: 'text-indigo-500',    shadow: 'shadow-indigo-200/60' },
-  lifestyle:    { bg: 'from-teal-50 to-teal-100',       bgActive: 'from-teal-400 to-teal-600',       icon: 'text-teal-500',      shadow: 'shadow-teal-200/60' },
+const PKG_ICON: Record<string, (p: { className?: string }) => React.JSX.Element> = {
+  // BUSINESS
+  corp: Pi.IconCorp, portfolio: Pi.IconUser, law: Pi.IconLaw,
+  hospital: Pi.IconHospital, clinic: Pi.IconHospital,
+  'real-estate': Pi.IconHome, consulting: Pi.IconBriefcase,
+  accounting: Pi.IconCalc, construction: Pi.IconHome, 'edu-biz': Pi.IconCorp,
+  // COMMERCE
+  shop: Pi.IconShop, fashion: Pi.IconShirt, grocery: Pi.IconGrocery,
+  farm: Pi.IconLeaf, luxury: Pi.IconGem, used: Pi.IconRefresh,
+  'b2b-market': Pi.IconCorp, auction: Pi.IconAuction,
+  subscription: Pi.IconRefresh, crowdfunding: Pi.IconTrending,
+  // FOOD
+  delivery: Pi.IconDelivery, reservation: Pi.IconCalendar,
+  pos: Pi.IconReceipt, cafe: Pi.IconCoffee,
+  'ghost-kitchen': Pi.IconChef, catering: Pi.IconChef,
+  'home-meal': Pi.IconSoup, chef: Pi.IconChef,
+  // EDUCATION
+  edu: Pi.IconBook, 'kids-edu': Pi.IconBaby,
+  language: Pi.IconBook, bootcamp: Pi.IconGrad,
+  tutor: Pi.IconGrad, cert: Pi.IconAward,
+  // HEALTH
+  fitness: Pi.IconFitness, yoga: Pi.IconFitness,
+  mental: Pi.IconMental, diet: Pi.IconDiet,
+  pet: Pi.IconPet, medical: Pi.IconHospital,
+  // COMMUNITY
+  community: Pi.IconChat, dating: Pi.IconDating,
+  hobby: Pi.IconParty, local: Pi.IconMapPin,
+  religious: Pi.IconChurch, parents: Pi.IconBaby, senior: Pi.IconUser,
+  // PRODUCTIVITY
+  todo: Pi.IconTodo, note: Pi.IconNote, crm: Pi.IconCrm,
+  'project-mgmt': Pi.IconKanban, hr: Pi.IconCrm, invoice: Pi.IconFile,
+  'team-chat': Pi.IconChat,
+  // LIFESTYLE
+  freelance: Pi.IconBriefcase, cleaning: Pi.IconSpray,
+  laundry: Pi.IconShirt, moving: Pi.IconTruck,
+  repair: Pi.IconWrench, 'lawyer-match': Pi.IconLaw,
+  'doctor-match': Pi.IconHospital, travel: Pi.IconPlane,
 }
 
 const DESIGNS = [
@@ -793,15 +812,10 @@ export default function EstimatePage() {
                     className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
                     <div className="flex items-start gap-3">
                       {(() => {
-                        const Icon = ICON_COMPONENTS[p.iconKey] ?? PackageIcon
-                        const theme = CATEGORY_THEME[p.category] ?? CATEGORY_THEME.business
+                        const IconCmp = PKG_ICON[p.id]
                         return (
-                          <div
-                            className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br transition-all duration-300 group-hover:scale-[1.06] group-hover:-rotate-2 ${isActivePkg ? `${theme.bgActive} shadow-[0_8px_20px_rgba(15,23,42,0.15)]` : `${theme.bg} shadow-[0_4px_14px_rgba(15,23,42,0.05)]`}`}
-                          >
-                            {/* 상단 하이라이트 (glossy) */}
-                            <span aria-hidden className="pointer-events-none absolute inset-x-1 top-1 h-[45%] rounded-t-[12px] bg-gradient-to-b from-white/70 to-white/0" />
-                            <Icon className={`relative h-6 w-6 ${isActivePkg ? 'text-white' : theme.icon}`} strokeWidth={2.2} />
+                          <div className={`shrink-0 transition-transform duration-300 group-hover:scale-[1.08] group-hover:-rotate-3 ${isActivePkg ? 'drop-shadow-[0_6px_16px_rgba(41,121,255,0.35)]' : ''}`}>
+                            {IconCmp ? <IconCmp className="h-12 w-12" /> : <div className="h-12 w-12 rounded-[12px] bg-slate-100" />}
                           </div>
                         )
                       })()}
