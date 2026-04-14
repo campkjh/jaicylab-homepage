@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import {
   Check, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Send, AlertCircle, Search, X,
@@ -556,6 +556,23 @@ export default function EstimatePage() {
   const [mounted, setMounted] = useState(false)
 
   const carouselRef = useRef<HTMLDivElement>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const [pill, setPill] = useState<{ left: number; top: number; width: number; height: number } | null>(null)
+
+  useLayoutEffect(() => {
+    function update() {
+      const container = tabsRef.current
+      if (!container) return
+      const active = container.querySelector<HTMLElement>(`[data-tab-id="${pkgCategory}"]`)
+      if (!active) return
+      const cr = container.getBoundingClientRect()
+      const r = active.getBoundingClientRect()
+      setPill({ left: r.left - cr.left, top: r.top - cr.top, width: r.width, height: r.height })
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [pkgCategory])
 
   useEffect(() => {
     const h = () => setScrollY(window.scrollY)
@@ -725,20 +742,27 @@ export default function EstimatePage() {
             {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">선택 초기화</button>}
           </div>
 
-          {/* 카테고리 필터 */}
-          <div className="mt-6 flex flex-wrap gap-2">
+          {/* 카테고리 필터 — 슬라이딩 알약 인디케이터 */}
+          <div ref={tabsRef} className="relative mt-6 flex flex-wrap gap-2">
+            {pill && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute z-0 rounded-full bg-slate-900 shadow-[0_4px_16px_rgba(15,23,42,0.25)] transition-all duration-[450ms]"
+                style={{
+                  left: pill.left, top: pill.top, width: pill.width, height: pill.height,
+                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                }}
+              />
+            )}
             {PACKAGE_CATEGORIES.map(c => {
               const active = pkgCategory === c.id
               return (
-                <button key={c.id} type="button" onClick={() => setPkgCategory(c.id)}
-                  className={`group relative overflow-hidden rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300 hover:scale-[1.04] active:scale-95
-                    ${active
-                      ? 'border-slate-900 bg-slate-900 text-white shadow-[0_4px_16px_rgba(15,23,42,0.25)]'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900 hover:shadow-sm'}`}>
-                  {active && (
-                    <span aria-hidden className="pointer-events-none absolute inset-0 animate-[shimmer_2.4s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{ backgroundSize: '200% 100%' }} />
-                  )}
-                  <span className="relative">{c.label}</span>
+                <button
+                  key={c.id} type="button" data-tab-id={c.id}
+                  onClick={() => setPkgCategory(c.id)}
+                  className={`relative z-10 rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors duration-300 active:scale-95 ${active ? 'border-transparent text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'}`}
+                >
+                  {c.label}
                 </button>
               )
             })}
