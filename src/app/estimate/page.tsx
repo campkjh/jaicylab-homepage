@@ -489,16 +489,16 @@ const ICON_LUCIDE: Record<string, LucideIcon> = {
   MessageCircle, SprayCan, Truck, Wrench, Plane,
 }
 
-// 카테고리별 파스텔 테마
-const CATEGORY_THEME: Record<string, { bg: string; bgActive: string; icon: string }> = {
-  business:     { bg: 'from-sky-50 to-sky-100',         bgActive: 'from-sky-400 to-sky-600',         icon: 'text-sky-500' },
-  commerce:     { bg: 'from-rose-50 to-rose-100',       bgActive: 'from-rose-400 to-rose-600',       icon: 'text-rose-500' },
-  food:         { bg: 'from-amber-50 to-amber-100',     bgActive: 'from-amber-400 to-amber-600',     icon: 'text-amber-500' },
-  education:    { bg: 'from-violet-50 to-violet-100',   bgActive: 'from-violet-400 to-violet-600',   icon: 'text-violet-500' },
-  health:       { bg: 'from-emerald-50 to-emerald-100', bgActive: 'from-emerald-400 to-emerald-600', icon: 'text-emerald-500' },
-  community:    { bg: 'from-fuchsia-50 to-fuchsia-100', bgActive: 'from-fuchsia-400 to-fuchsia-600', icon: 'text-fuchsia-500' },
-  productivity: { bg: 'from-indigo-50 to-indigo-100',   bgActive: 'from-indigo-400 to-indigo-600',   icon: 'text-indigo-500' },
-  lifestyle:    { bg: 'from-teal-50 to-teal-100',       bgActive: 'from-teal-400 to-teal-600',       icon: 'text-teal-500' },
+// 카테고리별 플랫 파스텔 테마 (그라데이션 X)
+const CATEGORY_THEME: Record<string, { bg: string; bgActive: string; icon: string; iconActive: string }> = {
+  business:     { bg: 'bg-sky-100',      bgActive: 'bg-sky-500',      icon: 'text-sky-600',      iconActive: 'text-white' },
+  commerce:     { bg: 'bg-rose-100',     bgActive: 'bg-rose-500',     icon: 'text-rose-600',     iconActive: 'text-white' },
+  food:         { bg: 'bg-amber-100',    bgActive: 'bg-amber-500',    icon: 'text-amber-600',    iconActive: 'text-white' },
+  education:    { bg: 'bg-violet-100',   bgActive: 'bg-violet-500',   icon: 'text-violet-600',   iconActive: 'text-white' },
+  health:       { bg: 'bg-emerald-100',  bgActive: 'bg-emerald-500',  icon: 'text-emerald-600',  iconActive: 'text-white' },
+  community:    { bg: 'bg-fuchsia-100',  bgActive: 'bg-fuchsia-500',  icon: 'text-fuchsia-600',  iconActive: 'text-white' },
+  productivity: { bg: 'bg-indigo-100',   bgActive: 'bg-indigo-500',   icon: 'text-indigo-600',   iconActive: 'text-white' },
+  lifestyle:    { bg: 'bg-teal-100',     bgActive: 'bg-teal-500',     icon: 'text-teal-600',     iconActive: 'text-white' },
 }
 
 const DESIGNS = [
@@ -538,8 +538,9 @@ function fmt(manwon: number) {
 }
 function priceOf(ids: string[]) { return ids.reduce((s, id) => s + (ITEM_LOOKUP[id]?.price ?? 0), 0) }
 
+// 알약 pill 색상은 전 티어 공통 다크 그레이
 const TIER_HEX: Record<TierId, string> = {
-  mvp: '#64748B', basic: '#0EA5E9', premium: '#2563EB', deluxe: '#4F46E5', enterprise: '#0F172A',
+  mvp: '#334155', basic: '#334155', premium: '#334155', deluxe: '#334155', enterprise: '#334155',
 }
 
 // ───────────────────────────── PackageCard ─────────────────────────────
@@ -581,10 +582,9 @@ function PackageCard({
     >
       <div className="flex items-start gap-3">
         <div
-          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br transition-all duration-300 group-hover:scale-[1.06] group-hover:-rotate-2 ${isActivePkg ? `${theme.bgActive} shadow-[0_8px_20px_rgba(15,23,42,0.15)]` : `${theme.bg} shadow-[0_4px_14px_rgba(15,23,42,0.05)]`}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] transition-colors duration-300 ${isActivePkg ? theme.bgActive : theme.bg}`}
         >
-          <span aria-hidden className="pointer-events-none absolute inset-x-1 top-1 h-[45%] rounded-t-[12px] bg-gradient-to-b from-white/70 to-white/0" />
-          <Icon className={`relative h-6 w-6 ${isActivePkg ? 'text-white' : theme.icon}`} strokeWidth={2.2} />
+          <Icon className={`h-6 w-6 ${isActivePkg ? theme.iconActive : theme.icon}`} strokeWidth={2.2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
@@ -639,8 +639,8 @@ function PackageCard({
 
       {isActivePkg && activeTier && (
         <div className="mt-3 flex items-center gap-1.5 text-[11px]">
-          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white ${TIER_META[activeTier].color}`}>{TIER_META[activeTier].label}</span>
-          <span className="text-slate-400">·</span>
+          <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold ${TIER_META[activeTier].soft}`}>{TIER_META[activeTier].label}</span>
+          <span className="text-slate-300">·</span>
           <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
         </div>
       )}
@@ -946,7 +946,7 @@ export default function EstimatePage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold text-white ${meta.color}`}>{meta.label}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.soft}`}>{meta.label}</span>
                 <span className="text-[11px] text-slate-500">{meta.desc}</span>
               </div>
               <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}만</span>
