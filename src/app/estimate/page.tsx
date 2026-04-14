@@ -1370,17 +1370,29 @@ export default function EstimatePage() {
               <X className="h-4 w-4" />
             </button>
 
-            {/* 헤더 */}
-            <div className="bg-gradient-to-br from-[#2979FF] to-[#1E6AE1] px-7 pb-7 pt-8 text-white">
-              <p className="text-[11px] font-semibold tracking-wider opacity-80">LIMITED OFFER</p>
-              <h2 className="mt-2 text-[24px] font-bold leading-tight tracking-tight">견적받고<br />할인받기 🎁</h2>
-              <p className="mt-3 text-[13px] leading-relaxed text-white/80">
-                지금 신청하시면 담당 PM이 <b className="text-white">1영업일 내</b> 맞춤 견적서와<br />
-                <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
-              </p>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur">
-                <Sparkles className="h-3 w-3" />
-                현재 공급가 {calc.subtotal.toLocaleString()}만원 기준
+            {/* 헤더 — Spline 애니메이션 배경 */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#2979FF] to-[#1E6AE1] px-7 pb-7 pt-8 text-white">
+              <div className="pointer-events-none absolute inset-0 opacity-90">
+                <iframe
+                  src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
+                  className="absolute -right-12 -top-8 h-[260px] w-[260px] border-none"
+                  style={{ pointerEvents: 'none', background: 'transparent' }}
+                  loading="eager"
+                  title="Reward Animation"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#2979FF] via-[#2979FF]/50 to-transparent" />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-semibold tracking-wider opacity-80">LIMITED OFFER</p>
+                <h2 className="mt-2 text-[24px] font-bold leading-tight tracking-tight">견적받고<br />할인받기</h2>
+                <p className="mt-3 text-[13px] leading-relaxed text-white/80">
+                  지금 신청하시면 담당 PM이 <b className="text-white">1영업일 내</b> 맞춤 견적서와<br />
+                  <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur">
+                  <Sparkles className="h-3 w-3" />
+                  현재 공급가 {calc.subtotal.toLocaleString()}만원 기준
+                </div>
               </div>
             </div>
 
@@ -1423,7 +1435,6 @@ export default function EstimatePage() {
                 className="group relative mt-5 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] text-[15px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98] disabled:opacity-60"
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <Send className="relative h-4 w-4" />
                 <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
               </button>
 
