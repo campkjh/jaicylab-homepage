@@ -489,16 +489,12 @@ const ICON_LUCIDE: Record<string, LucideIcon> = {
   MessageCircle, SprayCan, Truck, Wrench, Plane,
 }
 
-// 카테고리별 플랫 파스텔 테마 (그라데이션 X)
-const CATEGORY_THEME: Record<string, { bg: string; bgActive: string; icon: string; iconActive: string }> = {
-  business:     { bg: 'bg-sky-100',      bgActive: 'bg-sky-500',      icon: 'text-sky-600',      iconActive: 'text-white' },
-  commerce:     { bg: 'bg-rose-100',     bgActive: 'bg-rose-500',     icon: 'text-rose-600',     iconActive: 'text-white' },
-  food:         { bg: 'bg-amber-100',    bgActive: 'bg-amber-500',    icon: 'text-amber-600',    iconActive: 'text-white' },
-  education:    { bg: 'bg-violet-100',   bgActive: 'bg-violet-500',   icon: 'text-violet-600',   iconActive: 'text-white' },
-  health:       { bg: 'bg-emerald-100',  bgActive: 'bg-emerald-500',  icon: 'text-emerald-600',  iconActive: 'text-white' },
-  community:    { bg: 'bg-fuchsia-100',  bgActive: 'bg-fuchsia-500',  icon: 'text-fuchsia-600',  iconActive: 'text-white' },
-  productivity: { bg: 'bg-indigo-100',   bgActive: 'bg-indigo-500',   icon: 'text-indigo-600',   iconActive: 'text-white' },
-  lifestyle:    { bg: 'bg-teal-100',     bgActive: 'bg-teal-500',     icon: 'text-teal-600',     iconActive: 'text-white' },
+// 아이콘 테마 — 전 카테고리 공통 뉴트럴 그레이
+const ICON_THEME = {
+  bg: 'bg-slate-100',
+  bgActive: 'bg-slate-900',
+  icon: 'text-slate-700',
+  iconActive: 'text-white',
 }
 
 const DESIGNS = [
@@ -573,7 +569,13 @@ function PackageCard({
   }, [isActivePkg, activeTier])
 
   const Icon = ICON_LUCIDE[p.iconKey] ?? FileText
-  const theme = CATEGORY_THEME[p.category] ?? CATEGORY_THEME.business
+
+  // 카드 하단 키워드 태그 (sub를 '·'로 분리)
+  const keywords = p.sub.split(/\s*[·•,]\s*/).filter(Boolean)
+
+  // 평균 개발 기간 (Basic 티어 기준)
+  const basicMM = priceOf(p.tiers.basic) / 600
+  const avgMonths = Math.max(0.5, basicMM / 2.5)
 
   return (
     <div
@@ -582,44 +584,47 @@ function PackageCard({
     >
       <div className="flex items-start gap-3">
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] transition-colors duration-300 ${isActivePkg ? theme.bgActive : theme.bg}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] transition-colors duration-300 ${isActivePkg ? ICON_THEME.bgActive : ICON_THEME.bg}`}
         >
-          <Icon className={`h-6 w-6 ${isActivePkg ? theme.iconActive : theme.icon}`} strokeWidth={2.2} />
+          <Icon className={`h-6 w-6 ${isActivePkg ? ICON_THEME.iconActive : ICON_THEME.icon}`} strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
-          <p className="mt-0.5 truncate text-[12px] text-slate-500">{p.sub}</p>
+          {/* 키워드 태그 */}
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {keywords.map((k, i) => (
+              <span key={i} className="rounded-md bg-slate-100 px-1.5 py-[2px] text-[10px] font-medium text-slate-500">
+                {k}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 알약 티어 버튼 + 슬라이딩 색상 인디케이터 */}
-      <div ref={gridRef} className="relative mt-4 grid grid-cols-5 gap-1.5">
+      {/* 평균 개발 기간 */}
+      <div className="mt-3 flex items-center gap-1 text-[11px] text-slate-500">
+        <svg className="h-3 w-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="8" cy="8" r="6" />
+          <path d="M8 4.5 V8 L10.5 9.5" />
+        </svg>
+        <span className="font-medium">평균 개발 기간</span>
+        <span className="text-slate-300">·</span>
+        <span className="font-semibold text-slate-700">{avgMonths.toFixed(1)}개월</span>
+        <span className="text-slate-400">(Basic 기준)</span>
+      </div>
+
+      {/* 알약 티어 버튼 + 슬라이딩 인디케이터 (색 변화·라디얼 펄스 없음) */}
+      <div ref={gridRef} className="relative mt-3 grid grid-cols-5 gap-1.5">
         {pill && (
           <span
             aria-hidden
-            className="pointer-events-none absolute top-0 z-0 h-[44px] rounded-full transition-all duration-[550ms]"
+            className="pointer-events-none absolute top-0 z-0 h-[44px] rounded-full bg-slate-200 transition-all duration-[550ms]"
             style={{
               left: pill.left,
               width: pill.width,
-              backgroundColor: pill.color,
-              boxShadow: `0 8px 20px ${pill.color}55, 0 2px 4px ${pill.color}33`,
               transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
             }}
-          >
-            <span
-              className="absolute inset-0 rounded-full animate-[pillWave_3.2s_ease-in-out_infinite]"
-              style={{
-                background: 'radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%)',
-                backgroundSize: '220% 120%',
-              }}
-            />
-            <span
-              className="absolute inset-0 rounded-full animate-[pillBreath_2.6s_ease-in-out_infinite]"
-              style={{
-                background: 'radial-gradient(circle at 70% 60%, rgba(255,255,255,0.25), rgba(255,255,255,0) 55%)',
-              }}
-            />
-          </span>
+          />
         )}
         {TIER_ORDER.map(t => {
           const meta = TIER_META[t]
@@ -629,7 +634,7 @@ function PackageCard({
               onMouseEnter={e => onHoverEnter(t, (e.currentTarget as HTMLElement).getBoundingClientRect())}
               onMouseLeave={() => onHoverLeave(t)}>
               <button type="button" onClick={() => applyTier(p, t)}
-                className={`relative flex h-[44px] w-full items-center justify-center rounded-full text-[12px] font-bold outline-none transition-colors duration-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#2979FF]/40 ${tierActive ? 'bg-transparent text-white' : `${meta.soft} hover:brightness-105`}`}>
+                className={`relative flex h-[44px] w-full items-center justify-center rounded-full text-[12px] font-semibold text-slate-700 outline-none transition-colors duration-300 active:scale-95 focus-visible:ring-2 focus-visible:ring-slate-300 ${tierActive ? '' : 'bg-slate-50 hover:bg-slate-100'}`}>
                 {meta.label.charAt(0)}
               </button>
             </div>
@@ -639,7 +644,7 @@ function PackageCard({
 
       {isActivePkg && activeTier && (
         <div className="mt-3 flex items-center gap-1.5 text-[11px]">
-          <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold ${TIER_META[activeTier].soft}`}>{TIER_META[activeTier].label}</span>
+          <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>{TIER_META[activeTier].label}</span>
           <span className="text-slate-300">·</span>
           <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
         </div>
@@ -946,7 +951,7 @@ export default function EstimatePage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.soft}`}>{meta.label}</span>
+                <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${meta.soft}`}>{meta.label}</span>
                 <span className="text-[11px] text-slate-500">{meta.desc}</span>
               </div>
               <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}만</span>
