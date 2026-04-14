@@ -1420,11 +1420,11 @@ export default function EstimatePage() {
           onClick={() => !quickSending && setQuickOpen(false)}
         >
           <div
-            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
+            className="relative mx-auto flex max-h-[92vh] w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
             onClick={e => e.stopPropagation()}
           >
             {/* UnicornStudio — 상단 고정 높이 영역 */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[260px] overflow-hidden">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[240px] overflow-hidden">
               <div
                 data-us-project="62NofPZ8VN0npDqUw1vB"
                 className="absolute inset-0"
@@ -1454,9 +1454,9 @@ export default function EstimatePage() {
               <X className="h-4 w-4" />
             </button>
 
-            <div className="relative z-10">
+            <div className="scrollbar-hide relative z-10 flex-1 overflow-y-auto">
               {/* 헤더 — 검정 텍스트 (애니메이션 아래 위치) */}
-              <div className="px-7 pb-4 pt-[180px] text-slate-900">
+              <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-[160px] text-slate-900" style={{ animationDelay: '80ms' }}>
                 <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
                   <Sparkles className="h-3 w-3" />
                   LIMITED OFFER · 공급가 {calc.subtotal.toLocaleString()}만원
@@ -1473,7 +1473,7 @@ export default function EstimatePage() {
                 const shown = labels.slice(0, 12)
                 const remain = labels.length - shown.length
                 return (
-                  <div className="px-7 pb-1 pt-2">
+                  <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-1 pt-2" style={{ animationDelay: '180ms' }}>
                     <div className="flex items-center justify-between">
                       <p className="text-[11px] font-bold tracking-wide text-slate-700">선택한 항목 · {labels.length}개</p>
                       {activePkg && activeTier && (
@@ -1509,8 +1509,8 @@ export default function EstimatePage() {
                     { key: 'name',  label: '이름',   required: true,  value: quick.name,  placeholder: '홍길동' },
                     { key: 'phone', label: '연락처', required: true,  value: quick.phone, placeholder: '010-0000-0000' },
                     { key: 'email', label: '이메일', required: false, value: quick.email, placeholder: 'you@example.com' },
-                  ].map(f => (
-                    <div key={f.key} className="group relative">
+                  ].map((f, i) => (
+                    <div key={f.key} className="group relative animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: `${260 + i * 70}ms` }}>
                       <input
                         id={`quick-${f.key}`}
                         type={f.key === 'email' ? 'email' : 'text'}
@@ -1542,7 +1542,7 @@ export default function EstimatePage() {
                   ))}
 
                   {/* 요청사항 textarea + AI 작성 */}
-                  <div className="group relative">
+                  <div className="group relative animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: '500ms' }}>
                     <textarea
                       id="quick-memo"
                       value={quick.memo}
@@ -1573,7 +1573,8 @@ export default function EstimatePage() {
                 <button
                   type="submit"
                   disabled={quickSending}
-                  className="group relative mt-5 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 text-[15px] font-bold text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
+                  style={{ animationDelay: '580ms' }}
+                  className="group relative mt-5 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 text-[15px] font-bold text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
