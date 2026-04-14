@@ -22,7 +22,7 @@ export default function HomePage() {
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">회사소개</Link>
             <a href="#services" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">서비스</a>
-            <a href="#process" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">프로세스</a>
+            <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">자가견적</Link>
             <Link href="/about#문의" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">문의</Link>
           </nav>
           <Link href="/about#문의" className="bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">프로젝트 의뢰</Link>
@@ -66,8 +66,8 @@ export default function HomePage() {
               제품의 처음과 끝을 함께 설계하는 앱 개발 스튜디오입니다.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
-              <Link href="/about#문의" className="group flex items-center gap-2 bg-white px-7 py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
-                프로젝트 시작하기
+              <Link href="/estimate" className="group flex items-center gap-2 bg-white px-7 py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
+                30초 견적 받기
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link href="/about" className="border border-white/15 px-7 py-3.5 text-[15px] font-bold text-white/70 transition-all hover:bg-white/5 hover:text-white">

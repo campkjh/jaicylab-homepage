@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 
 const NAV = ['회사소개', '서비스', '프로세스', '비전', '자료실', '문의']
+const EXTRA_LINKS = [{ href: '/estimate', label: '자가견적' }]
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
@@ -76,6 +77,7 @@ export default function AboutPage() {
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             {NAV.map(n => (<button key={n} onClick={() => scrollTo(n)} className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{n}</button>))}
+            {EXTRA_LINKS.map(l => (<Link key={l.href} href={l.href} className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{l.label}</Link>))}
           </nav>
           <button onClick={() => scrollTo('문의')} className="bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">프로젝트 의뢰</button>
         </div>
