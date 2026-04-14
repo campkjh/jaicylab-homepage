@@ -1201,32 +1201,9 @@ export default function EstimatePage() {
           {/* RIGHT */}
           <aside>
             <div className="sticky top-[80px] space-y-4">
-              <div className="group relative min-h-[280px] overflow-hidden rounded-2xl border-2 border-[#2979FF] bg-gradient-to-br from-white to-[#f0f7ff] shadow-[0_12px_40px_rgba(41,121,255,0.12)] transition-all duration-300 hover:shadow-[0_16px_56px_rgba(41,121,255,0.18)]">
-                {/* Spline 3D 배경 애니메이션 — 카드 상단 영역 */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[160px] overflow-hidden">
-                  <iframe
-                    src="https://my.spline.design/metalcardsanimation-G3wZmyzxTsKLadm6za8TNMHl/"
-                    className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 scale-[0.75] border-none transition-transform duration-700 group-hover:scale-[0.82]"
-                    style={{ pointerEvents: 'none', background: 'transparent' }}
-                    loading="eager"
-                    title="Animation"
-                  />
-                  {/* 하단 그라데이션 블러 — mask-image로 블러 자체가 점진적 */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 h-20 backdrop-blur-md"
-                    style={{
-                      WebkitMaskImage: 'linear-gradient(to top, black 40%, transparent 100%)',
-                      maskImage: 'linear-gradient(to top, black 40%, transparent 100%)',
-                    }}
-                  />
-                  {/* 바닥 화이트 페이드 — 텍스트 구역과 자연 연결 */}
-                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/60 to-transparent" />
-                </div>
-
-                {/* 코너 글로우 */}
-                <div className="pointer-events-none absolute -right-10 -top-10 z-0 h-32 w-32 rounded-full bg-[#2979FF]/15 blur-3xl" />
-
-                <div className="relative z-10 p-6 pt-[120px]">
+              <div className="relative overflow-hidden rounded-2xl border-2 border-[#2979FF] bg-gradient-to-br from-white to-[#f0f7ff] p-6 shadow-[0_12px_40px_rgba(41,121,255,0.12)] transition-all duration-300 hover:shadow-[0_16px_56px_rgba(41,121,255,0.18)]">
+                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#2979FF]/10 blur-3xl" />
+                <div className="relative">
                   <p className="text-[12px] font-semibold text-[#2979FF]">Total Estimate</p>
                   <p className="mt-3 text-[11px] text-slate-500">공급가 <span className="text-slate-400">· VAT 별도</span></p>
                   <p key={calc.subtotal} className="mt-1 animate-[priceBump_0.35s_ease-out] bg-gradient-to-r from-slate-900 to-[#2979FF] bg-clip-text text-[42px] font-bold leading-tight tracking-tight text-transparent">
