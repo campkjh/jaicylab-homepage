@@ -551,6 +551,7 @@ export default function EstimatePage() {
   const [activeTier, setActiveTier] = useState<TierId | null>('basic')
   const [pkgCategory, setPkgCategory] = useState<string>('all')
   const [hoverPkgTier, setHoverPkgTier] = useState<{ pkg: string; tier: TierId } | null>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
   const [query, setQuery] = useState('')
   const [mounted, setMounted] = useState(false)
 
@@ -726,33 +727,41 @@ export default function EstimatePage() {
 
           {/* 카테고리 필터 */}
           <div className="mt-6 flex flex-wrap gap-2">
-            {PACKAGE_CATEGORIES.map(c => (
-              <button key={c.id} type="button" onClick={() => setPkgCategory(c.id)}
-                className={`rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-all duration-200 ${pkgCategory === c.id ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}>
-                {c.label}
-              </button>
-            ))}
+            {PACKAGE_CATEGORIES.map(c => {
+              const active = pkgCategory === c.id
+              return (
+                <button key={c.id} type="button" onClick={() => setPkgCategory(c.id)}
+                  className={`group relative overflow-hidden rounded-full border px-4 py-2 text-[12px] font-semibold transition-all duration-300 hover:scale-[1.04] active:scale-95
+                    ${active
+                      ? 'border-slate-900 bg-slate-900 text-white shadow-[0_4px_16px_rgba(15,23,42,0.25)]'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900 hover:shadow-sm'}`}>
+                  {active && (
+                    <span aria-hidden className="pointer-events-none absolute inset-0 animate-[shimmer_2.4s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{ backgroundSize: '200% 100%' }} />
+                  )}
+                  <span className="relative">{c.label}</span>
+                </button>
+              )
+            })}
           </div>
 
           {/* Carousel */}
           <div className="relative mt-6">
-            <button type="button" onClick={() => scrollCarousel('left')}
-              className="group absolute -left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.08)] transition-all duration-200 hover:scale-110 hover:shadow-[0_6px_24px_rgba(15,23,42,0.12)] active:scale-95 md:flex"
-              style={{ width: 44, height: 44 }}>
-              <ChevronLeft className="h-5 w-5 text-slate-700 transition-transform group-hover:-translate-x-0.5" />
+            <button type="button" onClick={() => scrollCarousel('left')} aria-label="이전"
+              className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
+              style={{ width: 48, height: 48 }}>
+              <ChevronLeft className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:-translate-x-0.5" />
             </button>
-            <button type="button" onClick={() => scrollCarousel('right')}
-              className="group absolute -right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.08)] transition-all duration-200 hover:scale-110 hover:shadow-[0_6px_24px_rgba(15,23,42,0.12)] active:scale-95 md:flex"
-              style={{ width: 44, height: 44 }}>
-              <ChevronRight className="h-5 w-5 text-slate-700 transition-transform group-hover:translate-x-0.5" />
+            <button type="button" onClick={() => scrollCarousel('right')} aria-label="다음"
+              className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
+              style={{ width: 48, height: 48 }}>
+              <ChevronRight className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>
 
-            <div ref={carouselRef}
-              className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-0.5 pb-2"
+            <div ref={carouselRef} key={pkgCategory}
+              className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-6"
               style={{ scrollbarWidth: 'none' }}>
               {filteredPackages.map((p, idx) => {
                 const isActivePkg = activePkg === p.id
-                const tierForHover = hoverPkgTier?.pkg === p.id ? hoverPkgTier.tier : null
                 return (
                   <div key={p.id}
                     style={{ animationDelay: `${idx * 40}ms` }}
@@ -775,8 +784,12 @@ export default function EstimatePage() {
                         const ids = p.tiers[t]
                         return (
                           <div key={t} className="relative"
-                            onMouseEnter={() => setHoverPkgTier({ pkg: p.id, tier: t })}
-                            onMouseLeave={() => setHoverPkgTier(prev => prev?.pkg === p.id && prev.tier === t ? null : prev)}>
+                            onMouseEnter={e => {
+                              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                              setHoverPkgTier({ pkg: p.id, tier: t })
+                              setTooltipPos({ top: r.bottom + 10, left: r.left + r.width / 2 })
+                            }}
+                            onMouseLeave={() => { setHoverPkgTier(prev => prev?.pkg === p.id && prev.tier === t ? null : prev); setTooltipPos(null) }}>
                             <button type="button" onClick={() => applyTier(p, t)}
                               className={`relative flex h-[38px] w-full items-center justify-center overflow-hidden rounded-lg text-[11px] font-bold transition-all duration-200 hover:scale-[1.06] active:scale-95 ${tierActive ? `${meta.color} text-white shadow-[0_4px_12px_rgba(15,23,42,0.15)]` : `${meta.soft} hover:shadow-sm`}`}>
                               {tierActive && <span className="absolute inset-0 animate-[shimmer_2.5s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{ backgroundSize: '200% 100%' }} />}
@@ -786,36 +799,6 @@ export default function EstimatePage() {
                         )
                       })}
                     </div>
-
-                    {/* Tooltip */}
-                    {tierForHover && (
-                      <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 w-[320px] -translate-x-1/2 animate-[tooltipIn_0.15s_ease-out] rounded-xl border border-slate-200 bg-white p-4 text-left shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold text-white ${TIER_META[tierForHover].color}`}>{TIER_META[tierForHover].label}</span>
-                            <span className="text-[11px] text-slate-500">{TIER_META[tierForHover].desc}</span>
-                          </div>
-                          <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(p.tiers[tierForHover]).toLocaleString()}만</span>
-                        </div>
-                        <div className="mt-3 max-h-[200px] overflow-hidden">
-                          <p className="mb-1.5 text-[10px] font-bold text-slate-400">포함 항목 ({p.tiers[tierForHover].length}개)</p>
-                          <ul className="space-y-1">
-                            {p.tiers[tierForHover].slice(0, 10).map(id => {
-                              const item = ITEM_LOOKUP[id]
-                              return item ? (
-                                <li key={id} className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                                  <Check className="h-3 w-3 shrink-0 text-emerald-500" />
-                                  <span className="truncate">{item.label}</span>
-                                </li>
-                              ) : null
-                            })}
-                            {p.tiers[tierForHover].length > 10 && (
-                              <li className="pl-5 text-[10px] text-slate-400">…외 {p.tiers[tierForHover].length - 10}개</li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
 
                     {isActivePkg && activeTier && (
                       <div className="mt-3 flex items-center gap-1.5 text-[11px]">
@@ -831,6 +814,49 @@ export default function EstimatePage() {
           </div>
         </div>
       </section>
+
+      {/* Floating Tooltip (fixed — carousel overflow 바깥) */}
+      {hoverPkgTier && tooltipPos && (() => {
+        const pkg = PACKAGES.find(p => p.id === hoverPkgTier.pkg)!
+        const tierIds = pkg.tiers[hoverPkgTier.tier]
+        const meta = TIER_META[hoverPkgTier.tier]
+        // 뷰포트 우측 초과 방지
+        const width = 320
+        const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
+        const leftClamped = Math.min(Math.max(tooltipPos.left, width / 2 + 16), vw - width / 2 - 16)
+        return (
+          <div
+            className="pointer-events-none fixed z-[100] w-[320px] -translate-x-1/2 animate-[tooltipIn_0.15s_ease-out] rounded-xl border border-slate-200 bg-white p-4 text-left shadow-[0_16px_48px_rgba(15,23,42,0.18)]"
+            style={{ top: tooltipPos.top, left: leftClamped }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold text-white ${meta.color}`}>{meta.label}</span>
+                <span className="text-[11px] text-slate-500">{meta.desc}</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}만</span>
+            </div>
+            <p className="mt-2 text-[12px] font-bold text-slate-900">{pkg.label}</p>
+            <div className="mt-3">
+              <p className="mb-1.5 text-[10px] font-bold text-slate-400">포함 항목 ({tierIds.length}개)</p>
+              <ul className="space-y-1">
+                {tierIds.slice(0, 10).map(id => {
+                  const item = ITEM_LOOKUP[id]
+                  return item ? (
+                    <li key={id} className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                      <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+                      <span className="truncate">{item.label}</span>
+                    </li>
+                  ) : null
+                })}
+                {tierIds.length > 10 && (
+                  <li className="pl-5 text-[10px] text-slate-400">…외 {tierIds.length - 10}개</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Body */}
       <section className="py-12" id="categories-section">
