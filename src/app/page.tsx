@@ -23,6 +23,7 @@ export default function HomePage() {
             <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">회사소개</Link>
             <a href="#services" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">서비스</a>
             <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">자가견적</Link>
+            <Link href="/guides/apple-developer" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">가이드</Link>
             <Link href="/about#문의" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">문의</Link>
           </nav>
           <Link href="/about#문의" className="bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">프로젝트 의뢰</Link>
