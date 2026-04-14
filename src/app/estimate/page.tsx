@@ -934,7 +934,7 @@ export default function EstimatePage() {
       {/* Hero + Spline */}
       <section className={`relative border-b border-slate-200/70 pt-[60px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
         {/* Spline 3D — 히어로 배경 */}
-        <div className="pointer-events-none relative h-[380px] w-full overflow-hidden md:h-[460px]">
+        <div className="pointer-events-none relative h-[240px] w-full overflow-hidden md:h-[300px]">
           <iframe
             src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
             className="absolute inset-0 h-full w-full border-none"
@@ -949,7 +949,7 @@ export default function EstimatePage() {
         </div>
 
         {/* 텍스트 영역 — 애니메이션 위로 자연스럽게 올라옴 */}
-        <div className="relative z-10 mx-auto -mt-28 max-w-[1320px] px-6 pb-10 md:-mt-32">
+        <div className="relative z-10 mx-auto -mt-20 max-w-[1320px] px-6 pb-10 md:-mt-24">
           <p className="text-[12px] font-semibold text-[#2979FF]">Self Estimate</p>
           <h1 className="mt-2 text-[38px] font-bold leading-[1.05] tracking-tight text-slate-900 md:text-[48px]">
             상세 항목별 자가견적
