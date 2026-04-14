@@ -91,10 +91,10 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]" />
         <div className="relative z-10 text-center px-6">
           <Reveal>
-            <p className="mb-4 text-[12px] font-bold tracking-[0.4em] text-white/30">APP DEVELOPMENT STUDIO</p>
+            <p className="mb-4 text-[12px] font-bold tracking-[0.15em] text-white/30">APP DEVELOPMENT STUDIO</p>
           </Reveal>
           <Reveal delay={200}>
-            <h1 className="text-[44px] font-black leading-[1.1] tracking-tight md:text-[72px]">
+            <h1 className="text-[44px] font-bold leading-[1.1] tracking-tight md:text-[72px]">
               <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">아이디어를 제품으로,</span><br />
               <span className="bg-gradient-to-r from-[#2979FF] to-[#82b1ff] bg-clip-text text-transparent">제품을 성장으로</span>
             </h1>
@@ -118,8 +118,8 @@ export default function AboutPage() {
       {/* 회사소개 */}
       <section id="회사소개" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1100px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">ABOUT US</p></Reveal>
-          <Reveal delay={100}><h2 className="mt-3 text-[36px] font-black tracking-tight">작은 팀, 끝까지 가는 방식</h2></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">ABOUT US</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[36px] font-bold tracking-tight">작은 팀, 끝까지 가는 방식</h2></Reveal>
           <Reveal delay={200}>
             <p className="mt-6 max-w-[640px] text-[15px] leading-[1.9] text-white/40">
               제이씨랩(JAICYLAB)은 기획부터 출시, 운영까지 한 팀이 이어서 책임지는 앱 개발 스튜디오입니다.
@@ -134,8 +134,8 @@ export default function AboutPage() {
             </div>
             <div className="w-full md:w-1/2 space-y-6">
               <Reveal>
-                <p className="text-[11px] font-bold tracking-[0.4em] text-white/20">OUR TRACK</p>
-                <h3 className="mt-2 text-[24px] font-black">스타트업과 함께 달려온<br />앱 개발 스튜디오</h3>
+                <p className="text-[11px] font-bold tracking-[0.15em] text-white/20">OUR TRACK</p>
+                <h3 className="mt-2 text-[24px] font-bold">스타트업과 함께 달려온<br />앱 개발 스튜디오</h3>
               </Reveal>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -147,7 +147,7 @@ export default function AboutPage() {
                   <Reveal key={i} delay={i * 100}>
                     <div className="border border-white/8 bg-white/[0.02] p-4 transition-all hover:border-white/15 hover:bg-white/[0.04]">
                       <div className="flex items-center gap-2 text-white/20 mb-2">{s.icon}<span className="text-[10px] tracking-wider">{s.label}</span></div>
-                      <p className="text-[28px] font-black text-white"><CountUp target={s.num} suffix={s.suffix} /></p>
+                      <p className="text-[28px] font-bold text-white"><CountUp target={s.num} suffix={s.suffix} /></p>
                     </div>
                   </Reveal>
                 ))}
@@ -177,8 +177,8 @@ export default function AboutPage() {
       {/* 서비스 */}
       <section id="서비스" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto max-w-[1100px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">SERVICES</p></Reveal>
-          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-black tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">SERVICES</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2></Reveal>
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {[
               { icon: <Smartphone className="h-5 w-5" />, title: '모바일 앱 개발', desc: 'iOS · Android 네이티브와 React Native · Flutter 크로스플랫폼' },
@@ -203,8 +203,8 @@ export default function AboutPage() {
       {/* 프로세스 */}
       <section id="프로세스" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">OUR PROCESS</p></Reveal>
-          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-black tracking-tight">Discovery — Design — Build — Grow</h2></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">OUR PROCESS</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight">Discovery — Design — Build — Grow</h2></Reveal>
           <div className="mt-12 grid gap-4 md:grid-cols-4">
             {[
               { step: '01', title: 'Discovery', color: '#ef4444', items: ['문제 정의', '사용자 시나리오', '기술 조사', '범위 합의'] },
@@ -230,9 +230,9 @@ export default function AboutPage() {
       {/* 비전 */}
       <section id="비전" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">WHY JAICYLAB?</p></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">WHY JAICYLAB?</p></Reveal>
           <Reveal delay={100}>
-            <h2 className="mt-3 text-[32px] font-black tracking-tight">&ldquo;빠르게 만들고,<br />오래 가는 제품으로&rdquo;</h2>
+            <h2 className="mt-3 text-[32px] font-bold tracking-tight">&ldquo;빠르게 만들고,<br />오래 가는 제품으로&rdquo;</h2>
           </Reveal>
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {[
@@ -261,8 +261,8 @@ export default function AboutPage() {
       {/* 자료실 */}
       <section id="자료실" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">RESOURCES</p></Reveal>
-          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-black">자료실</h2></Reveal>
+          <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">RESOURCES</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold">자료실</h2></Reveal>
           <div className="mt-12 grid gap-3 md:grid-cols-2">
             {[
               { icon: <FileText className="h-5 w-5" />, title: '회사소개서', desc: 'PDF', action: () => toast('준비 중입니다') },
@@ -287,8 +287,8 @@ export default function AboutPage() {
       <section id="문의" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto grid max-w-[1000px] gap-12 px-6 md:grid-cols-[1fr_1.2fr]">
           <div>
-            <Reveal><p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">CONTACT</p></Reveal>
-            <Reveal delay={100}><h2 className="mt-3 text-[32px] font-black">프로젝트 문의</h2></Reveal>
+            <Reveal><p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">CONTACT</p></Reveal>
+            <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold">프로젝트 문의</h2></Reveal>
             <Reveal delay={200}>
               <p className="mt-4 text-[14px] leading-relaxed text-white/40">
                 아이디어 단계여도 좋습니다.<br />간단한 내용이라도 남겨주시면 빠르게 회신드릴게요.
@@ -347,7 +347,7 @@ export default function AboutPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowPrivacy(false)}>
           <div className="relative w-full max-w-[700px] max-h-[80vh] overflow-auto bg-[#111] border border-white/10 p-8 animate-[scaleIn_0.2s_ease-out]" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowPrivacy(false)} className="absolute top-4 right-4 text-white/20 hover:text-white transition-colors"><X className="h-5 w-5" /></button>
-            <h2 className="text-[22px] font-black mb-6">개인정보처리방침</h2>
+            <h2 className="text-[22px] font-bold mb-6">개인정보처리방침</h2>
             <div className="space-y-4 text-[13px] leading-[1.8] text-white/45">
               <p><strong className="text-white/80">제1조 (목적)</strong><br />제이씨랩(이하 &ldquo;회사&rdquo;)은 개인정보 보호법에 따라 정보주체의 개인정보를 보호하고 관련 고충을 신속히 처리할 수 있도록 다음과 같이 처리방침을 수립·공개합니다.</p>
               <p><strong className="text-white/80">제2조 (수집 항목)</strong><br />필수: 이름, 연락처, 이메일 / 선택: 회사명, 문의 내용 / 자동수집: 접속 IP, 이용 기록</p>
@@ -366,7 +366,7 @@ export default function AboutPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowTerms(false)}>
           <div className="relative w-full max-w-[700px] max-h-[80vh] overflow-auto bg-[#111] border border-white/10 p-8 animate-[scaleIn_0.2s_ease-out]" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowTerms(false)} className="absolute top-4 right-4 text-white/20 hover:text-white transition-colors"><X className="h-5 w-5" /></button>
-            <h2 className="text-[22px] font-black mb-6">서비스 이용약관</h2>
+            <h2 className="text-[22px] font-bold mb-6">서비스 이용약관</h2>
             <div className="space-y-4 text-[13px] leading-[1.8] text-white/45">
               <p><strong className="text-white/80">제1조 (목적)</strong><br />이 약관은 제이씨랩이 제공하는 앱 개발 및 관련 서비스의 이용조건, 권리·의무·책임사항을 규정합니다.</p>
               <p><strong className="text-white/80">제2조 (서비스)</strong><br />모바일 앱, 웹, 백엔드, AI 통합 개발 및 유지보수</p>

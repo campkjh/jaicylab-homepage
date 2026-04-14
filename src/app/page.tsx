@@ -56,8 +56,8 @@ export default function HomePage() {
         {/* Right content */}
         <div className="relative z-10 flex flex-1 items-center px-6 lg:px-16">
           <div className={`w-full max-w-[560px] transition-all duration-1000 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
-            <p className="mb-4 text-[12px] font-bold tracking-[0.4em] text-[#2979FF]">APP DEVELOPMENT STUDIO</p>
-            <h1 className="text-[44px] font-black leading-[1.05] tracking-tight md:text-[64px]">
+            <p className="mb-4 text-[12px] font-bold tracking-[0.15em] text-[#2979FF]">APP DEVELOPMENT STUDIO</p>
+            <h1 className="text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
               <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">아이디어를</span><br />
               <span className="bg-gradient-to-r from-[#2979FF] to-[#82b1ff] bg-clip-text text-transparent">앱으로.</span>
             </h1>
@@ -88,8 +88,8 @@ export default function HomePage() {
       {/* Services */}
       <section id="services" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1100px] px-6">
-          <p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">SERVICES</p>
-          <h2 className="mt-3 text-[36px] font-black tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2>
+          <p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">SERVICES</p>
+          <h2 className="mt-3 text-[36px] font-bold tracking-tight">제품 전 단계를<br />하나의 팀으로 커버합니다</h2>
 
           <div className="mt-14 grid gap-4 md:grid-cols-3">
             {[
@@ -100,7 +100,7 @@ export default function HomePage() {
               { icon: <Layers className="h-6 w-6" />, title: 'MVP · PoC', desc: '4–8주 단위 MVP 스프린트로 가설을 빠르게 검증하고 다음 단계를 함께 결정합니다.' },
               { icon: <Rocket className="h-6 w-6" />, title: '운영 · 성장', desc: '런칭 이후의 분석, 운영 자동화, 점진적 기능 확장을 같은 팀이 이어갑니다.' },
             ].map((s, i) => (
-              <div key={i} className="group border border-white/8 p-6 transition-all duration-300 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03]">
+              <div key={i} className="group border border-white/8 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03] hover:shadow-[0_8px_32px_rgba(41,121,255,0.08)]">
                 <div className="flex h-12 w-12 items-center justify-center bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 group-hover:scale-110">{s.icon}</div>
                 <h3 className="mt-4 text-[17px] font-bold">{s.title}</h3>
                 <p className="mt-2 text-[13px] leading-relaxed text-white/40">{s.desc}</p>
@@ -113,8 +113,8 @@ export default function HomePage() {
       {/* Process */}
       <section id="process" className="border-t border-white/5 bg-white/[0.01] py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">PROCESS</p>
-          <h2 className="mt-3 text-[32px] font-black tracking-tight">우리가 일하는 방식</h2>
+          <p className="text-[11px] font-bold tracking-[0.15em] text-[#2979FF]">PROCESS</p>
+          <h2 className="mt-3 text-[32px] font-bold tracking-tight">우리가 일하는 방식</h2>
 
           <div className="mt-12 space-y-4">
             {[
@@ -124,7 +124,7 @@ export default function HomePage() {
               { phase: '04', title: 'Launch & Grow', desc: '스토어 출시, 분석 도입, 운영 자동화까지 같은 팀이 책임집니다.' },
             ].map((p, i) => (
               <div key={i} className="flex items-start gap-6 border-l-2 border-[#2979FF] pl-6 py-2 transition-all hover:pl-8">
-                <span className="text-[32px] font-black text-[#2979FF]/20">{p.phase}</span>
+                <span className="text-[32px] font-bold text-[#2979FF]/20">{p.phase}</span>
                 <div>
                   <h3 className="text-[17px] font-bold">{p.title}</h3>
                   <p className="mt-1 text-[13px] text-white/40">{p.desc}</p>
@@ -138,12 +138,12 @@ export default function HomePage() {
       {/* CTA */}
       <section className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[800px] px-6 text-center">
-          <h2 className="text-[36px] font-black leading-tight md:text-[48px]">
+          <h2 className="text-[36px] font-bold leading-tight md:text-[48px]">
             <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">함께 만들어 볼까요?</span>
           </h2>
           <p className="mt-4 text-[15px] text-white/40">아이디어 단계여도 좋습니다. 가볍게 이야기 나눠보세요.</p>
-          <Link href="/about#문의" className="mt-10 inline-flex items-center gap-2 bg-white px-8 py-4 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
-            프로젝트 의뢰하기 <ArrowRight className="h-4 w-4" />
+          <Link href="/about#문의" className="group mt-10 inline-flex items-center gap-2 bg-white px-8 py-4 text-[15px] font-bold text-black transition-all animate-[pulseRing_2.5s_ease-out_infinite] hover:bg-white/90 hover:animate-none hover:scale-[1.03] active:scale-95">
+            프로젝트 의뢰하기 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </section>
