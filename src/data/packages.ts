@@ -820,6 +820,88 @@ export const PACKAGES: Pkg[] = [
   },
 ]
 
+export type Example = { name: string; domain: string }
+
+export const PACKAGE_EXAMPLES: Record<string, Example[]> = {
+  // business
+  corp:        [{ name: '토스', domain: 'toss.im' }, { name: '카카오', domain: 'kakao.com' }, { name: '네이버', domain: 'naver.com' }],
+  portfolio:   [{ name: 'Behance', domain: 'behance.net' }, { name: 'Dribbble', domain: 'dribbble.com' }, { name: 'Notion', domain: 'notion.so' }],
+  law:         [{ name: '로톡', domain: 'lawtalk.co.kr' }, { name: '헬프미', domain: 'help-me.kr' }, { name: '로앤컴퍼니', domain: 'lawandcompany.co.kr' }],
+  hospital:    [{ name: '굿닥', domain: 'goodoc.co.kr' }, { name: '닥터나우', domain: 'drnow.co.kr' }, { name: '올라케어', domain: 'ollacare.com' }],
+  clinic:      [{ name: '똑닥', domain: 'ddocdoc.com' }, { name: '모두닥', domain: 'modoodoc.com' }, { name: '굿닥', domain: 'goodoc.co.kr' }],
+  'real-estate':[{ name: '직방', domain: 'zigbang.com' }, { name: '다방', domain: 'dabangapp.com' }, { name: '호갱노노', domain: 'hogangnono.com' }],
+  consulting:  [{ name: '위시켓', domain: 'wishket.com' }, { name: '크몽', domain: 'kmong.com' }, { name: '탤런트뱅크', domain: 'talentbank.co.kr' }],
+  accounting:  [{ name: '자비스', domain: 'jobis.co' }, { name: '삼쩜삼', domain: '3o3.co.kr' }, { name: '택슬리', domain: 'taxly.kr' }],
+  construction:[{ name: '집닥', domain: 'zipdoc.co.kr' }, { name: '오늘의집', domain: 'ohou.se' }, { name: '한샘', domain: 'hanssem.com' }],
+  'edu-biz':   [{ name: '클래스팅', domain: 'classting.com' }, { name: '아이엠스쿨', domain: 'iamschool.net' }, { name: '학크램', domain: 'hakcream.com' }],
+
+  // commerce
+  shop:        [{ name: '쿠팡', domain: 'coupang.com' }, { name: '11번가', domain: '11st.co.kr' }, { name: 'G마켓', domain: 'gmarket.co.kr' }],
+  fashion:     [{ name: '무신사', domain: 'musinsa.com' }, { name: '지그재그', domain: 'zigzag.kr' }, { name: '에이블리', domain: 'a-bly.com' }],
+  grocery:     [{ name: '마켓컬리', domain: 'kurly.com' }, { name: '오아시스', domain: 'oasis.co.kr' }, { name: 'SSG', domain: 'ssg.com' }],
+  farm:        [{ name: '마켓컬리', domain: 'kurly.com' }, { name: '정다운팜', domain: 'jungdawoonfarm.com' }, { name: '농사로', domain: 'nongsaro.go.kr' }],
+  luxury:      [{ name: '머스트잇', domain: 'mustit.co.kr' }, { name: '트렌비', domain: 'trenbe.com' }, { name: '발란', domain: 'balaan.co.kr' }],
+  used:        [{ name: '당근마켓', domain: 'daangn.com' }, { name: '번개장터', domain: 'bunjang.co.kr' }, { name: '중고나라', domain: 'joongna.com' }],
+  'b2b-market':[{ name: '도매꾹', domain: 'domeggook.com' }, { name: '도매매', domain: 'dmmd.net' }, { name: '알리바바', domain: 'alibaba.com' }],
+  auction:     [{ name: '서울옥션', domain: 'seoulauction.com' }, { name: 'K옥션', domain: 'k-auction.com' }, { name: '옥션', domain: 'auction.co.kr' }],
+  subscription:[{ name: '밀리의서재', domain: 'millie.co.kr' }, { name: '윌라', domain: 'welaaa.com' }, { name: '구독', domain: 'flitto.com' }],
+  crowdfunding:[{ name: '와디즈', domain: 'wadiz.kr' }, { name: '텀블벅', domain: 'tumblbug.com' }, { name: 'Kickstarter', domain: 'kickstarter.com' }],
+
+  // food
+  delivery:    [{ name: '배달의민족', domain: 'baemin.com' }, { name: '요기요', domain: 'yogiyo.co.kr' }, { name: '쿠팡이츠', domain: 'coupangeats.com' }],
+  reservation: [{ name: '캐치테이블', domain: 'catchtable.co.kr' }, { name: '테이블링', domain: 'tabling.co.kr' }, { name: '포잉', domain: 'poing.co.kr' }],
+  pos:         [{ name: '토스플레이스', domain: 'toss.im' }, { name: '페이히어', domain: 'payhere.in' }, { name: 'KISVAN', domain: 'kisvan.co.kr' }],
+  cafe:        [{ name: '스타벅스', domain: 'starbucks.co.kr' }, { name: '투썸', domain: 'twosome.co.kr' }, { name: '할리스', domain: 'hollys.co.kr' }],
+  'ghost-kitchen':[{ name: '위쿡', domain: 'wecook.co.kr' }, { name: 'Ghost Kitchen', domain: 'ghostkitchen.co.kr' }, { name: 'CloudKitchens', domain: 'cloudkitchens.com' }],
+  catering:    [{ name: '케이터톡', domain: 'catertong.com' }, { name: '피비', domain: 'pibi.co.kr' }, { name: '파티쉐프', domain: 'partychef.co.kr' }],
+  'home-meal': [{ name: '프레시지', domain: 'fresheasy.co.kr' }, { name: '마이셰프', domain: 'mychef.co.kr' }, { name: '쿠팡', domain: 'coupang.com' }],
+  chef:        [{ name: '숨고', domain: 'soomgo.com' }, { name: '크몽', domain: 'kmong.com' }, { name: '식탁', domain: 'sikdae.kr' }],
+
+  // education
+  edu:         [{ name: '클래스101', domain: 'class101.net' }, { name: '인프런', domain: 'inflearn.com' }, { name: '탈잉', domain: 'taling.me' }],
+  'kids-edu':  [{ name: '핑크퐁', domain: 'pinkfong.com' }, { name: '호두잉글리시', domain: 'hodooenglish.com' }, { name: '토도수학', domain: 'todoschool.com' }],
+  language:    [{ name: 'Native Camp', domain: 'nativecamp.net' }, { name: 'HiNative', domain: 'hinative.com' }, { name: '케이크', domain: 'cake.edu' }],
+  bootcamp:    [{ name: '코드스테이츠', domain: 'codestates.com' }, { name: '부스트코스', domain: 'boostcourse.org' }, { name: '제로베이스', domain: 'zero-base.co.kr' }],
+  tutor:       [{ name: '김과외', domain: 'gimgwaoe.kr' }, { name: '꾸그', domain: 'ggugg.com' }, { name: '에듀윌', domain: 'eduwill.net' }],
+  cert:        [{ name: '에듀윌', domain: 'eduwill.net' }, { name: '해커스', domain: 'hackers.co.kr' }, { name: '시대에듀', domain: 'sdedu.co.kr' }],
+
+  // health
+  fitness:     [{ name: 'Noom', domain: 'noom.com' }, { name: '번핏', domain: 'burnfit.io' }, { name: '인바디', domain: 'inbody.com' }],
+  yoga:        [{ name: '피트룸', domain: 'fitroom.co.kr' }, { name: 'Yoga Journal', domain: 'yogajournal.com' }, { name: 'MindBodyGreen', domain: 'mindbodygreen.com' }],
+  mental:      [{ name: '마인드카페', domain: 'mindcafe.co.kr' }, { name: '트로스트', domain: 'trost.co.kr' }, { name: '헤이민디', domain: 'heymindy.com' }],
+  diet:        [{ name: 'Noom', domain: 'noom.com' }, { name: '인바디', domain: 'inbody.com' }, { name: '캐시워크', domain: 'cashwalk.co.kr' }],
+  pet:         [{ name: '펫프렌즈', domain: 'petfriends.co.kr' }, { name: '어바웃펫', domain: 'aboutpet.co.kr' }, { name: '닥터펫', domain: 'drpet.co.kr' }],
+  medical:     [{ name: '닥터나우', domain: 'drnow.co.kr' }, { name: '올라케어', domain: 'ollacare.com' }, { name: '굿닥', domain: 'goodoc.co.kr' }],
+
+  // community
+  community:   [{ name: '에브리타임', domain: 'everytime.kr' }, { name: '블라인드', domain: 'teamblind.com' }, { name: '카카오스토리', domain: 'story.kakao.com' }],
+  dating:      [{ name: '윌유', domain: 'willyou.co.kr' }, { name: '위피', domain: 'wippy.kr' }, { name: '글램', domain: 'glam.co.kr' }],
+  hobby:       [{ name: '소모임', domain: 'somoim.co.kr' }, { name: '문토', domain: 'munto.io' }, { name: '프립', domain: 'frip.co.kr' }],
+  local:       [{ name: '당근마켓', domain: 'daangn.com' }, { name: '번개장터', domain: 'bunjang.co.kr' }, { name: '맘카페', domain: 'cafe.naver.com' }],
+  religious:   [{ name: 'GOODTV', domain: 'goodtv.co.kr' }, { name: 'CGN', domain: 'cgn.tv' }, { name: '가스펠투데이', domain: 'gospeltoday.co.kr' }],
+  parents:     [{ name: '맘스다이어리', domain: 'momsdiary.co.kr' }, { name: '맘스홀릭', domain: 'momsholic.com' }, { name: '베베', domain: 'bebe.com' }],
+  senior:      [{ name: '오베이', domain: 'obey.co.kr' }, { name: '시니어토크', domain: 'seniortalk.co.kr' }, { name: '네이버카페', domain: 'cafe.naver.com' }],
+
+  // productivity
+  todo:        [{ name: 'Todoist', domain: 'todoist.com' }, { name: 'Things', domain: 'culturedcode.com' }, { name: '투두메이트', domain: 'todomate.net' }],
+  note:        [{ name: 'Notion', domain: 'notion.so' }, { name: 'Obsidian', domain: 'obsidian.md' }, { name: 'Evernote', domain: 'evernote.com' }],
+  crm:         [{ name: 'Salesforce', domain: 'salesforce.com' }, { name: 'HubSpot', domain: 'hubspot.com' }, { name: 'Zendesk', domain: 'zendesk.com' }],
+  'project-mgmt':[{ name: 'Jira', domain: 'atlassian.com' }, { name: 'Linear', domain: 'linear.app' }, { name: 'Asana', domain: 'asana.com' }],
+  hr:          [{ name: 'Flex', domain: 'flex.team' }, { name: 'Shiftee', domain: 'shiftee.io' }, { name: '사람인', domain: 'saramin.co.kr' }],
+  invoice:     [{ name: '자비스', domain: 'jobis.co' }, { name: '삼쩜삼', domain: '3o3.co.kr' }, { name: '택슬리', domain: 'taxly.kr' }],
+  'team-chat': [{ name: 'Slack', domain: 'slack.com' }, { name: '잔디', domain: 'jandi.com' }, { name: '플로우', domain: 'flow.team' }],
+
+  // lifestyle
+  freelance:   [{ name: '크몽', domain: 'kmong.com' }, { name: '숨고', domain: 'soomgo.com' }, { name: '위시켓', domain: 'wishket.com' }],
+  cleaning:    [{ name: '청소연구소', domain: 'cleaninglab.kr' }, { name: '미소', domain: 'getmiso.com' }, { name: 'Handy', domain: 'handy.com' }],
+  laundry:     [{ name: '세탁특공대', domain: 'washswat.com' }, { name: '런드리고', domain: 'laundrygo.com' }, { name: '크린토피아', domain: 'cleantopia.com' }],
+  moving:      [{ name: '짐센터', domain: 'zimcenter.com' }, { name: '이사모아', domain: 'easamoa.com' }, { name: '미소', domain: 'getmiso.com' }],
+  repair:      [{ name: '숨고', domain: 'soomgo.com' }, { name: '집닥', domain: 'zipdoc.co.kr' }, { name: '크몽', domain: 'kmong.com' }],
+  'lawyer-match':[{ name: '로톡', domain: 'lawtalk.co.kr' }, { name: '헬프미', domain: 'help-me.kr' }, { name: '로앤컴퍼니', domain: 'lawandcompany.co.kr' }],
+  'doctor-match':[{ name: '닥터나우', domain: 'drnow.co.kr' }, { name: '올라케어', domain: 'ollacare.com' }, { name: '굿닥', domain: 'goodoc.co.kr' }],
+  travel:      [{ name: '야놀자', domain: 'yanolja.com' }, { name: '여기어때', domain: 'goodchoice.kr' }, { name: '마이리얼트립', domain: 'myrealtrip.com' }],
+}
+
 export const PACKAGE_CATEGORIES = [
   { id: 'all', label: '전체' },
   { id: 'business', label: '비즈니스 / B2B' },

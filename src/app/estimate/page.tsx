@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
-import { PACKAGES, PACKAGE_CATEGORIES, TIER_ORDER, TIER_META, type TierId, type Pkg } from '@/data/packages'
+import { PACKAGES, PACKAGE_CATEGORIES, PACKAGE_EXAMPLES, TIER_ORDER, TIER_META, type TierId, type Pkg } from '@/data/packages'
 
 // ───────────────────────────── DATA ─────────────────────────────
 
@@ -829,6 +829,30 @@ export default function EstimatePage() {
                         <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold text-white ${TIER_META[activeTier].color}`}>{TIER_META[activeTier].label}</span>
                         <span className="text-slate-400">·</span>
                         <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
+                      </div>
+                    )}
+
+                    {/* 비슷한 서비스 예시 — 호버 시 슬라이드 다운 */}
+                    {PACKAGE_EXAMPLES[p.id] && (
+                      <div className="mt-auto max-h-0 overflow-hidden opacity-0 transition-all duration-400 ease-out group-hover:max-h-24 group-hover:opacity-100 group-hover:mt-3">
+                        <div className="border-t border-slate-100 pt-3">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                            {PACKAGE_EXAMPLES[p.id].map((ex, i) => (
+                              <div key={ex.domain} style={{ animationDelay: `${i * 60}ms` }} className="flex animate-[fadeUp_0.3s_ease-out_both] items-center gap-1.5">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
+                                  alt={ex.name}
+                                  width={16} height={16}
+                                  className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
+                                  onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                                />
+                                <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
