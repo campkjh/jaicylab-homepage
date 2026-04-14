@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react'
+import Script from 'next/script'
 import Link from 'next/link'
 import {
   Check, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Send, AlertCircle, Search, X,
@@ -687,6 +688,16 @@ export default function EstimatePage() {
   const [quickOpen, setQuickOpen] = useState(false)
   const [quick, setQuick] = useState({ name: '', phone: '', email: '' })
   const [quickSending, setQuickSending] = useState(false)
+
+  // UnicornStudio 재초기화 (모달 열릴 때마다)
+  useEffect(() => {
+    if (!quickOpen) return
+    const t = setTimeout(() => {
+      const us = (window as unknown as { UnicornStudio?: { init?: () => void } }).UnicornStudio
+      if (us?.init) us.init()
+    }, 50)
+    return () => clearTimeout(t)
+  }, [quickOpen])
   const [sending, setSending] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [activePkg, setActivePkg] = useState<string | null>('shop')
@@ -914,6 +925,14 @@ export default function EstimatePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-slate-900">
+      <Script
+        src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.1.6/dist/unicornStudio.umd.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          const us = (window as unknown as { UnicornStudio?: { init?: () => void; isInitialized?: boolean } }).UnicornStudio
+          if (us?.init) us.init()
+        }}
+      />
 
       {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/70 backdrop-blur-2xl border-b border-slate-200/60' : 'bg-transparent'}`}>
@@ -1361,14 +1380,12 @@ export default function EstimatePage() {
             className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
             onClick={e => e.stopPropagation()}
           >
-            {/* Spline 전체 배경 */}
+            {/* UnicornStudio 전체 배경 */}
             <div className="pointer-events-none absolute inset-0 bg-white">
-              <iframe
-                src="https://my.spline.design/metalcardsanimation-G3wZmyzxTsKLadm6za8TNMHl/"
-                className="absolute inset-0 h-full w-full border-none"
-                style={{ pointerEvents: 'none', background: 'transparent' }}
-                loading="eager"
-                title="Reward Animation"
+              <div
+                data-us-project="62NofPZ8VN0npDqUw1vB"
+                className="absolute inset-0 h-full w-full"
+                style={{ pointerEvents: 'none' }}
               />
             </div>
 
