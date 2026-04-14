@@ -1,489 +1,551 @@
-// 제이씨랩 — 패키지용 커스텀 아이콘 (토스식 라운드 스퀴클 스타일)
-// 각 아이콘은 44x44 viewBox에 자체 배경(rx=10)을 포함한 완결된 디자인
+// 제이씨랩 — 패키지용 커스텀 아이콘 (Toss 아이콘 톤앤매너)
+// 팔레트: #005BE2, #4B82FA, #76A5F9, #D2E1FF, #FFD04F, #FFB520,
+//         #6F47D2, #8862E8, #AA88FF, #97E8FF, #DAE0E8, #ADB8C4,
+//         #FFC9A8, #FDDDBA, #FF5700, #FFFFFF
 
 type P = { className?: string }
-const W = (p: P) => p.className ?? 'h-12 w-12'
+const C = (p: P) => p.className ?? 'h-12 w-12'
+const V: React.SVGProps<SVGSVGElement> = { viewBox: '0 0 44 44', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }
+const BG = <rect width="44" height="44" fill="white" />
 
 // ───────────── BUSINESS ─────────────
 
 export const IconCorp = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#DBEAFE" />
-    <rect x="9" y="10" width="26" height="28" rx="3" fill="#3B82F6" />
-    <rect x="9" y="10" width="26" height="6" fill="#60A5FA" />
-    <rect x="13" y="20" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="20.25" y="20" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="27.5" y="20" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="13" y="26" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="20.25" y="26" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="27.5" y="26" width="3.5" height="3.5" rx="0.5" fill="white" />
-    <rect x="19" y="32" width="6" height="6" fill="#1E40AF" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="6" y="14" width="32" height="24" rx="3" fill="#D2E1FF" />
+    <rect x="9" y="8" width="20" height="30" rx="3" fill="#76A5F9" />
+    <rect x="12" y="12" width="4" height="4" rx="1" fill="white" />
+    <rect x="18" y="12" width="4" height="4" rx="1" fill="white" />
+    <rect x="12" y="19" width="4" height="4" rx="1" fill="white" />
+    <rect x="18" y="19" width="4" height="4" rx="1" fill="white" />
+    <rect x="12" y="26" width="4" height="4" rx="1" fill="white" />
+    <rect x="18" y="26" width="4" height="4" rx="1" fill="white" />
+    <rect x="30" y="19" width="5" height="3" rx="1" fill="white" />
+    <rect x="30" y="25" width="5" height="3" rx="1" fill="white" />
+    <rect x="30" y="31" width="5" height="3" rx="1" fill="white" />
+    <rect x="17" y="33" width="4" height="5" rx="1" fill="#4B82FA" />
   </svg>
 )
 
 export const IconUser = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FCE7F3" />
-    <circle cx="22" cy="17" r="6.5" fill="#EC4899" />
-    <path d="M10 38 Q10 26 22 26 Q34 26 34 38 Z" fill="#F472B6" />
-    <circle cx="22" cy="17" r="6.5" fill="#EC4899" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <circle cx="22" cy="18" r="7" fill="#FDDDBA" />
+    <path d="M17 12 Q17 7 22 7 Q27 7 27 12 Q27 14 25 15 L19 15 Q17 14 17 12 Z" fill="#6F47D2" />
+    <path d="M8 40 Q8 26 22 26 Q36 26 36 40 Z" fill="#AA88FF" />
+    <path d="M14 34 L30 34" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 )
 
 export const IconLaw = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#F1F5F9" />
-    <rect x="21" y="10" width="2" height="24" rx="1" fill="#475569" />
-    <circle cx="22" cy="8" r="2.5" fill="#475569" />
-    <rect x="14" y="32" width="16" height="2.5" rx="1" fill="#475569" />
-    <path d="M10 17 L18 17 L14 25 Z" fill="#94A3B8" />
-    <path d="M26 17 L34 17 L30 25 Z" fill="#94A3B8" />
-    <rect x="10" y="15" width="24" height="2" rx="0.5" fill="#475569" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="20.5" y="8" width="3" height="26" rx="1.5" fill="#ADB8C4" />
+    <circle cx="22" cy="8" r="3" fill="#4B82FA" />
+    <rect x="13" y="33" width="18" height="3" rx="1.5" fill="#ADB8C4" />
+    <path d="M8 15 L18 15 L13 24 Q13 25 13 25 L8 16 Z" fill="#76A5F9" />
+    <path d="M26 15 L36 15 L31 24 Q31 25 31 25 L26 16 Z" fill="#76A5F9" />
+    <rect x="7" y="13" width="30" height="3" rx="1.5" fill="#4B82FA" />
   </svg>
 )
 
 export const IconHospital = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEE2E2" />
-    <rect x="7" y="13" width="30" height="24" rx="3" fill="#EF4444" />
-    <rect x="7" y="13" width="30" height="6" fill="#F87171" />
-    <rect x="19" y="21" width="6" height="12" rx="1" fill="white" />
-    <rect x="16" y="24" width="12" height="6" rx="1" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="6" y="10" width="32" height="28" rx="4" fill="#D2E1FF" />
+    <rect x="6" y="10" width="32" height="8" rx="4" fill="#4B82FA" />
+    <rect x="19" y="21" width="6" height="14" rx="1.5" fill="#FF5700" />
+    <rect x="15" y="25" width="14" height="6" rx="1.5" fill="#FF5700" />
+    <rect x="19" y="21" width="6" height="14" rx="1.5" fill="white" opacity="0.15" />
+    <circle cx="12" cy="14" r="1.5" fill="white" />
+    <circle cx="32" cy="14" r="1.5" fill="white" />
   </svg>
 )
 
 export const IconCalendar = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0E7FF" />
-    <rect x="8" y="11" width="28" height="26" rx="3" fill="#6366F1" />
-    <rect x="8" y="11" width="28" height="7" fill="#4F46E5" />
-    <rect x="13" y="7" width="2.5" height="7" rx="1" fill="#312E81" />
-    <rect x="28.5" y="7" width="2.5" height="7" rx="1" fill="#312E81" />
-    <path d="M16 26 L20 30 L29 20" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="6" y="10" width="32" height="28" rx="4" fill="#D2E1FF" />
+    <rect x="6" y="10" width="32" height="8" rx="4" fill="#4B82FA" />
+    <rect x="12" y="6" width="3" height="8" rx="1.5" fill="#005BE2" />
+    <rect x="29" y="6" width="3" height="8" rx="1.5" fill="#005BE2" />
+    <circle cx="16" cy="25" r="2" fill="#76A5F9" />
+    <circle cx="22" cy="25" r="2" fill="#76A5F9" />
+    <circle cx="28" cy="25" r="2" fill="#76A5F9" />
+    <circle cx="16" cy="31" r="2" fill="#76A5F9" />
+    <rect x="19" y="28" width="6" height="6" rx="1.5" fill="#FF5700" />
   </svg>
 )
 
 export const IconHome = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <path d="M22 7 L37 20 L37 37 L7 37 L7 20 Z" fill="#F59E0B" />
-    <path d="M22 7 L37 20 L32 20 L22 12 L12 20 L7 20 Z" fill="#FBBF24" />
-    <rect x="18" y="25" width="8" height="12" fill="#FEF3C7" />
-    <circle cx="20" cy="31" r="0.8" fill="#F59E0B" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 7 L38 20 L35 22 L22 11 L9 22 L6 20 Z" fill="#FFB520" />
+    <path d="M10 20 L22 11 L34 20 L34 38 L10 38 Z" fill="#FFD04F" />
+    <rect x="18" y="25" width="8" height="13" rx="1" fill="white" />
+    <rect x="14" y="23" width="4" height="4" rx="0.5" fill="#FDDDBA" />
+    <rect x="26" y="23" width="4" height="4" rx="0.5" fill="#FDDDBA" />
+    <circle cx="24" cy="32" r="0.8" fill="#6F47D2" />
   </svg>
 )
 
 export const IconBriefcase = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0F2FE" />
-    <rect x="17" y="9" width="10" height="6" rx="1.5" fill="#0284C7" />
-    <rect x="6" y="14" width="32" height="22" rx="3" fill="#0EA5E9" />
-    <rect x="6" y="22" width="32" height="3" fill="#0369A1" />
-    <rect x="19" y="20" width="6" height="5" rx="1" fill="#FACC15" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="17" y="9" width="10" height="6" rx="1.5" fill="#005BE2" />
+    <rect x="6" y="14" width="32" height="22" rx="4" fill="#D2E1FF" />
+    <rect x="6" y="14" width="32" height="22" rx="4" fill="#4B82FA" />
+    <rect x="6" y="22" width="32" height="3" fill="#005BE2" />
+    <rect x="19" y="21" width="6" height="5" rx="1" fill="#FFD04F" />
+    <rect x="6" y="14" width="32" height="4" fill="#76A5F9" opacity="0.8" />
   </svg>
 )
 
 export const IconCalc = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#EDE9FE" />
-    <rect x="10" y="7" width="24" height="30" rx="3" fill="#8B5CF6" />
-    <rect x="13" y="11" width="18" height="7" rx="1.5" fill="#F3F4F6" />
-    <circle cx="16" cy="24" r="1.8" fill="white" />
-    <circle cx="22" cy="24" r="1.8" fill="white" />
-    <circle cx="28" cy="24" r="1.8" fill="white" />
-    <circle cx="16" cy="30" r="1.8" fill="white" />
-    <circle cx="22" cy="30" r="1.8" fill="white" />
-    <rect x="26.5" y="28.2" width="3.6" height="3.6" rx="0.8" fill="#FBBF24" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="9" y="6" width="26" height="32" rx="4" fill="#8862E8" />
+    <rect x="12" y="10" width="20" height="8" rx="1.5" fill="white" />
+    <rect x="28" y="12" width="3" height="4" rx="0.5" fill="#6F47D2" />
+    <circle cx="15" cy="24" r="2" fill="white" />
+    <circle cx="22" cy="24" r="2" fill="white" />
+    <circle cx="29" cy="24" r="2" fill="white" />
+    <circle cx="15" cy="31" r="2" fill="white" />
+    <circle cx="22" cy="31" r="2" fill="white" />
+    <rect x="27" y="29" width="4" height="4" rx="1" fill="#FFD04F" />
   </svg>
 )
 
 // ───────────── COMMERCE ─────────────
 
 export const IconShop = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FFE4E6" />
-    <path d="M14.5 14.5 Q14.5 8 22 8 Q29.5 8 29.5 14.5" stroke="#F43F5E" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-    <path d="M10 16 L34 16 L31.5 38 L12.5 38 Z" fill="#F43F5E" />
-    <circle cx="17" cy="22" r="1.5" fill="white" />
-    <circle cx="27" cy="22" r="1.5" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M14 15 Q14 7 22 7 Q30 7 30 15" stroke="#4B82FA" strokeWidth="3" fill="none" strokeLinecap="round" />
+    <path d="M8 15 L36 15 Q37 15 37 16 L34 37 Q34 38 33 38 L11 38 Q10 38 10 37 L7 16 Q7 15 8 15 Z" fill="#4B82FA" />
+    <path d="M8 15 L36 15 Q37 15 37 16 L35 23 L9 23 L7 16 Q7 15 8 15 Z" fill="#76A5F9" />
+    <circle cx="17" cy="19" r="1.3" fill="white" />
+    <circle cx="27" cy="19" r="1.3" fill="white" />
   </svg>
 )
 
 export const IconShirt = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FCE7F3" />
-    <path d="M14 12 L22 8 L30 12 L38 18 L33 23 L30 21 L30 37 L14 37 L14 21 L11 23 L6 18 Z" fill="#DB2777" />
-    <path d="M18 10.5 Q22 13.5 26 10.5" stroke="#831843" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M14 11 L22 8 L30 11 L37 17 L33 22 L30 20 L30 37 L14 37 L14 20 L11 22 L7 17 Z" fill="#AA88FF" />
+    <path d="M14 11 L22 8 L30 11 L37 17 L33 22 L30 20 L30 26 L14 26 L14 20 L11 22 L7 17 Z" fill="#8862E8" />
+    <path d="M19 10 Q22 12 25 10" stroke="#6F47D2" strokeWidth="1.5" fill="none" strokeLinecap="round" />
   </svg>
 )
 
 export const IconGrocery = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEE2E2" />
-    <path d="M8 11 L11 11 L13 16 L33 16 L30 28 L15 28 L14 24" stroke="#DC2626" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="16" cy="33" r="2.5" fill="#DC2626" />
-    <circle cx="29" cy="33" r="2.5" fill="#DC2626" />
-    <rect x="17" y="18" width="14" height="8" rx="1" fill="#FCA5A5" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M7 10 L11 10 L13 15 L34 15 Q35 15 35 16 L32 28 Q32 29 31 29 L16 29 L15 32" stroke="#4B82FA" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <rect x="14" y="16" width="20" height="12" rx="1.5" fill="#D2E1FF" />
+    <rect x="17" y="18" width="4" height="8" rx="1" fill="#FF5700" />
+    <rect x="23" y="18" width="4" height="8" rx="1" fill="#FFD04F" />
+    <rect x="29" y="18" width="4" height="8" rx="1" fill="#76A5F9" />
+    <circle cx="16" cy="36" r="2.5" fill="#4B82FA" />
+    <circle cx="30" cy="36" r="2.5" fill="#4B82FA" />
   </svg>
 )
 
 export const IconLeaf = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#D1FAE5" />
-    <path d="M34 8 C34 20 27 32 12 34 C12 34 10 22 18 14 C24 8 34 8 34 8 Z" fill="#10B981" />
-    <path d="M14 34 Q22 22 32 10" stroke="#047857" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M36 8 C36 22 26 34 10 36 C10 36 10 20 20 12 C28 6 36 8 36 8 Z" fill="#97E8FF" />
+    <path d="M36 8 C36 22 26 34 10 36 C10 36 14 26 22 20 C28 16 36 8 36 8 Z" fill="#4B82FA" opacity="0.6" />
+    <path d="M12 36 Q22 24 34 12" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
   </svg>
 )
 
 export const IconGem = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#EDE9FE" />
-    <path d="M22 8 L34 18 L22 38 L10 18 Z" fill="#8B5CF6" />
-    <path d="M22 8 L28 18 L22 38 L16 18 Z" fill="#A78BFA" />
-    <path d="M10 18 L34 18" stroke="white" strokeWidth="1.5" />
-    <path d="M14 14 L30 14" stroke="#6D28D9" strokeWidth="1.5" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 7 L36 18 L22 39 L8 18 Z" fill="#AA88FF" />
+    <path d="M22 7 L28 18 L22 39 L16 18 Z" fill="#8862E8" />
+    <path d="M8 18 L36 18" stroke="white" strokeWidth="1.8" />
+    <path d="M13 13 L31 13" stroke="#6F47D2" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M22 7 L22 18" stroke="white" strokeWidth="1" />
   </svg>
 )
 
 export const IconRefresh = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#CCFBF1" />
-    <path d="M22 10 C28.6 10 34 15.4 34 22 L29 22 L33 28 L37 22" stroke="#14B8A6" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M22 34 C15.4 34 10 28.6 10 22 L15 22 L11 16 L7 22" stroke="#14B8A6" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 9 C28.6 9 34 14.4 34 21 L29 21 L33 28 L37 21" stroke="#4B82FA" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 35 C15.4 35 10 29.6 10 23 L15 23 L11 16 L7 23" stroke="#76A5F9" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 export const IconAuction = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <rect x="6" y="32" width="32" height="4" rx="1.5" fill="#CA8A04" />
-    <rect x="22" y="10" width="5" height="22" rx="1.5" transform="rotate(-30 24.5 21)" fill="#EAB308" />
-    <rect x="24" y="6" width="12" height="7" rx="1.5" transform="rotate(-30 30 9.5)" fill="#F59E0B" />
-    <circle cx="18" cy="26" r="2" fill="#FDE047" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="5" y="33" width="34" height="4" rx="1.5" fill="#ADB8C4" />
+    <rect x="20" y="12" width="4" height="22" rx="1.5" transform="rotate(-32 22 23)" fill="#FFB520" />
+    <rect x="23" y="5" width="12" height="7" rx="2" transform="rotate(-32 29 8.5)" fill="#FFD04F" />
+    <circle cx="14" cy="28" r="2" fill="#FF5700" />
   </svg>
 )
 
 export const IconTrending = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#D1FAE5" />
-    <path d="M8 30 L18 20 L24 26 L36 12" stroke="#059669" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M28 12 L36 12 L36 20" stroke="#059669" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="18" cy="20" r="2" fill="#10B981" />
-    <circle cx="24" cy="26" r="2" fill="#10B981" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="8" y="24" width="5" height="12" rx="1.5" fill="#D2E1FF" />
+    <rect x="16" y="18" width="5" height="18" rx="1.5" fill="#76A5F9" />
+    <rect x="24" y="12" width="5" height="24" rx="1.5" fill="#4B82FA" />
+    <path d="M8 24 L16 18 L24 14 L36 8" stroke="#FF5700" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    <path d="M30 8 L36 8 L36 14" stroke="#FF5700" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 // ───────────── FOOD ─────────────
 
 export const IconDelivery = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FED7AA" />
-    <rect x="9" y="10" width="16" height="12" rx="2" fill="#EA580C" />
-    <path d="M25 14 L33 14 L37 22 L37 28 L25 28 Z" fill="#F97316" />
-    <circle cx="13" cy="32" r="4" fill="#7C2D12" />
-    <circle cx="13" cy="32" r="1.5" fill="#FED7AA" />
-    <circle cx="31" cy="32" r="4" fill="#7C2D12" />
-    <circle cx="31" cy="32" r="1.5" fill="#FED7AA" />
-    <rect x="28" y="18" width="6" height="4" fill="#FED7AA" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="8" y="12" width="14" height="12" rx="2" fill="#FF5700" />
+    <path d="M22 16 L32 16 L37 22 L37 28 L22 28 Z" fill="#FFB520" />
+    <rect x="28" y="19" width="6" height="4" rx="1" fill="white" />
+    <circle cx="13" cy="30" r="5" fill="#005BE2" />
+    <circle cx="13" cy="30" r="2" fill="#D2E1FF" />
+    <circle cx="32" cy="30" r="5" fill="#005BE2" />
+    <circle cx="32" cy="30" r="2" fill="#D2E1FF" />
+    <rect x="14" y="26" width="18" height="2.5" fill="#ADB8C4" />
   </svg>
 )
 
 export const IconReceipt = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <path d="M11 6 L33 6 L33 40 L29 37 L25 40 L22 37 L19 40 L15 37 L11 40 Z" fill="#F59E0B" />
-    <rect x="15" y="12" width="14" height="2" rx="1" fill="white" />
-    <rect x="15" y="17" width="14" height="2" rx="1" fill="white" />
-    <rect x="15" y="22" width="10" height="2" rx="1" fill="white" />
-    <rect x="15" y="28" width="14" height="2.5" rx="1" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M11 5 L33 5 L33 41 L29 38 L25 41 L22 38 L19 41 L15 38 L11 41 Z" fill="#FFD04F" />
+    <path d="M11 5 L33 5 L33 13 L11 13 Z" fill="#FFB520" />
+    <rect x="15" y="8" width="14" height="2" rx="0.5" fill="white" />
+    <rect x="15" y="18" width="14" height="2" rx="0.5" fill="white" />
+    <rect x="15" y="23" width="12" height="2" rx="0.5" fill="white" />
+    <rect x="15" y="28" width="14" height="2" rx="0.5" fill="white" />
+    <circle cx="28" cy="33" r="2" fill="#FF5700" />
   </svg>
 )
 
 export const IconCoffee = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <path d="M12 18 L32 18 L30 36 L14 36 Z" fill="#92400E" />
-    <path d="M32 22 Q38 22 38 28 Q38 32 32 32" stroke="#92400E" strokeWidth="2.5" fill="none" />
-    <path d="M18 10 Q18 14 16 16" stroke="#D4A574" strokeWidth="2" strokeLinecap="round" fill="none" />
-    <path d="M23 10 Q23 14 21 16" stroke="#D4A574" strokeWidth="2" strokeLinecap="round" fill="none" />
-    <path d="M28 10 Q28 14 26 16" stroke="#D4A574" strokeWidth="2" strokeLinecap="round" fill="none" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M12 17 L32 17 L30 36 Q30 37 29 37 L15 37 Q14 37 14 36 Z" fill="#FDDDBA" />
+    <path d="M12 17 L32 17 L31 22 L13 22 Z" fill="#FFC9A8" />
+    <path d="M32 21 Q38 21 38 27 Q38 32 32 32" stroke="#FDDDBA" strokeWidth="2.5" fill="none" />
+    <path d="M17 8 Q17 11 19 13" stroke="#AA88FF" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+    <path d="M22 7 Q22 10 24 12" stroke="#AA88FF" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+    <path d="M27 8 Q27 11 29 13" stroke="#AA88FF" strokeWidth="2.2" strokeLinecap="round" fill="none" />
   </svg>
 )
 
 export const IconChef = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#F3E8FF" />
-    <path d="M12 20 Q8 20 8 16 Q8 11 13 11 Q14 8 18 8 Q22 6 26 8 Q30 8 31 11 Q36 11 36 16 Q36 20 32 20 L32 28 L12 28 Z" fill="#9333EA" />
-    <rect x="12" y="28" width="20" height="3" fill="#6B21A8" />
-    <rect x="12" y="31" width="20" height="4" fill="#A855F7" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M12 20 Q7 20 7 15 Q7 10 12 10 Q13 6 18 6 Q22 4 26 6 Q31 6 32 10 Q37 10 37 15 Q37 20 32 20 L32 30 L12 30 Z" fill="white" stroke="#DAE0E8" strokeWidth="1.2" />
+    <rect x="12" y="28" width="20" height="3" fill="#DAE0E8" />
+    <rect x="12" y="31" width="20" height="6" rx="1" fill="#4B82FA" />
+    <circle cx="16" cy="34" r="0.8" fill="white" />
+    <circle cx="22" cy="34" r="0.8" fill="white" />
+    <circle cx="28" cy="34" r="0.8" fill="white" />
   </svg>
 )
 
 export const IconSoup = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEE2E2" />
-    <path d="M6 22 L38 22 Q38 34 22 36 Q6 34 6 22 Z" fill="#DC2626" />
-    <rect x="6" y="22" width="32" height="3" fill="#EF4444" />
-    <circle cx="16" cy="16" r="2.5" fill="#FCA5A5" />
-    <circle cx="22" cy="12" r="2.5" fill="#FCA5A5" />
-    <circle cx="28" cy="16" r="2.5" fill="#FCA5A5" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M5 22 L39 22 Q39 35 22 37 Q5 35 5 22 Z" fill="#FFD04F" />
+    <rect x="5" y="22" width="34" height="3" fill="#FFB520" />
+    <circle cx="15" cy="14" r="3" fill="#FF5700" />
+    <circle cx="22" cy="10" r="3" fill="#FFC9A8" />
+    <circle cx="29" cy="14" r="3" fill="#FF5700" />
+    <path d="M13 6 Q15 3 17 6" stroke="#AA88FF" strokeWidth="2" fill="none" strokeLinecap="round" />
   </svg>
 )
 
 // ───────────── EDUCATION ─────────────
 
 export const IconBook = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#DBEAFE" />
-    <path d="M6 12 L22 10 L22 34 L6 36 Z" fill="#2563EB" />
-    <path d="M38 12 L22 10 L22 34 L38 36 Z" fill="#3B82F6" />
-    <rect x="21" y="10" width="2" height="26" fill="#1E40AF" />
-    <rect x="10" y="16" width="8" height="1.5" rx="0.5" fill="white" />
-    <rect x="10" y="20" width="10" height="1.5" rx="0.5" fill="white" />
-    <rect x="10" y="24" width="6" height="1.5" rx="0.5" fill="white" />
-    <rect x="24" y="16" width="10" height="1.5" rx="0.5" fill="white" />
-    <rect x="24" y="20" width="8" height="1.5" rx="0.5" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M5 11 L22 9 L22 36 L5 38 Z" fill="#76A5F9" />
+    <path d="M39 11 L22 9 L22 36 L39 38 Z" fill="#4B82FA" />
+    <rect x="21" y="9" width="2" height="27" fill="#005BE2" />
+    <rect x="9" y="16" width="8" height="1.5" rx="0.5" fill="white" />
+    <rect x="9" y="20" width="10" height="1.5" rx="0.5" fill="white" />
+    <rect x="9" y="24" width="6" height="1.5" rx="0.5" fill="white" />
+    <rect x="25" y="16" width="10" height="1.5" rx="0.5" fill="white" />
+    <rect x="25" y="20" width="8" height="1.5" rx="0.5" fill="white" />
+    <rect x="25" y="24" width="9" height="1.5" rx="0.5" fill="white" />
   </svg>
 )
 
 export const IconBaby = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FCE7F3" />
-    <circle cx="22" cy="18" r="9" fill="#FBBF24" />
-    <circle cx="18.5" cy="17" r="1.2" fill="#451A03" />
-    <circle cx="25.5" cy="17" r="1.2" fill="#451A03" />
-    <path d="M18 21 Q22 24 26 21" stroke="#451A03" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <circle cx="13" cy="13" r="2.5" fill="#FDE68A" />
-    <circle cx="31" cy="13" r="2.5" fill="#FDE68A" />
-    <path d="M10 38 Q10 29 22 29 Q34 29 34 38 Z" fill="#EC4899" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <circle cx="22" cy="17" r="10" fill="#FDDDBA" />
+    <path d="M14 11 Q14 6 22 6 Q30 6 30 11 Q30 14 27 15 L17 15 Q14 14 14 11 Z" fill="#6F47D2" />
+    <circle cx="18" cy="18" r="1.3" fill="#2C2C2C" />
+    <circle cx="26" cy="18" r="1.3" fill="#2C2C2C" />
+    <path d="M19 22 Q22 24 25 22" stroke="#FF5700" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <circle cx="13" cy="22" r="2" fill="#FFC9A8" />
+    <circle cx="31" cy="22" r="2" fill="#FFC9A8" />
+    <path d="M8 39 Q8 29 22 29 Q36 29 36 39 Z" fill="#AA88FF" />
   </svg>
 )
 
 export const IconGrad = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0E7FF" />
-    <path d="M4 18 L22 10 L40 18 L22 26 Z" fill="#4F46E5" />
-    <path d="M12 22 L12 31 Q22 37 32 31 L32 22" stroke="#6366F1" strokeWidth="3" fill="none" strokeLinecap="round" />
-    <rect x="37" y="18" width="1.8" height="10" fill="#4F46E5" />
-    <circle cx="37.9" cy="30" r="2" fill="#4F46E5" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M4 18 L22 10 L40 18 L22 26 Z" fill="#6F47D2" />
+    <path d="M4 18 L22 10 L40 18 L22 22 Z" fill="#8862E8" />
+    <path d="M12 22 L12 31 Q22 38 32 31 L32 22" stroke="#AA88FF" strokeWidth="3" fill="none" strokeLinecap="round" />
+    <rect x="37" y="18" width="1.8" height="10" fill="#6F47D2" />
+    <circle cx="37.9" cy="31" r="2.5" fill="#FFD04F" />
   </svg>
 )
 
 export const IconAward = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <circle cx="22" cy="19" r="11" fill="#F59E0B" />
-    <circle cx="22" cy="19" r="7" fill="#FBBF24" />
-    <path d="M15 27 L11 38 L16 35 L18 40 L22 30" fill="#DC2626" />
-    <path d="M29 27 L33 38 L28 35 L26 40 L22 30" fill="#DC2626" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M14 6 L20 22 L14 30 L10 22 Z" fill="#FF5700" />
+    <path d="M30 6 L34 22 L30 30 L24 22 Z" fill="#FF5700" />
+    <circle cx="22" cy="25" r="11" fill="#FFD04F" />
+    <circle cx="22" cy="25" r="7" fill="#FFB520" />
+    <path d="M19 22 L21 26 L26 20" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 // ───────────── HEALTH ─────────────
 
 export const IconFitness = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#D1FAE5" />
-    <rect x="4" y="18" width="4" height="10" rx="1.5" fill="#065F46" />
-    <rect x="8" y="14" width="5" height="18" rx="2" fill="#059669" />
-    <rect x="13" y="20" width="18" height="6" rx="1" fill="#10B981" />
-    <rect x="31" y="14" width="5" height="18" rx="2" fill="#059669" />
-    <rect x="36" y="18" width="4" height="10" rx="1.5" fill="#065F46" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="3" y="18" width="4" height="8" rx="1.5" fill="#005BE2" />
+    <rect x="7" y="14" width="5" height="16" rx="2" fill="#4B82FA" />
+    <rect x="12" y="20" width="20" height="4" rx="1" fill="#76A5F9" />
+    <rect x="32" y="14" width="5" height="16" rx="2" fill="#4B82FA" />
+    <rect x="37" y="18" width="4" height="8" rx="1.5" fill="#005BE2" />
+    <rect x="12" y="20" width="20" height="1.5" fill="white" opacity="0.5" />
   </svg>
 )
 
 export const IconMental = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#F3E8FF" />
-    <path d="M22 38 C8 27 8 18 14 14 C18 11 22 14 22 17 C22 14 26 11 30 14 C36 18 36 27 22 38 Z" fill="#A855F7" />
-    <path d="M22 38 C8 27 8 18 14 14 C18 11 22 14 22 17 Z" fill="#C084FC" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 38 C7 27 7 17 13 13 C17 10 22 13 22 17 C22 13 27 10 31 13 C37 17 37 27 22 38 Z" fill="#AA88FF" />
+    <path d="M22 38 C7 27 7 17 13 13 C17 10 22 13 22 17 Z" fill="#8862E8" />
+    <path d="M22 17 Q22 13 17 11" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
   </svg>
 )
 
 export const IconDiet = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEE2E2" />
-    <path d="M22 12 C14 12 8 18 8 26 C8 34 14 38 22 38 C30 38 36 34 36 26 C36 18 30 12 22 12 Z" fill="#EF4444" />
-    <path d="M20 9 Q22 5 26 7 Q24 11 20 12 Z" fill="#16A34A" />
-    <circle cx="16" cy="22" r="2" fill="#FCA5A5" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M18 11 Q20 6 25 8 Q23 11 20 12 Z" fill="#97E8FF" opacity="0.9" />
+    <path d="M22 12 C13 12 7 19 7 27 C7 35 13 39 22 39 C31 39 37 35 37 27 C37 19 31 12 22 12 Z" fill="#FF5700" />
+    <path d="M22 12 C13 12 7 19 7 27 C7 30 8 33 10 35 C12 32 15 28 22 28 C29 28 32 32 34 35 C36 33 37 30 37 27 C37 19 31 12 22 12 Z" fill="#FFB520" opacity="0.4" />
+    <ellipse cx="14" cy="22" rx="2.5" ry="1.8" fill="white" opacity="0.5" />
   </svg>
 )
 
 export const IconPet = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FED7AA" />
-    <ellipse cx="22" cy="28" rx="8" ry="7" fill="#C2410C" />
-    <ellipse cx="12" cy="18" rx="3" ry="4" fill="#EA580C" />
-    <ellipse cx="32" cy="18" rx="3" ry="4" fill="#EA580C" />
-    <ellipse cx="17" cy="12" rx="2.5" ry="3.5" fill="#EA580C" />
-    <ellipse cx="27" cy="12" rx="2.5" ry="3.5" fill="#EA580C" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <ellipse cx="22" cy="28" rx="9" ry="8" fill="#FDDDBA" />
+    <ellipse cx="11" cy="18" rx="3" ry="4.5" fill="#FFC9A8" />
+    <ellipse cx="33" cy="18" rx="3" ry="4.5" fill="#FFC9A8" />
+    <ellipse cx="17" cy="11" rx="2.5" ry="3.5" fill="#FFC9A8" />
+    <ellipse cx="27" cy="11" rx="2.5" ry="3.5" fill="#FFC9A8" />
+    <circle cx="22" cy="28" r="2" fill="#FF5700" />
   </svg>
 )
 
 // ───────────── COMMUNITY ─────────────
 
 export const IconChat = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FCE7F3" />
-    <path d="M6 14 Q6 8 12 8 L26 8 Q32 8 32 14 L32 22 Q32 28 26 28 L18 28 L12 34 L12 28 Q6 28 6 22 Z" fill="#EC4899" />
-    <path d="M16 20 Q22 24 28 18 Q32 14 38 16 L38 30 Q38 34 34 34 L26 34 L22 38 L22 34 Q18 34 16 30 Z" fill="#F472B6" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M5 14 Q5 8 11 8 L25 8 Q31 8 31 14 L31 22 Q31 28 25 28 L19 28 L13 34 L13 28 Q5 28 5 22 Z" fill="#D2E1FF" />
+    <path d="M14 20 Q22 26 30 18 Q31 18 32 18 Q38 18 38 24 L38 30 Q38 34 34 34 L26 34 L22 38 L22 34 Q14 34 14 30 Z" fill="#4B82FA" />
+    <circle cx="12" cy="18" r="1.5" fill="#4B82FA" />
+    <circle cx="18" cy="18" r="1.5" fill="#4B82FA" />
+    <circle cx="24" cy="26" r="1.2" fill="white" />
+    <circle cx="30" cy="26" r="1.2" fill="white" />
   </svg>
 )
 
 export const IconDating = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FFE4E6" />
-    <path d="M18 38 C7 30 7 22 11 18 C14 15 17 18 17 20 C17 18 20 15 23 18 C27 22 27 30 18 38 Z" fill="#F43F5E" />
-    <path d="M30 26 C22 20 22 14 25 11 C27 9 30 11 30 13 C30 11 33 9 35 11 C38 14 38 20 30 26 Z" fill="#FB7185" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M17 38 C5 29 5 20 10 16 C14 13 17 16 17 19 C17 16 20 13 24 16 C29 20 29 29 17 38 Z" fill="#FF5700" />
+    <path d="M30 26 C22 20 22 14 25 11 C27 9 30 11 30 13 C30 11 33 9 35 11 C38 14 38 20 30 26 Z" fill="#AA88FF" />
   </svg>
 )
 
 export const IconParty = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <path d="M10 38 L24 10 L36 32 Z" fill="#F59E0B" />
-    <circle cx="18" cy="20" r="1.8" fill="#EC4899" />
-    <circle cx="28" cy="18" r="1.8" fill="#22C55E" />
-    <circle cx="22" cy="28" r="1.8" fill="#3B82F6" />
-    <circle cx="14" cy="34" r="1.5" fill="#EC4899" />
-    <circle cx="32" cy="30" r="1.5" fill="#A855F7" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M9 38 L24 9 L37 33 Z" fill="#FFD04F" />
+    <path d="M14 32 L24 9 L32 29 Z" fill="#FFB520" />
+    <circle cx="18" cy="22" r="2" fill="#FF5700" />
+    <circle cx="28" cy="20" r="2" fill="#4B82FA" />
+    <circle cx="22" cy="30" r="1.8" fill="#AA88FF" />
+    <circle cx="14" cy="36" r="1.5" fill="#97E8FF" />
+    <circle cx="33" cy="32" r="1.5" fill="#6F47D2" />
   </svg>
 )
 
 export const IconMapPin = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#D1FAE5" />
-    <path d="M22 6 C14.3 6 8 12.3 8 20 C8 28 22 40 22 40 C22 40 36 28 36 20 C36 12.3 29.7 6 22 6 Z" fill="#10B981" />
-    <circle cx="22" cy="19" r="5" fill="white" />
-    <circle cx="22" cy="19" r="2.5" fill="#047857" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 5 C13.7 5 7 11.7 7 20 C7 28.5 22 40 22 40 C22 40 37 28.5 37 20 C37 11.7 30.3 5 22 5 Z" fill="#FF5700" />
+    <circle cx="22" cy="20" r="6" fill="white" />
+    <circle cx="22" cy="20" r="3" fill="#FF5700" />
   </svg>
 )
 
 export const IconChurch = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0E7FF" />
-    <rect x="20.5" y="6" width="3" height="12" fill="#4F46E5" />
-    <rect x="16" y="10" width="12" height="3" fill="#4F46E5" />
-    <path d="M22 14 L34 22 L34 38 L10 38 L10 22 Z" fill="#6366F1" />
-    <rect x="18" y="28" width="8" height="10" rx="4" fill="#E0E7FF" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="20" y="4" width="4" height="14" rx="1" fill="#6F47D2" />
+    <rect x="15" y="9" width="14" height="4" rx="1" fill="#6F47D2" />
+    <path d="M22 15 L35 23 L35 38 L9 38 L9 23 Z" fill="#AA88FF" />
+    <path d="M22 15 L35 23 L30 23 L22 17 L14 23 L9 23 Z" fill="#8862E8" />
+    <rect x="18" y="26" width="8" height="12" rx="4" fill="white" />
+    <rect x="20" y="28" width="4" height="4" fill="#FFD04F" />
   </svg>
 )
 
 // ───────────── PRODUCTIVITY ─────────────
 
 export const IconTodo = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#DBEAFE" />
-    <rect x="8" y="10" width="28" height="26" rx="3" fill="white" />
-    <rect x="11" y="14" width="3" height="3" rx="0.5" fill="#3B82F6" />
-    <rect x="16" y="14" width="14" height="3" rx="0.5" fill="#93C5FD" />
-    <rect x="11" y="21" width="3" height="3" rx="0.5" fill="#3B82F6" />
-    <rect x="16" y="21" width="10" height="3" rx="0.5" fill="#93C5FD" />
-    <rect x="11" y="28" width="3" height="3" rx="0.5" fill="#E5E7EB" />
-    <rect x="16" y="28" width="12" height="3" rx="0.5" fill="#E5E7EB" />
-    <path d="M11.5 15 L12.5 16 L13.5 14.5" stroke="white" strokeWidth="0.9" fill="none" />
-    <path d="M11.5 22 L12.5 23 L13.5 21.5" stroke="white" strokeWidth="0.9" fill="none" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="6" y="8" width="32" height="28" rx="4" fill="#D2E1FF" />
+    <rect x="6" y="8" width="32" height="7" rx="4" fill="#4B82FA" />
+    <rect x="10" y="19" width="4" height="4" rx="1" fill="#4B82FA" />
+    <rect x="16" y="20" width="14" height="2" rx="0.5" fill="#76A5F9" />
+    <rect x="10" y="26" width="4" height="4" rx="1" fill="#4B82FA" />
+    <rect x="16" y="27" width="10" height="2" rx="0.5" fill="#76A5F9" />
+    <rect x="10" y="33" width="4" height="4" rx="1" fill="white" stroke="#76A5F9" strokeWidth="1" />
+    <rect x="16" y="34" width="12" height="2" rx="0.5" fill="#ADB8C4" />
+    <path d="M10.8 21 L12 22 L13.3 20" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10.8 28 L12 29 L13.3 27" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 export const IconNote = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEF3C7" />
-    <rect x="8" y="8" width="28" height="30" rx="3" fill="#F59E0B" />
-    <rect x="11" y="12" width="22" height="22" rx="1" fill="white" />
-    <rect x="14" y="17" width="14" height="2" rx="0.5" fill="#FBBF24" />
-    <rect x="14" y="22" width="12" height="2" rx="0.5" fill="#FBBF24" />
-    <rect x="14" y="27" width="10" height="2" rx="0.5" fill="#FBBF24" />
-    <path d="M28 30 L34 24 L37 27 L31 33 Z" fill="#EC4899" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="7" y="7" width="26" height="30" rx="3" fill="#FFD04F" />
+    <rect x="10" y="11" width="20" height="22" rx="1" fill="white" />
+    <rect x="13" y="16" width="14" height="2" rx="0.5" fill="#FFD04F" />
+    <rect x="13" y="21" width="12" height="2" rx="0.5" fill="#FFD04F" />
+    <rect x="13" y="26" width="9" height="2" rx="0.5" fill="#FFD04F" />
+    <path d="M26 28 L34 20 L37 23 L29 31 Z" fill="#6F47D2" />
+    <path d="M34 20 L37 23" stroke="white" strokeWidth="1" />
   </svg>
 )
 
 export const IconCrm = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#CCFBF1" />
-    <circle cx="15" cy="15" r="5" fill="#14B8A6" />
-    <circle cx="29" cy="15" r="5" fill="#0D9488" />
-    <circle cx="22" cy="26" r="5.5" fill="#14B8A6" />
-    <path d="M7 36 Q7 28 15 28 Q20 28 22 30 Q24 28 29 28 Q37 28 37 36" fill="#5EEAD4" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <circle cx="14" cy="14" r="5" fill="#76A5F9" />
+    <circle cx="30" cy="14" r="5" fill="#4B82FA" />
+    <circle cx="22" cy="25" r="6" fill="#005BE2" />
+    <path d="M6 38 Q6 29 14 29 Q19 29 22 31 Q25 29 30 29 Q38 29 38 38" fill="#D2E1FF" />
+    <circle cx="22" cy="24" r="2" fill="white" />
   </svg>
 )
 
 export const IconKanban = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0E7FF" />
-    <rect x="7" y="10" width="9" height="24" rx="2" fill="#6366F1" />
-    <rect x="17.5" y="10" width="9" height="16" rx="2" fill="#818CF8" />
-    <rect x="28" y="10" width="9" height="20" rx="2" fill="#4F46E5" />
-    <rect x="9" y="14" width="5" height="2" rx="0.5" fill="white" />
-    <rect x="9" y="18" width="5" height="2" rx="0.5" fill="white" />
-    <rect x="19.5" y="14" width="5" height="2" rx="0.5" fill="white" />
-    <rect x="30" y="14" width="5" height="2" rx="0.5" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="5" y="8" width="10" height="28" rx="2" fill="#D2E1FF" />
+    <rect x="17" y="8" width="10" height="20" rx="2" fill="#76A5F9" />
+    <rect x="29" y="8" width="10" height="24" rx="2" fill="#4B82FA" />
+    <rect x="7" y="12" width="6" height="2.5" rx="0.5" fill="#4B82FA" />
+    <rect x="7" y="17" width="6" height="2.5" rx="0.5" fill="#4B82FA" />
+    <rect x="19" y="12" width="6" height="2.5" rx="0.5" fill="white" />
+    <rect x="31" y="12" width="6" height="2.5" rx="0.5" fill="white" />
+    <rect x="31" y="17" width="6" height="2.5" rx="0.5" fill="white" />
   </svg>
 )
 
 // ───────────── LIFESTYLE ─────────────
 
 export const IconSpray = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#CCFBF1" />
-    <rect x="14" y="14" width="14" height="22" rx="2" fill="#14B8A6" />
-    <rect x="16" y="10" width="10" height="5" rx="1.5" fill="#0D9488" />
-    <rect x="18" y="6" width="6" height="4" rx="1" fill="#0F766E" />
-    <rect x="16" y="20" width="10" height="6" rx="1" fill="white" />
-    <circle cx="32" cy="10" r="1.5" fill="#5EEAD4" />
-    <circle cx="35" cy="14" r="1.2" fill="#5EEAD4" />
-    <circle cx="34" cy="18" r="1" fill="#5EEAD4" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="13" y="14" width="16" height="24" rx="3" fill="#97E8FF" />
+    <rect x="13" y="14" width="16" height="8" rx="3" fill="#4B82FA" />
+    <rect x="15" y="10" width="12" height="5" rx="1.5" fill="#76A5F9" />
+    <rect x="17" y="5" width="8" height="6" rx="1.5" fill="#005BE2" />
+    <rect x="16" y="25" width="10" height="5" rx="1" fill="white" />
+    <circle cx="34" cy="9" r="1.5" fill="#97E8FF" />
+    <circle cx="37" cy="13" r="1.2" fill="#97E8FF" />
+    <circle cx="35" cy="17" r="1" fill="#97E8FF" />
   </svg>
 )
 
 export const IconTruck = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#DBEAFE" />
-    <rect x="4" y="14" width="22" height="16" rx="2" fill="#2563EB" />
-    <path d="M26 18 L34 18 L38 24 L38 30 L26 30 Z" fill="#3B82F6" />
-    <rect x="28" y="20" width="6" height="4" fill="#DBEAFE" />
-    <circle cx="12" cy="33" r="3.5" fill="#1E40AF" />
-    <circle cx="12" cy="33" r="1.2" fill="#DBEAFE" />
-    <circle cx="32" cy="33" r="3.5" fill="#1E40AF" />
-    <circle cx="32" cy="33" r="1.2" fill="#DBEAFE" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <rect x="3" y="14" width="22" height="16" rx="2" fill="#D2E1FF" />
+    <path d="M25 18 L33 18 L39 24 L39 30 L25 30 Z" fill="#4B82FA" />
+    <rect x="27" y="20" width="6" height="4" fill="#D2E1FF" />
+    <circle cx="12" cy="32" r="4" fill="#005BE2" />
+    <circle cx="12" cy="32" r="1.5" fill="#D2E1FF" />
+    <circle cx="32" cy="32" r="4" fill="#005BE2" />
+    <circle cx="32" cy="32" r="1.5" fill="#D2E1FF" />
+    <rect x="6" y="18" width="14" height="2" rx="0.5" fill="#76A5F9" />
+    <rect x="6" y="22" width="10" height="2" rx="0.5" fill="#76A5F9" />
   </svg>
 )
 
 export const IconWrench = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#FEE2E2" />
-    <path d="M30 10 Q38 12 36 20 L24 32 L12 36 L8 32 L20 20 Q18 12 26 10 Z" fill="#DC2626" />
-    <circle cx="28" cy="14" r="3.5" fill="#FEE2E2" />
-    <path d="M11 31 L13 33" stroke="#FEE2E2" strokeWidth="1.5" strokeLinecap="round" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M31 8 Q38 11 36 19 L25 30 L14 36 L8 30 L19 19 Q17 11 24 8 Z" fill="#ADB8C4" />
+    <circle cx="28" cy="12" r="3.5" fill="white" />
+    <path d="M12 34 L14 32" stroke="white" strokeWidth="1.2" strokeLinecap="round" />
+    <rect x="19" y="19" width="3" height="18" rx="1" transform="rotate(45 20.5 28)" fill="#FFD04F" />
   </svg>
 )
 
 export const IconPlane = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#CCFBF1" />
-    <path d="M6 26 L16 20 L32 24 L38 16 Q42 14 40 20 L36 28 L22 32 L14 34 L12 32 L18 28 L14 28 L10 30 Z" fill="#0D9488" />
-    <circle cx="32" cy="22" r="1" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M4 22 Q4 20 6 20 L16 22 L30 12 Q34 9 37 11 Q39 13 36 17 L26 30 L22 38 L19 34 L20 28 L12 30 L8 26 L10 24 L16 24 Z" fill="#76A5F9" />
+    <path d="M30 12 Q34 9 37 11 Q39 13 36 17 L30 25 Z" fill="#4B82FA" />
+    <circle cx="32" cy="16" r="1" fill="white" />
   </svg>
 )
 
-// ───────────── PRODUCTIVITY / MISC ─────────────
-
 export const IconFile = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#E0E7FF" />
-    <path d="M12 8 L26 8 L34 16 L34 36 Q34 38 32 38 L12 38 Q10 38 10 36 L10 10 Q10 8 12 8 Z" fill="#4F46E5" />
-    <path d="M26 8 L26 16 L34 16 Z" fill="#6366F1" />
-    <rect x="14" y="22" width="16" height="1.8" rx="0.5" fill="white" />
-    <rect x="14" y="26" width="12" height="1.8" rx="0.5" fill="white" />
-    <rect x="14" y="30" width="14" height="1.8" rx="0.5" fill="white" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M10 6 L26 6 L34 14 L34 36 Q34 38 32 38 L10 38 Q8 38 8 36 L8 8 Q8 6 10 6 Z" fill="#D2E1FF" />
+    <path d="M26 6 L34 14 L26 14 Z" fill="#76A5F9" />
+    <rect x="13" y="20" width="16" height="2" rx="0.5" fill="#4B82FA" />
+    <rect x="13" y="25" width="12" height="2" rx="0.5" fill="#4B82FA" />
+    <rect x="13" y="30" width="14" height="2" rx="0.5" fill="#4B82FA" />
+    <circle cx="29" cy="32" r="3" fill="#FF5700" />
+    <path d="M27.5 32 L29 33.5 L31 31.5" stroke="white" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
 
 export const IconHeadset = (p: P) => (
-  <svg viewBox="0 0 44 44" className={W(p)} xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="12" fill="#DBEAFE" />
-    <path d="M22 8 C14 8 8 14 8 22 L8 30 Q8 34 12 34 L14 34 L14 22 C14 18 18 14 22 14 C26 14 30 18 30 22 L30 34 L32 34 Q36 34 36 30 L36 22 C36 14 30 8 22 8 Z" fill="#3B82F6" />
-    <rect x="6" y="24" width="8" height="12" rx="2" fill="#60A5FA" />
-    <rect x="30" y="24" width="8" height="12" rx="2" fill="#60A5FA" />
+  <svg {...V} className={C(p)}>
+    {BG}
+    <path d="M22 6 C13 6 6 13 6 22 L6 30 Q6 34 10 34 L13 34 L13 21 C13 16 17 12 22 12 C27 12 31 16 31 21 L31 34 L34 34 Q38 34 38 30 L38 22 C38 13 31 6 22 6 Z" fill="#4B82FA" />
+    <rect x="4" y="24" width="10" height="12" rx="3" fill="#76A5F9" />
+    <rect x="30" y="24" width="10" height="12" rx="3" fill="#76A5F9" />
+    <circle cx="9" cy="30" r="1.5" fill="white" />
+    <circle cx="35" cy="30" r="1.5" fill="white" />
   </svg>
 )

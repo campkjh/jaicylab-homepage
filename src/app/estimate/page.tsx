@@ -557,6 +557,134 @@ function fmt(manwon: number) {
 }
 function priceOf(ids: string[]) { return ids.reduce((s, id) => s + (ITEM_LOOKUP[id]?.price ?? 0), 0) }
 
+const TIER_HEX: Record<TierId, string> = {
+  mvp: '#64748B', basic: '#0EA5E9', premium: '#2563EB', deluxe: '#4F46E5', enterprise: '#0F172A',
+}
+
+// ───────────────────────────── PackageCard ─────────────────────────────
+
+function PackageCard({
+  p, idx, isActivePkg, activeTier, applyTier, onHoverEnter, onHoverLeave,
+}: {
+  p: Pkg; idx: number; isActivePkg: boolean; activeTier: TierId | null;
+  applyTier: (pkg: Pkg, tier: TierId) => void;
+  onHoverEnter: (tier: TierId, rect: DOMRect) => void;
+  onHoverLeave: (tier: TierId) => void;
+}) {
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [pill, setPill] = useState<{ left: number; width: number; color: string } | null>(null)
+
+  useLayoutEffect(() => {
+    function measure() {
+      if (!isActivePkg || !activeTier) { setPill(null); return }
+      const grid = gridRef.current
+      if (!grid) return
+      const btn = grid.querySelector<HTMLElement>(`[data-tier="${activeTier}"]`)
+      if (!btn) return
+      const gr = grid.getBoundingClientRect()
+      const br = btn.getBoundingClientRect()
+      setPill({ left: br.left - gr.left, width: br.width, color: TIER_HEX[activeTier] })
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [isActivePkg, activeTier])
+
+  const IconCmp = PKG_ICON[p.id]
+
+  return (
+    <div
+      style={{ animationDelay: `${idx * 40}ms` }}
+      className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+    >
+      <div className="flex items-start gap-3">
+        <div className={`shrink-0 transition-transform duration-300 group-hover:scale-[1.08] group-hover:-rotate-3 ${isActivePkg ? 'drop-shadow-[0_6px_16px_rgba(41,121,255,0.35)]' : ''}`}>
+          {IconCmp ? <IconCmp className="h-12 w-12" /> : <div className="h-12 w-12 rounded-[12px] bg-slate-100" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
+          <p className="mt-0.5 truncate text-[12px] text-slate-500">{p.sub}</p>
+        </div>
+      </div>
+
+      {/* 알약 티어 버튼 + 슬라이딩 색상 인디케이터 */}
+      <div ref={gridRef} className="relative mt-4 grid grid-cols-5 gap-1.5">
+        {pill && (
+          <span
+            aria-hidden
+            className="absolute top-0 z-0 h-[36px] rounded-full transition-all duration-[550ms]"
+            style={{
+              left: pill.left,
+              width: pill.width,
+              backgroundColor: pill.color,
+              boxShadow: `0 6px 18px ${pill.color}55, 0 2px 4px ${pill.color}33`,
+              transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            {/* 자연스럽게 일렁이는 하이라이트 (라디얼 + 브리드) */}
+            <span
+              className="absolute inset-0 rounded-full animate-[pillWave_3.2s_ease-in-out_infinite]"
+              style={{
+                background: 'radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%)',
+                backgroundSize: '220% 120%',
+              }}
+            />
+            <span
+              className="absolute inset-0 rounded-full animate-[pillBreath_2.6s_ease-in-out_infinite]"
+              style={{
+                background: 'radial-gradient(circle at 70% 60%, rgba(255,255,255,0.25), rgba(255,255,255,0) 55%)',
+              }}
+            />
+          </span>
+        )}
+        {TIER_ORDER.map(t => {
+          const meta = TIER_META[t]
+          const tierActive = isActivePkg && activeTier === t
+          return (
+            <div key={t} data-tier={t} className="relative z-10"
+              onMouseEnter={e => onHoverEnter(t, (e.currentTarget as HTMLElement).getBoundingClientRect())}
+              onMouseLeave={() => onHoverLeave(t)}>
+              <button type="button" onClick={() => applyTier(p, t)}
+                className={`relative flex h-[36px] w-full items-center justify-center rounded-full text-[11px] font-bold transition-colors duration-500 active:scale-95 ${tierActive ? 'text-white' : `${meta.soft} hover:brightness-105`}`}>
+                {meta.label.charAt(0)}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {isActivePkg && activeTier && (
+        <div className="mt-3 flex items-center gap-1.5 text-[11px]">
+          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white ${TIER_META[activeTier].color}`}>{TIER_META[activeTier].label}</span>
+          <span className="text-slate-400">·</span>
+          <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
+        </div>
+      )}
+
+      {PACKAGE_EXAMPLES[p.id] && (
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {PACKAGE_EXAMPLES[p.id].map(ex => (
+              <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
+                  alt={ex.name}
+                  width={16} height={16}
+                  className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                />
+                <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ───────────────────────────── PAGE ─────────────────────────────
 
 export default function EstimatePage() {
@@ -804,83 +932,15 @@ export default function EstimatePage() {
             <div ref={carouselRef} key={pkgCategory}
               className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-6"
               style={{ scrollbarWidth: 'none' }}>
-              {filteredPackages.map((p, idx) => {
-                const isActivePkg = activePkg === p.id
-                return (
-                  <div key={p.id}
-                    style={{ animationDelay: `${idx * 40}ms` }}
-                    className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
-                    <div className="flex items-start gap-3">
-                      {(() => {
-                        const IconCmp = PKG_ICON[p.id]
-                        return (
-                          <div className={`shrink-0 transition-transform duration-300 group-hover:scale-[1.08] group-hover:-rotate-3 ${isActivePkg ? 'drop-shadow-[0_6px_16px_rgba(41,121,255,0.35)]' : ''}`}>
-                            {IconCmp ? <IconCmp className="h-12 w-12" /> : <div className="h-12 w-12 rounded-[12px] bg-slate-100" />}
-                          </div>
-                        )
-                      })()}
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
-                        <p className="mt-0.5 truncate text-[12px] text-slate-500">{p.sub}</p>
-                      </div>
-                    </div>
-
-                    {/* Toss-style tier pills */}
-                    <div className="mt-4 grid grid-cols-5 gap-1.5">
-                      {TIER_ORDER.map(t => {
-                        const meta = TIER_META[t]
-                        const tierActive = isActivePkg && activeTier === t
-                        const ids = p.tiers[t]
-                        return (
-                          <div key={t} className="relative"
-                            onMouseEnter={e => {
-                              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-                              setHoverPkgTier({ pkg: p.id, tier: t })
-                              setTooltipPos({ top: r.bottom + 10, left: r.left + r.width / 2 })
-                            }}
-                            onMouseLeave={() => { setHoverPkgTier(prev => prev?.pkg === p.id && prev.tier === t ? null : prev); setTooltipPos(null) }}>
-                            <button type="button" onClick={() => applyTier(p, t)}
-                              className={`relative flex h-[38px] w-full items-center justify-center overflow-hidden rounded-lg text-[11px] font-bold transition-all duration-200 hover:scale-[1.06] active:scale-95 ${tierActive ? `${meta.color} text-white shadow-[0_4px_12px_rgba(15,23,42,0.15)]` : `${meta.soft} hover:shadow-sm`}`}>
-                              {tierActive && <span className="absolute inset-0 animate-[shimmer_2.5s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{ backgroundSize: '200% 100%' }} />}
-                              <span className="relative">{meta.label.charAt(0)}</span>
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {isActivePkg && activeTier && (
-                      <div className="mt-3 flex items-center gap-1.5 text-[11px]">
-                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold text-white ${TIER_META[activeTier].color}`}>{TIER_META[activeTier].label}</span>
-                        <span className="text-slate-400">·</span>
-                        <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
-                      </div>
-                    )}
-
-                    {/* 비슷한 서비스 예시 — 상시 노출 */}
-                    {PACKAGE_EXAMPLES[p.id] && (
-                      <div className="mt-3 border-t border-slate-100 pt-3">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                          {PACKAGE_EXAMPLES[p.id].map(ex => (
-                            <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
-                                alt={ex.name}
-                                width={16} height={16}
-                                className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
-                                onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                              />
-                              <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              {filteredPackages.map((p, idx) => (
+                <PackageCard key={p.id} p={p} idx={idx}
+                  isActivePkg={activePkg === p.id}
+                  activeTier={activeTier}
+                  applyTier={applyTier}
+                  onHoverEnter={(tier, rect) => { setHoverPkgTier({ pkg: p.id, tier }); setTooltipPos({ top: rect.bottom + 10, left: rect.left + rect.width / 2 }) }}
+                  onHoverLeave={(tier) => { setHoverPkgTier(prev => prev?.pkg === p.id && prev.tier === tier ? null : prev); setTooltipPos(null) }}
+                />
+              ))}
             </div>
           </div>
         </div>
