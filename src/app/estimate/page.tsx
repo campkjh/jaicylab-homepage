@@ -478,46 +478,27 @@ const CATEGORIES: Category[] = [
   },
 ]
 
-// 커스텀 Toss식 SVG 아이콘
-import * as Pi from '@/components/PackageIcons'
+// Lucide 라인 아이콘 매핑 (iconKey → 컴포넌트)
+import type { LucideIcon } from 'lucide-react'
+const ICON_LUCIDE: Record<string, LucideIcon> = {
+  Home, User, Scale, Hospital: Building2, Calendar, Building, Briefcase, Calculator, HardHat,
+  BookOpen, ShoppingBag, Shirt, ShoppingCart, Leaf, Gem, Repeat, Factory, Gavel, TrendingUp,
+  UtensilsCrossed, CalendarCheck, Receipt, Coffee, ChefHat, Utensils, Soup, Baby, Languages,
+  Terminal, GraduationCap, Award, Dumbbell, Heart, Brain, Apple, Dog, Stethoscope,
+  Users2, PartyPopper, MapPin, Church, CheckSquare, NotebookPen, Users, Kanban, FileText,
+  MessageCircle, SprayCan, Truck, Wrench, Plane,
+}
 
-const PKG_ICON: Record<string, (p: { className?: string }) => React.JSX.Element> = {
-  // BUSINESS
-  corp: Pi.IconCorp, portfolio: Pi.IconUser, law: Pi.IconLaw,
-  hospital: Pi.IconHospital, clinic: Pi.IconHospital,
-  'real-estate': Pi.IconHome, consulting: Pi.IconBriefcase,
-  accounting: Pi.IconCalc, construction: Pi.IconHome, 'edu-biz': Pi.IconCorp,
-  // COMMERCE
-  shop: Pi.IconShop, fashion: Pi.IconShirt, grocery: Pi.IconGrocery,
-  farm: Pi.IconLeaf, luxury: Pi.IconGem, used: Pi.IconRefresh,
-  'b2b-market': Pi.IconCorp, auction: Pi.IconAuction,
-  subscription: Pi.IconRefresh, crowdfunding: Pi.IconTrending,
-  // FOOD
-  delivery: Pi.IconDelivery, reservation: Pi.IconCalendar,
-  pos: Pi.IconReceipt, cafe: Pi.IconCoffee,
-  'ghost-kitchen': Pi.IconChef, catering: Pi.IconChef,
-  'home-meal': Pi.IconSoup, chef: Pi.IconChef,
-  // EDUCATION
-  edu: Pi.IconBook, 'kids-edu': Pi.IconBaby,
-  language: Pi.IconBook, bootcamp: Pi.IconGrad,
-  tutor: Pi.IconGrad, cert: Pi.IconAward,
-  // HEALTH
-  fitness: Pi.IconFitness, yoga: Pi.IconFitness,
-  mental: Pi.IconMental, diet: Pi.IconDiet,
-  pet: Pi.IconPet, medical: Pi.IconHospital,
-  // COMMUNITY
-  community: Pi.IconChat, dating: Pi.IconDating,
-  hobby: Pi.IconParty, local: Pi.IconMapPin,
-  religious: Pi.IconChurch, parents: Pi.IconBaby, senior: Pi.IconUser,
-  // PRODUCTIVITY
-  todo: Pi.IconTodo, note: Pi.IconNote, crm: Pi.IconCrm,
-  'project-mgmt': Pi.IconKanban, hr: Pi.IconCrm, invoice: Pi.IconFile,
-  'team-chat': Pi.IconChat,
-  // LIFESTYLE
-  freelance: Pi.IconBriefcase, cleaning: Pi.IconSpray,
-  laundry: Pi.IconShirt, moving: Pi.IconTruck,
-  repair: Pi.IconWrench, 'lawyer-match': Pi.IconLaw,
-  'doctor-match': Pi.IconHospital, travel: Pi.IconPlane,
+// 카테고리별 파스텔 테마
+const CATEGORY_THEME: Record<string, { bg: string; bgActive: string; icon: string }> = {
+  business:     { bg: 'from-sky-50 to-sky-100',         bgActive: 'from-sky-400 to-sky-600',         icon: 'text-sky-500' },
+  commerce:     { bg: 'from-rose-50 to-rose-100',       bgActive: 'from-rose-400 to-rose-600',       icon: 'text-rose-500' },
+  food:         { bg: 'from-amber-50 to-amber-100',     bgActive: 'from-amber-400 to-amber-600',     icon: 'text-amber-500' },
+  education:    { bg: 'from-violet-50 to-violet-100',   bgActive: 'from-violet-400 to-violet-600',   icon: 'text-violet-500' },
+  health:       { bg: 'from-emerald-50 to-emerald-100', bgActive: 'from-emerald-400 to-emerald-600', icon: 'text-emerald-500' },
+  community:    { bg: 'from-fuchsia-50 to-fuchsia-100', bgActive: 'from-fuchsia-400 to-fuchsia-600', icon: 'text-fuchsia-500' },
+  productivity: { bg: 'from-indigo-50 to-indigo-100',   bgActive: 'from-indigo-400 to-indigo-600',   icon: 'text-indigo-500' },
+  lifestyle:    { bg: 'from-teal-50 to-teal-100',       bgActive: 'from-teal-400 to-teal-600',       icon: 'text-teal-500' },
 }
 
 const DESIGNS = [
@@ -590,7 +571,8 @@ function PackageCard({
     return () => window.removeEventListener('resize', measure)
   }, [isActivePkg, activeTier])
 
-  const IconCmp = PKG_ICON[p.id]
+  const Icon = ICON_LUCIDE[p.iconKey] ?? FileText
+  const theme = CATEGORY_THEME[p.category] ?? CATEGORY_THEME.business
 
   return (
     <div
@@ -598,8 +580,11 @@ function PackageCard({
       className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
     >
       <div className="flex items-start gap-3">
-        <div className={`shrink-0 transition-transform duration-300 group-hover:scale-[1.08] group-hover:-rotate-3 ${isActivePkg ? 'drop-shadow-[0_6px_16px_rgba(41,121,255,0.35)]' : ''}`}>
-          {IconCmp ? <IconCmp className="h-12 w-12" /> : <div className="h-12 w-12 rounded-[12px] bg-slate-100" />}
+        <div
+          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br transition-all duration-300 group-hover:scale-[1.06] group-hover:-rotate-2 ${isActivePkg ? `${theme.bgActive} shadow-[0_8px_20px_rgba(15,23,42,0.15)]` : `${theme.bg} shadow-[0_4px_14px_rgba(15,23,42,0.05)]`}`}
+        >
+          <span aria-hidden className="pointer-events-none absolute inset-x-1 top-1 h-[45%] rounded-t-[12px] bg-gradient-to-b from-white/70 to-white/0" />
+          <Icon className={`relative h-6 w-6 ${isActivePkg ? 'text-white' : theme.icon}`} strokeWidth={2.2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
@@ -612,16 +597,15 @@ function PackageCard({
         {pill && (
           <span
             aria-hidden
-            className="absolute top-0 z-0 h-[36px] rounded-full transition-all duration-[550ms]"
+            className="pointer-events-none absolute top-0 z-0 h-[44px] rounded-full transition-all duration-[550ms]"
             style={{
               left: pill.left,
               width: pill.width,
               backgroundColor: pill.color,
-              boxShadow: `0 6px 18px ${pill.color}55, 0 2px 4px ${pill.color}33`,
+              boxShadow: `0 8px 20px ${pill.color}55, 0 2px 4px ${pill.color}33`,
               transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           >
-            {/* 자연스럽게 일렁이는 하이라이트 (라디얼 + 브리드) */}
             <span
               className="absolute inset-0 rounded-full animate-[pillWave_3.2s_ease-in-out_infinite]"
               style={{
@@ -645,7 +629,7 @@ function PackageCard({
               onMouseEnter={e => onHoverEnter(t, (e.currentTarget as HTMLElement).getBoundingClientRect())}
               onMouseLeave={() => onHoverLeave(t)}>
               <button type="button" onClick={() => applyTier(p, t)}
-                className={`relative flex h-[36px] w-full items-center justify-center rounded-full text-[11px] font-bold transition-colors duration-500 active:scale-95 ${tierActive ? 'text-white' : `${meta.soft} hover:brightness-105`}`}>
+                className={`relative flex h-[44px] w-full items-center justify-center rounded-full text-[12px] font-bold outline-none transition-colors duration-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#2979FF]/40 ${tierActive ? 'bg-transparent text-white' : `${meta.soft} hover:brightness-105`}`}>
                 {meta.label.charAt(0)}
               </button>
             </div>
