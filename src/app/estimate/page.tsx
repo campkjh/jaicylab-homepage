@@ -54,7 +54,7 @@ const CATEGORIES: Category[] = [
       { id: 'ds-darkmode', label: '다크모드 지원', price: 60 },
       { id: 'ds-themes', label: '다중 테마 / 컬러 커스터마이즈', price: 120 },
       { id: 'ds-a11y', label: '접근성 대응 (WCAG AA)', price: 120 },
-      { id: 'ds-a11y-aa+', label: '접근성 강화 (스크린리더 최적화)', price: 200 },
+      { id: 'ds-a11y-aaa', label: '접근성 강화 (스크린리더 최적화)', price: 200 },
       { id: 'ds-responsive', label: '반응형 (모바일/태블릿/데스크탑)', price: 60 },
       { id: 'ds-rtl', label: 'RTL (아랍어 등) 레이아웃', price: 80 },
       { id: 'ds-illustration', label: '일러스트 / 캐릭터 디자인 (10종)', price: 200 },
@@ -93,6 +93,7 @@ const CATEGORIES: Category[] = [
       { id: 'an-blur', label: '글래스모피즘 / 블러 효과', price: 30 },
       { id: 'an-cursor', label: '커스텀 커서 (웹)', price: 40 },
       { id: 'an-3d-tilt', label: '3D 틸트 / 마우스 추적', price: 60 },
+      { id: 'an-spline', label: 'Spline 3D 임베드', price: 60 },
     ],
   },
   {
@@ -463,106 +464,115 @@ const CATEGORIES: Category[] = [
   },
 ]
 
-// ───── 패키지 프리셋 ─────
-type Pkg = { id: string; label: string; sub: string; icon: React.ReactNode; ids: string[] }
+// ───── 패키지 + 5단계 티어 ─────
+type TierId = 'mvp' | 'basic' | 'premium' | 'deluxe' | 'enterprise'
+const TIER_ORDER: TierId[] = ['mvp', 'basic', 'premium', 'deluxe', 'enterprise']
+const TIER_META: Record<TierId, { label: string; desc: string; color: string }> = {
+  mvp:        { label: 'MVP',        desc: '최소 검증',     color: 'bg-slate-400' },
+  basic:      { label: 'Basic',      desc: '표준 출시',     color: 'bg-sky-500' },
+  premium:    { label: 'Premium',    desc: '완성도 +α',    color: 'bg-blue-600' },
+  deluxe:     { label: 'Deluxe',     desc: '고도화 기능',   color: 'bg-indigo-600' },
+  enterprise: { label: 'Enterprise', desc: '대규모·컴플',   color: 'bg-slate-900' },
+}
+
+type Pkg = { id: string; label: string; sub: string; icon: React.ReactNode; tiers: Record<TierId, string[]> }
+
+// 누적식 정의: 각 티어는 이전 티어 항목을 모두 포함하고 추가 항목만 명시
+function build(base: string[], add: Partial<Record<TierId, string[]>>): Record<TierId, string[]> {
+  const r: Record<TierId, string[]> = { mvp: [], basic: [], premium: [], deluxe: [], enterprise: [] }
+  let cur = [...base]
+  r.mvp = [...cur]
+  for (const t of ['basic', 'premium', 'deluxe', 'enterprise'] as TierId[]) {
+    cur = [...cur, ...(add[t] ?? [])]
+    r[t] = [...cur]
+  }
+  return r
+}
 
 const PACKAGES: Pkg[] = [
   {
-    id: 'corp', label: '회사 홈페이지', sub: '소개 + 문의', icon: <Home className="h-4 w-4" />, ids: [
-      'pf-corp-site', 'pf-landing', 'ds-research', 'ds-ui-key', 'ds-responsive',
-      'an-page', 'an-scroll-reveal', 'an-hero',
-      'se-privacy', 'se-terms',
-      'in-vercel', 'in-domain', 'ex-seo-basic', 'ex-cs',
-    ],
+    id: 'corp', label: '회사 홈페이지', sub: '소개 / 채용 / 문의', icon: <Home className="h-4 w-4" />,
+    tiers: build(
+      ['pf-landing', 'se-privacy', 'se-terms', 'in-vercel', 'in-domain', 'ex-cs'],
+      {
+        basic: ['pf-corp-site', 'ds-research', 'ds-ui-key', 'ds-responsive', 'an-page', 'an-scroll-reveal', 'ex-seo-basic', 'ex-faq'],
+        premium: ['ds-ui-mid', 'ds-system', 'ds-darkmode', 'an-hero', 'an-parallax', 'an-skeleton', 'an-tap', 'ex-seo-pro', 'ex-channel-talk', 'in-sentry', 'in-cdn'],
+        deluxe: ['ds-ui-full', 'an-spline', 'an-3d-tilt', 'an-cursor', 'an-blur', 'an-particle', 'ex-i18n-setup', 'ex-lang-en', 'da-ga', 'no-email'],
+        enterprise: ['ds-ui-xl', 'ds-illustration', 'ds-figma', 'ex-lang-jp', 'ex-lang-cn', 'da-amplitude', 'da-funnel', 'da-ab', 'se-privacy-custom', 'se-terms-custom', 'se-cookie', 'in-cicd'],
+      },
+    ),
   },
   {
-    id: 'shop', label: '쇼핑몰', sub: '결제 + 배송 + 리뷰', icon: <ShoppingBag className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-admin', 'pf-tabbar', 'pf-splash',
-      'ds-ui-mid', 'ds-system',
-      'au-signup', 'au-login', 'au-kakao', 'au-pwreset', 'au-profile',
-      'cm-catalog', 'cm-detail', 'cm-options', 'cm-cart', 'cm-wishlist', 'cm-search', 'cm-filter', 'cm-sort', 'cm-stock', 'cm-order', 'cm-order-history', 'cm-order-cancel', 'cm-shipping-track', 'cm-shipping-addr', 'cm-admin-product', 'cm-admin-order', 'cm-review', 'cm-section', 'cm-event',
-      'py-toss', 'py-iap-ios', 'py-iap-aos', 'py-coupon', 'py-point-earn', 'py-point-use', 'py-refund-auto', 'py-tax-bill', 'py-cash-receipt', 'py-dashboard',
-      'no-fcm', 'no-apns', 'no-katalk-alert', 'no-email',
-      'se-privacy', 'se-terms', 'se-consent', 'se-encrypt',
-      'in-supabase', 'in-domain', 'in-s3', 'in-cdn', 'in-sentry', 'in-cicd',
-      'ex-appstore', 'ex-playstore', 'ex-icon', 'ex-screenshot',
-    ],
+    id: 'shop', label: '쇼핑몰', sub: '상품 · 결제 · 배송', icon: <ShoppingBag className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'pf-tabbar', 'au-signup', 'au-login', 'au-kakao', 'cm-catalog', 'cm-detail', 'cm-cart', 'cm-order', 'py-toss', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['pf-admin', 'ds-ui-key', 'ds-system', 'au-pwreset', 'au-profile', 'cm-options', 'cm-search', 'cm-filter', 'cm-sort', 'cm-stock', 'cm-order-history', 'cm-shipping-addr', 'cm-shipping-track', 'py-iap-ios', 'py-iap-aos', 'no-fcm', 'no-apns', 'cm-admin-product', 'cm-admin-order'],
+        premium: ['ds-ui-mid', 'an-page', 'an-skeleton', 'an-like', 'an-snap', 'cm-wishlist', 'cm-recent', 'cm-review', 'cm-qna', 'cm-section', 'cm-order-cancel', 'py-coupon', 'py-point-earn', 'py-point-use', 'py-tax-bill', 'py-cash-receipt', 'no-katalk-alert', 'no-email', 'se-consent', 'in-cdn', 'in-sentry', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'cm-event', 'cm-flash', 'cm-grade', 'cm-gift', 'cm-options-comb', 'cm-search-image', 'cm-soldout', 'py-naverpay', 'py-kakaopay', 'py-applepay', 'py-samsungpay', 'py-card', 'py-subscription', 'py-refund-auto', 'so-review', 'so-share', 'no-rich', 'no-chat-1on1', 'da-kpi', 'da-charts', 'da-ga', 'ex-screenshot', 'in-cicd', 'in-backup'],
+        enterprise: ['ds-ui-xl', 'ds-motion-spec', 'cm-multiseller', 'cm-subscribe-box', 'py-stripe', 'py-paypal', 'py-escrow', 'py-corp', 'py-settle', 'py-dashboard', 'py-excel', 'da-realtime', 'da-amplitude', 'da-funnel', 'da-cohort', 'da-segment', 'da-ab', 'da-bigquery', 'se-encrypt', 'se-audit', 'se-2fa', 'se-waf', 'se-ismsp', 'se-pen-test', 'in-aws', 'in-db-rdb', 'in-redis', 'in-k8s', 'in-apm', 'in-loadtest', 'ex-maintenance-3m'],
+      },
+    ),
   },
   {
-    id: 'freelance', label: '프리랜서 매칭', sub: '몰앤몰 / 인력 매칭', icon: <Briefcase className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-admin', 'pf-tabbar', 'pf-onboarding',
-      'ds-ui-mid', 'ds-system',
-      'au-signup', 'au-login', 'au-kakao', 'au-pass', 'au-profile', 'au-avatar', 'au-rbac',
-      'sc-cal', 'sc-booking', 'sc-slot', 'sc-noshow', 'sc-match', 'sc-bid', 'sc-shift', 'sc-attendance',
-      'no-chat-1on1', 'no-chat-media', 'no-chat-read', 'no-fcm', 'no-apns', 'no-katalk-alert',
-      'py-toss', 'py-escrow', 'py-settle', 'py-tax-bill', 'py-cash-receipt', 'py-dashboard',
-      'so-review', 'so-rating', 'so-report', 'so-block',
-      'lo-kakao', 'lo-gps', 'lo-address', 'lo-autocomplete',
-      'da-kpi', 'da-charts',
-      'se-privacy', 'se-terms', 'se-consent',
-      'in-supabase', 'in-domain', 'in-cdn', 'in-sentry',
-      'ex-appstore', 'ex-playstore', 'ex-icon',
-    ],
+    id: 'freelance', label: '프리랜서 매칭', sub: '몰앤몰 / 인력 매칭', icon: <Briefcase className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'au-signup', 'au-login', 'au-kakao', 'sc-booking', 'sc-match', 'no-chat-1on1', 'py-toss', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['pf-admin', 'pf-tabbar', 'ds-ui-key', 'ds-system', 'au-profile', 'au-avatar', 'au-pass', 'sc-cal', 'sc-slot', 'sc-shift', 'so-review', 'so-rating', 'no-fcm', 'no-apns', 'lo-kakao', 'lo-address'],
+        premium: ['ds-ui-mid', 'an-page', 'an-skeleton', 'au-rbac', 'sc-noshow', 'sc-bid', 'sc-attendance', 'so-report', 'so-block', 'no-katalk-alert', 'no-chat-media', 'no-chat-read', 'lo-gps', 'lo-autocomplete', 'py-escrow', 'py-coupon', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'au-team', 'au-invite', 'sc-auto-shift', 'sc-google-cal', 'sc-waiting', 'no-chat-typing', 'no-chat-emoji', 'py-settle', 'py-tax-bill', 'py-cash-receipt', 'py-point-earn', 'da-kpi', 'da-charts', 'ai-chatbot', 'ai-reco-rule', 'in-cdn', 'in-sentry', 'ex-i18n-setup', 'ex-seo-basic'],
+        enterprise: ['ds-ui-xl', 'au-sso', 'au-device', 'au-session', 'py-dashboard', 'py-excel', 'da-realtime', 'da-funnel', 'da-cohort', 'se-encrypt', 'se-audit', 'se-ismsp', 'in-aws', 'in-redis', 'in-apm', 'in-loadtest', 'in-cicd', 'ex-maintenance-3m'],
+      },
+    ),
   },
   {
-    id: 'community', label: '커뮤니티 / SNS', sub: '게시판 + 피드 + DM', icon: <Users2 className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-admin', 'pf-tabbar', 'pf-splash',
-      'ds-ui-mid', 'ds-system', 'ds-darkmode',
-      'an-page', 'an-pull', 'an-skeleton', 'an-like', 'an-stagger',
-      'au-signup', 'au-login', 'au-kakao', 'au-google', 'au-apple', 'au-profile', 'au-avatar', 'au-nickname',
-      'so-board-list', 'so-board-crud', 'so-board-cat', 'so-board-image', 'so-comment', 'so-reply', 'so-mention', 'so-like', 'so-bookmark', 'so-follow', 'so-hashtag', 'so-search', 'so-report', 'so-block', 'so-filter', 'so-feed-time', 'so-feed-follow', 'so-dm', 'so-share',
-      'me-upload', 'me-cdn', 'me-resize', 'me-thumb',
-      'no-fcm', 'no-apns', 'no-targeting',
-      'se-privacy', 'se-terms', 'se-consent',
-      'in-supabase', 'in-domain', 'in-s3', 'in-cdn', 'in-sentry',
-      'ex-appstore', 'ex-playstore', 'ex-icon',
-    ],
+    id: 'community', label: '커뮤니티 / SNS', sub: '게시판 + 피드 + DM', icon: <Users2 className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'pf-tabbar', 'au-signup', 'au-login', 'au-kakao', 'so-board-list', 'so-board-crud', 'so-comment', 'so-like', 'no-fcm', 'no-apns', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['ds-ui-key', 'ds-system', 'ds-darkmode', 'an-page', 'an-pull', 'an-skeleton', 'an-like', 'au-google', 'au-apple', 'au-profile', 'au-avatar', 'au-nickname', 'so-board-cat', 'so-board-image', 'so-reply', 'so-bookmark', 'so-follow', 'so-hashtag', 'so-search', 'so-report', 'so-block'],
+        premium: ['ds-ui-mid', 'an-stagger', 'an-scroll-reveal', 'an-shared', 'an-modal', 'so-mention', 'so-dm', 'so-filter', 'so-feed-time', 'so-feed-follow', 'so-share', 'me-upload', 'me-cdn', 'me-resize', 'me-thumb', 'no-targeting', 'no-rich', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'an-particle', 'an-confetti', 'an-blur', 'so-reply-tree', 'so-feed-rank', 'so-story', 'so-shorts', 'so-review', 'so-search-elastic', 'so-filter-ai', 'me-video-up', 'me-hls', 'me-filter', 'me-webrtc-1on1', 'gm-badge', 'gm-level', 'gm-streak', 'da-kpi', 'da-ga'],
+        enterprise: ['ds-ui-xl', 'ai-chatbot', 'ai-reco-ml', 'ai-sentiment', 'me-webrtc-group', 'me-live', 'me-drm', 'au-sso', 'au-passkey', 'se-encrypt', 'se-audit', 'se-ismsp', 'in-aws', 'in-redis', 'in-db-rdb', 'in-k8s', 'in-apm', 'in-loadtest', 'ex-maintenance-3m'],
+      },
+    ),
   },
   {
-    id: 'delivery', label: '배달 / O2O', sub: '주문 + 위치 + 라이더', icon: <UtensilsCrossed className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-admin', 'pf-tabbar',
-      'ds-ui-mid', 'ds-system',
-      'au-signup', 'au-kakao', 'au-pass', 'au-profile',
-      'cm-catalog', 'cm-detail', 'cm-options', 'cm-cart', 'cm-order', 'cm-order-history', 'cm-shipping-addr',
-      'lo-kakao', 'lo-gps', 'lo-track', 'lo-route', 'lo-route-opt', 'lo-eta', 'lo-geofence', 'lo-address', 'lo-rider-match', 'lo-pickup',
-      'py-toss', 'py-kakaopay', 'py-naverpay', 'py-coupon', 'py-point-earn', 'py-settle',
-      'no-fcm', 'no-apns', 'no-katalk-alert', 'no-rich',
-      'so-review', 'so-rating',
-      'se-privacy', 'se-terms', 'se-consent',
-      'in-supabase', 'in-domain', 'in-redis', 'in-sentry', 'in-cicd',
-      'ex-appstore', 'ex-playstore', 'ex-icon',
-    ],
+    id: 'delivery', label: '배달 / O2O', sub: '주문 + 위치 + 라이더', icon: <UtensilsCrossed className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'pf-tabbar', 'au-signup', 'au-kakao', 'cm-catalog', 'cm-detail', 'cm-cart', 'cm-order', 'lo-kakao', 'lo-gps', 'lo-address', 'py-toss', 'no-fcm', 'no-apns', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['pf-admin', 'ds-ui-key', 'ds-system', 'au-pass', 'au-profile', 'cm-options', 'cm-order-history', 'cm-shipping-addr', 'lo-track', 'lo-route', 'lo-eta', 'lo-geofence', 'py-kakaopay', 'py-naverpay', 'no-katalk-alert', 'so-review', 'so-rating'],
+        premium: ['ds-ui-mid', 'an-page', 'an-skeleton', 'au-google', 'cm-admin-product', 'cm-admin-order', 'cm-review', 'cm-section', 'lo-route-opt', 'lo-rider-match', 'lo-pickup', 'lo-autocomplete', 'lo-reverse', 'py-coupon', 'py-point-earn', 'no-rich', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'cm-event', 'cm-flash', 'cm-grade', 'py-card', 'py-settle', 'py-dashboard', 'ai-chatbot', 'ai-reco-rule', 'no-chat-1on1', 'sc-attendance', 'da-kpi', 'da-charts', 'da-realtime', 'se-encrypt', 'in-redis', 'in-cicd', 'in-backup'],
+        enterprise: ['ds-ui-xl', 'ds-motion-spec', 'cm-multiseller', 'cm-subscribe-box', 'py-escrow', 'py-tax-bill', 'py-corp', 'py-stripe', 'ai-reco-ml', 'da-funnel', 'da-cohort', 'da-bigquery', 'se-audit', 'se-waf', 'se-ismsp', 'in-aws', 'in-k8s', 'in-apm', 'in-loadtest', 'ex-maintenance-3m'],
+      },
+    ),
   },
   {
-    id: 'edu', label: '교육 / LMS', sub: '강의 + 진도 + 결제', icon: <BookOpen className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-web', 'pf-admin', 'pf-tabbar',
-      'ds-ui-mid', 'ds-system',
-      'au-signup', 'au-login', 'au-google', 'au-profile',
-      'me-video-up', 'me-hls', 'me-drm', 'me-podcast', 'me-pdf-view',
-      'so-comment', 'so-rating', 'so-review',
-      'py-toss', 'py-subscription', 'py-coupon', 'py-tax-bill',
-      'gm-attendance', 'gm-badge', 'gm-streak',
-      'da-kpi', 'da-funnel',
-      'no-fcm', 'no-apns', 'no-email',
-      'se-privacy', 'se-terms',
-      'in-supabase', 'in-cdn', 'in-s3', 'in-domain',
-      'ex-appstore', 'ex-playstore', 'ex-icon',
-    ],
+    id: 'edu', label: '교육 / LMS', sub: '강의 + 진도 + 결제', icon: <BookOpen className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'pf-tabbar', 'au-signup', 'au-login', 'au-google', 'me-video-up', 'me-hls', 'py-toss', 'no-fcm', 'no-apns', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['pf-web', 'pf-admin', 'ds-ui-key', 'ds-system', 'au-profile', 'au-pwreset', 'me-podcast', 'me-pdf-view', 'so-comment', 'so-rating', 'py-subscription', 'py-coupon', 'gm-attendance', 'gm-streak'],
+        premium: ['ds-ui-mid', 'an-page', 'an-skeleton', 'an-progress', 'me-drm', 'me-audio', 'so-review', 'so-report', 'gm-badge', 'gm-level', 'gm-mission', 'gm-leaderboard', 'py-tax-bill', 'no-katalk-alert', 'no-email', 'da-kpi', 'da-funnel', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'an-count', 'an-confetti', 'me-webrtc-1on1', 'me-recording', 'me-screenshare', 'so-feed-follow', 'so-search', 'gm-challenge', 'gm-reward', 'gm-referral', 'ai-chatbot', 'ai-stt', 'ai-summary', 'da-charts', 'da-ga', 'da-amplitude', 'se-consent', 'in-cdn', 'ex-seo-basic'],
+        enterprise: ['ds-ui-xl', 'ai-rag', 'ai-tts', 'ai-translate', 'ai-reco-ml', 'me-webrtc-group', 'me-live', 'au-sso', 'au-passkey', 'se-encrypt', 'se-audit', 'se-ismsp', 'in-aws', 'in-redis', 'in-k8s', 'in-apm', 'ex-lang-en', 'ex-lang-jp', 'ex-maintenance-3m', 'ex-aso'],
+      },
+    ),
   },
   {
-    id: 'fitness', label: '헬스 / 피트니스', sub: '운동 기록 + 챌린지', icon: <Heart className="h-4 w-4" />, ids: [
-      'pf-rn', 'pf-tabbar', 'pf-watch', 'pf-widget-ios',
-      'ds-ui-mid', 'ds-system',
-      'au-signup', 'au-google', 'au-apple', 'au-profile',
-      'lo-gps', 'lo-route',
-      'me-upload', 'me-cdn',
-      'gm-badge', 'gm-streak', 'gm-attendance', 'gm-mission', 'gm-leaderboard', 'gm-challenge',
-      'so-follow', 'so-feed-follow', 'so-like',
-      'no-fcm', 'no-apns',
-      'se-privacy', 'se-terms',
-      'in-supabase', 'in-domain', 'in-sentry',
-      'ex-appstore', 'ex-playstore', 'ex-icon',
-    ],
+    id: 'fitness', label: '헬스 / 피트니스', sub: '운동 기록 + 챌린지', icon: <Heart className="h-4 w-4" />,
+    tiers: build(
+      ['pf-rn', 'pf-splash', 'pf-tabbar', 'au-signup', 'au-google', 'au-apple', 'lo-gps', 'gm-attendance', 'gm-streak', 'no-fcm', 'no-apns', 'se-privacy', 'se-terms', 'in-supabase', 'in-domain'],
+      {
+        basic: ['ds-ui-key', 'ds-system', 'au-profile', 'au-avatar', 'lo-route', 'me-upload', 'me-cdn', 'gm-badge', 'gm-mission', 'so-follow', 'so-feed-follow', 'so-like', 'da-kpi'],
+        premium: ['ds-ui-mid', 'an-page', 'an-progress', 'an-count', 'an-confetti', 'pf-widget-ios', 'pf-watch', 'gm-level', 'gm-leaderboard', 'gm-challenge', 'gm-reward', 'so-share', 'no-rich', 'da-charts', 'da-ga', 'ex-appstore', 'ex-playstore', 'ex-icon'],
+        deluxe: ['ds-ui-full', 'an-particle', 'pf-widget-android', 'ai-pose', 'ai-tts', 'ai-stt', 'so-dm', 'so-review', 'py-toss', 'py-subscription', 'no-chat-1on1', 'da-amplitude', 'da-funnel', 'in-cdn', 'in-sentry'],
+        enterprise: ['ds-ui-xl', 'ai-reco-ml', 'ai-face', 'me-webrtc-1on1', 'me-live', 'au-sso', 'se-encrypt', 'se-audit', 'se-ismsp', 'in-aws', 'in-redis', 'in-apm', 'in-loadtest', 'ex-lang-en', 'ex-maintenance-3m', 'ex-aso'],
+      },
+    ),
   },
 ]
 
@@ -578,9 +588,8 @@ const TIMELINES = [
   { id: 'urgent', label: '긴급 (1개월 이내)', mult: 1.4 },
 ]
 
-const MM_RATE = 600 // 만원 / man-month
+const MM_RATE = 600
 
-// 카테고리별 역할 매핑
 const ROLE_BY_CAT: Record<string, string[]> = {
   platform: ['pm', 'designer', 'mobile'],
   design: ['designer', 'pm'],
@@ -611,7 +620,6 @@ const ROLE_LABEL: Record<string, string> = {
   devops: '데브옵스 엔지니어',
 }
 
-// 비-플랫폼 항목 ID 셋 (네이티브 배수 적용 대상)
 const PLATFORM_ITEM_IDS = new Set(CATEGORIES.find(c => c.id === 'platform')!.items.map(i => i.id))
 
 function fmt(manwon: number) {
@@ -619,17 +627,25 @@ function fmt(manwon: number) {
   return `${Math.round(manwon).toLocaleString()}만`
 }
 
+// 카테고리 기반 가격 합산 (티어 미리보기용)
+function priceOf(ids: string[]) {
+  let s = 0
+  CATEGORIES.forEach(cat => cat.items.forEach(it => { if (ids.includes(it.id)) s += it.price }))
+  return s
+}
+
 // ───────────────────────────── PAGE ─────────────────────────────
 
 export default function EstimatePage() {
-  const [selected, setSelected] = useState<Set<string>>(new Set(['pf-rn', 'pf-admin', 'pf-splash', 'pf-tabbar', 'ds-ui-key', 'ds-system', 'au-signup', 'au-login', 'au-kakao', 'au-pwreset', 'au-profile', 'no-fcm', 'no-apns', 'se-privacy', 'se-terms', 'in-vercel', 'in-supabase', 'in-domain']))
+  const [selected, setSelected] = useState<Set<string>>(new Set(PACKAGES[1].tiers.basic))
   const [open, setOpen] = useState<Set<string>>(new Set(['platform', 'anim']))
   const [design, setDesign] = useState('custom')
   const [timeline, setTimeline] = useState('normal')
   const [contact, setContact] = useState({ company: '', name: '', phone: '', email: '', memo: '' })
   const [sending, setSending] = useState(false)
   const [scrollY, setScrollY] = useState(0)
-  const [activePkg, setActivePkg] = useState<string | null>(null)
+  const [activePkg, setActivePkg] = useState<string | null>('shop')
+  const [activeTier, setActiveTier] = useState<TierId | null>('basic')
 
   useEffect(() => {
     const h = () => setScrollY(window.scrollY)
@@ -639,7 +655,7 @@ export default function EstimatePage() {
 
   function toggle(id: string) {
     setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
-    setActivePkg(null)
+    setActivePkg(null); setActiveTier(null)
   }
   function toggleCat(catId: string) {
     setOpen(prev => { const n = new Set(prev); n.has(catId) ? n.delete(catId) : n.add(catId); return n })
@@ -647,30 +663,25 @@ export default function EstimatePage() {
   function selectAllInCat(catId: string) {
     const cat = CATEGORIES.find(c => c.id === catId)!
     setSelected(prev => { const n = new Set(prev); cat.items.forEach(i => n.add(i.id)); return n })
-    setActivePkg(null)
+    setActivePkg(null); setActiveTier(null)
   }
   function clearCat(catId: string) {
     const cat = CATEGORIES.find(c => c.id === catId)!
     setSelected(prev => { const n = new Set(prev); cat.items.forEach(i => n.delete(i.id)); return n })
-    setActivePkg(null)
+    setActivePkg(null); setActiveTier(null)
   }
-  function applyPackage(pkg: Pkg) {
-    setSelected(new Set(pkg.ids))
-    setActivePkg(pkg.id)
-    // 해당 패키지가 사용하는 카테고리는 자동으로 펼치기
+  function applyTier(pkg: Pkg, tier: TierId) {
+    const ids = pkg.tiers[tier]
+    setSelected(new Set(ids))
+    setActivePkg(pkg.id); setActiveTier(tier)
     const cats = new Set<string>()
-    pkg.ids.forEach(id => CATEGORIES.forEach(c => { if (c.items.find(i => i.id === id)) cats.add(c.id) }))
+    ids.forEach(id => CATEGORIES.forEach(c => { if (c.items.find(i => i.id === id)) cats.add(c.id) }))
     setOpen(cats)
   }
   function clearAll() {
-    setSelected(new Set())
-    setActivePkg(null)
+    setSelected(new Set()); setActivePkg(null); setActiveTier(null)
   }
 
-  // ── 네이티브 모드 자동 감지 ──
-  // iOS+Android 네이티브 양쪽 선택 시 → ×1.6 (앱 항목만)
-  // iOS 또는 Android 단독 네이티브 → ×1.1
-  // 크로스플랫폼만 → ×1.0
   const nativeMode = useMemo(() => {
     const ios = selected.has('pf-ios')
     const aos = selected.has('pf-android')
@@ -682,7 +693,7 @@ export default function EstimatePage() {
 
   const calc = useMemo(() => {
     let baseSum = 0
-    let appSum = 0 // 네이티브 배수 적용 대상 합계 (앱 관련 기능)
+    let appSum = 0
     const catSum: Record<string, number> = {}
     CATEGORIES.forEach(cat => {
       let s = 0
@@ -696,10 +707,8 @@ export default function EstimatePage() {
       baseSum += s
     })
 
-    // 네이티브 배수: 앱 관련 기능 항목들에 적용
     const nativeAdd = appSum * (nativeMode.mult - 1)
     const afterNative = baseSum + nativeAdd
-
     const designMult = DESIGNS.find(d => d.id === design)?.mult ?? 1
     const timeMult = TIMELINES.find(t => t.id === timeline)?.mult ?? 1
     const designAdd = afterNative * (designMult - 1)
@@ -710,7 +719,6 @@ export default function EstimatePage() {
     const total = subtotal + vat
     const totalMM = subtotal / MM_RATE
 
-    // 역할별 분배
     const roleWeight: Record<string, number> = {}
     Object.entries(catSum).forEach(([catId, s]) => {
       const roles = ROLE_BY_CAT[catId] || []
@@ -721,21 +729,17 @@ export default function EstimatePage() {
       roleWeight.pm = (roleWeight.pm || 0) + baseSum * 0.15
       roleWeight.designer = (roleWeight.designer || 0) + baseSum * 0.12
     }
-
     const wSum = Object.values(roleWeight).reduce((a, b) => a + b, 0) || 1
     const teamMM: Record<string, number> = {}
     Object.entries(roleWeight).forEach(([r, w]) => { teamMM[r] = (w / wSum) * totalMM })
-    const team = Object.entries(teamMM)
-      .filter(([, mm]) => mm >= 0.05)
-      .sort(([, a], [, b]) => b - a)
-      .map(([role, mm]) => ({ role, mm }))
+    const team = Object.entries(teamMM).filter(([, mm]) => mm >= 0.05).sort(([, a], [, b]) => b - a).map(([role, mm]) => ({ role, mm }))
 
     const parallel = Math.max(2.5, Math.min(6, team.length * 0.7))
     const calMonths = totalMM / parallel
     const tMult = TIMELINES.find(t => t.id === timeline)?.mult ?? 1
     const calAdjusted = calMonths / (tMult > 1 ? tMult * 0.9 : 1)
 
-    return { baseSum, nativeAdd, designAdd, timeAdd, subtotal, vat, total, totalMM, team, calMonths: calAdjusted, designMult, timeMult, appSum }
+    return { baseSum, nativeAdd, designAdd, timeAdd, subtotal, vat, total, totalMM, team, calMonths: calAdjusted, designMult, timeMult }
   }, [selected, design, timeline, nativeMode])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -752,59 +756,84 @@ export default function EstimatePage() {
   const totalItems = CATEGORIES.reduce((a, c) => a + c.items.length, 0)
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-[#fafafa] text-slate-900">
 
       {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-black/60 backdrop-blur-2xl border-b border-white/5' : 'bg-transparent'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/80 backdrop-blur-2xl border-b border-slate-200' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Logo height={22} className="text-white" />
-            <span className="text-[12px] font-normal text-white/30">제이씨랩</span>
+            <Logo height={22} className="text-slate-900" />
+            <span className="text-[12px] font-normal text-slate-500">제이씨랩</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">회사소개</Link>
-            <Link href="/estimate" className="text-[13px] font-medium text-white transition-all">자가견적</Link>
-            <Link href="/about#문의" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">문의</Link>
+            <Link href="/about" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">회사소개</Link>
+            <Link href="/estimate" className="text-[13px] font-bold text-slate-900 transition-all">자가견적</Link>
+            <Link href="/about#문의" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">문의</Link>
           </nav>
-          <Link href="/about#문의" className="bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">프로젝트 의뢰</Link>
+          <Link href="/about#문의" className="bg-slate-900 px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-slate-800 active:scale-95">프로젝트 의뢰</Link>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="border-b border-white/5 pt-[110px] pb-10">
+      <section className="border-b border-slate-200 pt-[110px] pb-10">
         <div className="mx-auto max-w-[1320px] px-6">
           <p className="text-[11px] font-bold tracking-[0.4em] text-[#2979FF]">SELF ESTIMATE</p>
-          <h1 className="mt-3 text-[36px] font-black leading-[1.1] tracking-tight md:text-[44px]">
-            <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">상세 항목별 자가견적</span>
+          <h1 className="mt-3 text-[36px] font-black leading-[1.1] tracking-tight text-slate-900 md:text-[44px]">
+            상세 항목별 자가견적
           </h1>
-          <p className="mt-4 max-w-[640px] text-[14px] leading-relaxed text-white/40">
-            17개 카테고리 · 약 {totalItems}개 세부 항목 · 7가지 패키지 프리셋. 네이티브/크로스, 디자인 수준, 일정 보정, 부가세까지 실시간 계산됩니다.
+          <p className="mt-4 max-w-[640px] text-[14px] leading-relaxed text-slate-500">
+            17개 카테고리 · 약 {totalItems}개 세부 항목 · 7가지 패키지 × 5단계 티어. 네이티브/크로스, 디자인 수준, 일정 보정, 부가세까지 실시간 계산됩니다.
           </p>
         </div>
       </section>
 
       {/* PACKAGES */}
-      <section className="border-b border-white/5 py-10">
+      <section className="border-b border-slate-200 bg-white py-10">
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-baseline justify-between">
             <p className="text-[11px] font-bold tracking-[0.3em] text-[#2979FF]">QUICK START · 패키지 프리셋</p>
-            {activePkg && <button onClick={clearAll} className="text-[11px] text-white/30 hover:text-white/60">전체 초기화</button>}
+            {activePkg && <button onClick={clearAll} className="text-[11px] text-slate-400 hover:text-slate-700">전체 초기화</button>}
           </div>
-          <p className="mt-2 text-[13px] text-white/40">자주 만드는 서비스 유형을 클릭하면 표준 항목이 한 번에 선택됩니다. 이후 좌측에서 자유롭게 추가/제거 하세요.</p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <p className="mt-2 text-[13px] text-slate-500">서비스 유형을 고르고 5단계 중 원하는 티어를 선택하면 항목이 자동 체크됩니다. 이후 좌측에서 자유롭게 추가/제거 하세요.</p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {PACKAGES.map(p => {
-              const active = activePkg === p.id
+              const isActivePkg = activePkg === p.id
               return (
-                <button key={p.id} type="button" onClick={() => applyPackage(p)}
-                  className={`group flex items-start gap-3 border p-4 text-left transition-all ${active ? 'border-[#2979FF] bg-[#2979FF]/10' : 'border-white/8 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'}`}>
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center ${active ? 'bg-[#2979FF] text-white' : 'bg-white/[0.05] text-white/50'}`}>{p.icon}</div>
-                  <div className="flex-1">
-                    <p className="text-[14px] font-bold">{p.label}</p>
-                    <p className="mt-0.5 text-[11px] text-white/40">{p.sub}</p>
-                    <p className="mt-2 text-[10px] tracking-wider text-[#2979FF]">{p.ids.length}개 항목 자동 선택</p>
+                <div key={p.id} className={`flex flex-col border bg-white p-4 transition-all ${isActivePkg ? 'border-[#2979FF] shadow-[0_4px_24px_rgba(41,121,255,0.12)]' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center ${isActivePkg ? 'bg-[#2979FF] text-white' : 'bg-slate-100 text-slate-600'}`}>{p.icon}</div>
+                    <div className="flex-1">
+                      <p className="text-[14px] font-bold text-slate-900">{p.label}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{p.sub}</p>
+                    </div>
                   </div>
-                  {active && <Check className="h-4 w-4 shrink-0 text-[#2979FF]" />}
-                </button>
+                  <div className="mt-3 grid grid-cols-5 gap-1">
+                    {TIER_ORDER.map(t => {
+                      const ids = p.tiers[t]
+                      const tierActive = isActivePkg && activeTier === t
+                      const meta = TIER_META[t]
+                      const tierPrice = priceOf(ids)
+                      return (
+                        <button
+                          key={t} type="button" onClick={() => applyTier(p, t)}
+                          title={`${meta.label} · ${ids.length}개 항목 · ${tierPrice.toLocaleString()}만`}
+                          className={`group relative flex flex-col items-center justify-center border py-2 text-[10px] font-bold transition-all ${tierActive ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-white'}`}
+                        >
+                          <span className={`absolute left-0 top-0 h-[2px] w-full ${meta.color}`} />
+                          <span className="mt-0.5">{meta.label}</span>
+                          <span className="mt-0.5 text-[9px] font-normal opacity-60">{ids.length}항목</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {isActivePkg && activeTier && (
+                    <p className="mt-2 text-[11px] text-[#2979FF]">
+                      <span className="font-bold">{TIER_META[activeTier].label}</span>
+                      <span className="ml-1 text-slate-400">· {TIER_META[activeTier].desc} · {priceOf(p.tiers[activeTier]).toLocaleString()}만 (보정 전)</span>
+                    </p>
+                  )}
+                </div>
               )
             })}
           </div>
@@ -819,46 +848,46 @@ export default function EstimatePage() {
           <div className="space-y-4">
 
             {/* 프로젝트 조건 */}
-            <div className="border border-white/8 bg-white/[0.02] p-5">
-              <p className="text-[11px] font-bold tracking-[0.3em] text-white/40">PROJECT CONDITION</p>
+            <div className="border border-slate-200 bg-white p-5">
+              <p className="text-[11px] font-bold tracking-[0.3em] text-slate-400">PROJECT CONDITION</p>
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="text-[11px] text-white/40 mb-2">개발 방식 (자동 감지)</p>
-                  <div className={`flex items-center justify-between border px-4 py-3 ${nativeMode.id === 'both-native' ? 'border-[#2979FF]/40 bg-[#2979FF]/10' : 'border-white/8 bg-white/[0.02]'}`}>
+                  <p className="text-[11px] text-slate-500 mb-2">개발 방식 (자동 감지)</p>
+                  <div className={`flex items-center justify-between border px-4 py-3 ${nativeMode.id === 'both-native' ? 'border-[#2979FF]/40 bg-[#2979FF]/5' : 'border-slate-200 bg-slate-50'}`}>
                     <div>
-                      <p className="text-[13px] font-bold">{nativeMode.label}</p>
-                      <p className="mt-0.5 text-[11px] text-white/40">
+                      <p className="text-[13px] font-bold text-slate-900">{nativeMode.label}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">
                         {nativeMode.id === 'both-native' && 'iOS+Android 네이티브 양쪽 → 앱 기능 항목에 ×1.6 가중'}
                         {nativeMode.id === 'single-native' && '단일 네이티브 → 앱 기능 항목에 ×1.1 가중'}
                         {nativeMode.id === 'cross' && '크로스플랫폼 또는 단일 OS → 가중 없음'}
                       </p>
                     </div>
-                    <span className="text-[14px] font-black text-[#82b1ff]">×{nativeMode.mult.toFixed(2)}</span>
+                    <span className="text-[14px] font-black text-[#2979FF]">×{nativeMode.mult.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="text-[11px] text-white/40 mb-2">디자인 수준</p>
+                    <p className="text-[11px] text-slate-500 mb-2">디자인 수준</p>
                     <div className="flex gap-2">
                       {DESIGNS.map(d => (
                         <button key={d.id} type="button" onClick={() => setDesign(d.id)}
-                          className={`flex-1 border px-3 py-2 text-[11px] font-bold transition-all ${design === d.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-white' : 'border-white/8 text-white/40 hover:border-white/20'}`}>
+                          className={`flex-1 border px-3 py-2 text-[11px] font-bold transition-all ${design === d.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
                           {d.label}
-                          <span className="ml-1 text-[10px] text-[#2979FF]">×{d.mult.toFixed(2)}</span>
+                          <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-[11px] text-white/40 mb-2">일정</p>
+                    <p className="text-[11px] text-slate-500 mb-2">일정</p>
                     <div className="flex gap-2">
                       {TIMELINES.map(t => (
                         <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
-                          className={`flex-1 border px-3 py-2 text-[11px] font-bold transition-all ${timeline === t.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-white' : 'border-white/8 text-white/40 hover:border-white/20'}`}>
+                          className={`flex-1 border px-3 py-2 text-[11px] font-bold transition-all ${timeline === t.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
                           {t.label}
-                          <span className="ml-1 text-[10px] text-[#2979FF]">×{t.mult.toFixed(2)}</span>
+                          <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
                         </button>
                       ))}
                     </div>
@@ -873,30 +902,30 @@ export default function EstimatePage() {
               const selCount = cat.items.filter(i => selected.has(i.id)).length
               const catTotal = cat.items.filter(i => selected.has(i.id)).reduce((a, b) => a + b.price, 0)
               return (
-                <div key={cat.id} className="border border-white/8 bg-white/[0.02]">
+                <div key={cat.id} className="border border-slate-200 bg-white">
                   <div className="flex items-center justify-between px-5 py-4">
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
                       <div className="flex h-9 w-9 items-center justify-center bg-[#2979FF]/10 text-[#2979FF]">{cat.icon}</div>
                       <div>
-                        <p className="text-[11px] tracking-[0.25em] text-white/30">{cat.tag}</p>
-                        <p className="text-[15px] font-black">{cat.title}</p>
+                        <p className="text-[11px] tracking-[0.25em] text-slate-400">{cat.tag}</p>
+                        <p className="text-[15px] font-black text-slate-900">{cat.title}</p>
                       </div>
                     </button>
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] text-white/30">{selCount}/{cat.items.length}</span>
+                      <span className="text-[11px] text-slate-400">{selCount}/{cat.items.length}</span>
                       {catTotal > 0 && <span className="text-[12px] font-bold text-[#2979FF]">+{catTotal.toLocaleString()}만</span>}
-                      <button type="button" onClick={() => toggleCat(cat.id)} className="text-white/30 hover:text-white">
+                      <button type="button" onClick={() => toggleCat(cat.id)} className="text-slate-400 hover:text-slate-700">
                         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                       </button>
                     </div>
                   </div>
 
                   {isOpen && (
-                    <div className="border-t border-white/5">
-                      <div className="flex items-center justify-end gap-3 px-5 py-2 text-[10px] text-white/30">
-                        <button type="button" onClick={() => selectAllInCat(cat.id)} className="hover:text-white/60">전체 선택</button>
-                        <span className="text-white/10">|</span>
-                        <button type="button" onClick={() => clearCat(cat.id)} className="hover:text-white/60">전체 해제</button>
+                    <div className="border-t border-slate-100">
+                      <div className="flex items-center justify-end gap-3 px-5 py-2 text-[10px] text-slate-400">
+                        <button type="button" onClick={() => selectAllInCat(cat.id)} className="hover:text-slate-700">전체 선택</button>
+                        <span className="text-slate-200">|</span>
+                        <button type="button" onClick={() => clearCat(cat.id)} className="hover:text-slate-700">전체 해제</button>
                       </div>
                       <ul>
                         {cat.items.map(item => {
@@ -904,12 +933,12 @@ export default function EstimatePage() {
                           return (
                             <li key={item.id}>
                               <button type="button" onClick={() => toggle(item.id)}
-                                className={`flex w-full items-center gap-3 border-t border-white/5 px-5 py-3 text-left transition-all ${active ? 'bg-[#2979FF]/[0.06]' : 'hover:bg-white/[0.02]'}`}>
-                                <div className={`flex h-4 w-4 shrink-0 items-center justify-center border ${active ? 'border-[#2979FF] bg-[#2979FF]' : 'border-white/20'}`}>
+                                className={`flex w-full items-center gap-3 border-t border-slate-100 px-5 py-3 text-left transition-all ${active ? 'bg-[#2979FF]/[0.06]' : 'hover:bg-slate-50'}`}>
+                                <div className={`flex h-4 w-4 shrink-0 items-center justify-center border ${active ? 'border-[#2979FF] bg-[#2979FF]' : 'border-slate-300 bg-white'}`}>
                                   {active && <Check className="h-3 w-3 text-white" />}
                                 </div>
-                                <span className={`flex-1 text-[13px] ${active ? 'text-white' : 'text-white/50'}`}>{item.label}</span>
-                                <span className={`text-[12px] tracking-wider ${active ? 'text-[#2979FF]' : 'text-white/25'}`}>+{item.price.toLocaleString()}만</span>
+                                <span className={`flex-1 text-[13px] ${active ? 'text-slate-900' : 'text-slate-600'}`}>{item.label}</span>
+                                <span className={`text-[12px] tracking-wider ${active ? 'text-[#2979FF] font-bold' : 'text-slate-400'}`}>+{item.price.toLocaleString()}만</span>
                               </button>
                             </li>
                           )
@@ -922,19 +951,19 @@ export default function EstimatePage() {
             })}
 
             {/* 견적서 요청 */}
-            <div className="mt-12 border border-white/10 bg-white/[0.03] p-7">
+            <div className="mt-12 border border-slate-200 bg-white p-7">
               <p className="text-[11px] font-bold tracking-[0.3em] text-[#2979FF]">REQUEST QUOTATION</p>
-              <h2 className="mt-2 text-[22px] font-black">상세 견적서 요청</h2>
-              <p className="mt-2 text-[13px] text-white/40">현재 선택 내용을 기반으로 담당 PM이 영업일 기준 1일 내 정식 견적서와 일정 제안을 드립니다.</p>
+              <h2 className="mt-2 text-[22px] font-black text-slate-900">상세 견적서 요청</h2>
+              <p className="mt-2 text-[13px] text-slate-500">현재 선택 내용을 기반으로 담당 PM이 영업일 기준 1일 내 정식 견적서와 일정 제안을 드립니다.</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full border border-white/8 bg-white/[0.03] px-4 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="회사명 / 소속" value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full border border-white/8 bg-white/[0.03] px-4 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="담당자명 *" value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full border border-white/8 bg-white/[0.03] px-4 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="연락처 *" value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full border border-white/8 bg-white/[0.03] px-4 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="이메일" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="회사명 / 소속" value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="담당자명 *" value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="연락처 *" value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="이메일" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none border border-white/8 bg-white/[0.03] px-4 py-3 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="추가 전달사항 (참고 서비스, 예상 사용자 수, 특별 요구사항 등)" value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
-                <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 bg-white py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-[0.98] disabled:opacity-50">
+                <textarea className="h-28 w-full resize-none border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="추가 전달사항 (참고 서비스, 예상 사용자 수, 특별 요구사항 등)" value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
                   <Send className="h-4 w-4" /> {sending ? '전송 중...' : '상세 견적서 받기'}
                 </button>
               </form>
@@ -944,61 +973,60 @@ export default function EstimatePage() {
           {/* RIGHT */}
           <aside>
             <div className="sticky top-[80px] space-y-4">
-              <div className="border border-[#2979FF]/30 bg-gradient-to-b from-[#2979FF]/10 to-transparent p-6">
+              <div className="border-2 border-[#2979FF] bg-white p-6 shadow-[0_8px_32px_rgba(41,121,255,0.08)]">
                 <p className="text-[11px] font-bold tracking-[0.3em] text-[#2979FF]">TOTAL ESTIMATE</p>
-                <p className="mt-3 text-[11px] text-white/40">총 금액 (VAT 포함)</p>
-                <p className="mt-1 text-[34px] font-black leading-tight">
-                  <span className="bg-gradient-to-r from-white to-[#82b1ff] bg-clip-text text-transparent">{fmt(calc.total)}</span>
-                  <span className="ml-1 text-[14px] text-white/40">원</span>
+                <p className="mt-3 text-[11px] text-slate-500">총 금액 (VAT 포함)</p>
+                <p className="mt-1 text-[34px] font-black leading-tight text-slate-900">
+                  {fmt(calc.total)}<span className="ml-1 text-[14px] text-slate-400">원</span>
                 </p>
 
-                <div className="mt-5 space-y-1.5 border-t border-white/10 pt-4 text-[12px]">
-                  <div className="flex justify-between text-white/50"><span>항목 합계</span><span className="text-white/80">{calc.baseSum.toLocaleString()}만</span></div>
+                <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-[12px]">
+                  <div className="flex justify-between text-slate-500"><span>항목 합계</span><span className="text-slate-900">{calc.baseSum.toLocaleString()}만</span></div>
                   {calc.nativeAdd > 0 && (
-                    <div className="flex justify-between text-white/50"><span>네이티브 보정 (×{nativeMode.mult.toFixed(2)})</span><span className="text-white/80">+{Math.round(calc.nativeAdd).toLocaleString()}만</span></div>
+                    <div className="flex justify-between text-slate-500"><span>네이티브 보정 (×{nativeMode.mult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.nativeAdd).toLocaleString()}만</span></div>
                   )}
                   {calc.designAdd > 0 && (
-                    <div className="flex justify-between text-white/50"><span>디자인 보정 (×{calc.designMult.toFixed(2)})</span><span className="text-white/80">+{Math.round(calc.designAdd).toLocaleString()}만</span></div>
+                    <div className="flex justify-between text-slate-500"><span>디자인 보정 (×{calc.designMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.designAdd).toLocaleString()}만</span></div>
                   )}
                   {calc.timeAdd > 0 && (
-                    <div className="flex justify-between text-white/50"><span>일정 보정 (×{calc.timeMult.toFixed(2)})</span><span className="text-white/80">+{Math.round(calc.timeAdd).toLocaleString()}만</span></div>
+                    <div className="flex justify-between text-slate-500"><span>일정 보정 (×{calc.timeMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.timeAdd).toLocaleString()}만</span></div>
                   )}
-                  <div className="flex justify-between border-t border-white/5 pt-2 text-white"><span className="font-bold">소계 (공급가)</span><span className="font-black">{calc.subtotal.toLocaleString()}만</span></div>
-                  <div className="flex justify-between text-white/50"><span>부가세 (10%)</span><span className="text-white/80">{calc.vat.toLocaleString()}만</span></div>
-                  <div className="flex justify-between border-t border-white/10 pt-2 text-[13px] text-white"><span className="font-bold">합계</span><span className="font-black text-[#82b1ff]">{(calc.subtotal + calc.vat).toLocaleString()}만</span></div>
+                  <div className="flex justify-between border-t border-slate-100 pt-2 text-slate-900"><span className="font-bold">소계 (공급가)</span><span className="font-black">{calc.subtotal.toLocaleString()}만</span></div>
+                  <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><span className="text-slate-900">{calc.vat.toLocaleString()}만</span></div>
+                  <div className="flex justify-between border-t border-slate-200 pt-2 text-[13px]"><span className="font-bold text-slate-900">합계</span><span className="font-black text-[#2979FF]">{(calc.subtotal + calc.vat).toLocaleString()}만</span></div>
                 </div>
               </div>
 
-              <div className="border border-white/8 bg-white/[0.02] p-6">
-                <p className="text-[11px] font-bold tracking-[0.3em] text-white/40">TEAM ALLOCATION</p>
+              <div className="border border-slate-200 bg-white p-6">
+                <p className="text-[11px] font-bold tracking-[0.3em] text-slate-400">TEAM ALLOCATION</p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[11px] text-white/40">총 맨먼스</p>
-                    <p className="mt-1 text-[22px] font-black"><span className="text-[#82b1ff]">{calc.totalMM.toFixed(1)}</span> <span className="text-[12px] text-white/40">MM</span></p>
+                    <p className="text-[11px] text-slate-500">총 맨먼스</p>
+                    <p className="mt-1 text-[22px] font-black text-[#2979FF]">{calc.totalMM.toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">MM</span></p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-white/40">예상 기간</p>
-                    <p className="mt-1 text-[22px] font-black"><span className="text-[#82b1ff]">{Math.max(0.5, calc.calMonths).toFixed(1)}</span> <span className="text-[12px] text-white/40">개월</span></p>
+                    <p className="text-[11px] text-slate-500">예상 기간</p>
+                    <p className="mt-1 text-[22px] font-black text-[#2979FF]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">개월</span></p>
                   </div>
                 </div>
 
                 {calc.team.length > 0 ? (
-                  <ul className="mt-5 space-y-2 border-t border-white/5 pt-4">
+                  <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4">
                     {calc.team.map(({ role, mm }) => (
                       <li key={role} className="flex items-center justify-between text-[12px]">
-                        <span className="text-white/60">{ROLE_LABEL[role] || role}</span>
-                        <span className="font-mono text-white/80">{mm.toFixed(1)} MM</span>
+                        <span className="text-slate-600">{ROLE_LABEL[role] || role}</span>
+                        <span className="font-mono text-slate-900">{mm.toFixed(1)} MM</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="mt-5 flex items-start gap-2 border border-amber-500/30 bg-amber-500/5 p-3 text-[12px] text-amber-400/80">
+                  <div className="mt-5 flex items-start gap-2 border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-700">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>좌측에서 항목을 선택해주세요.</span>
                   </div>
                 )}
 
-                <p className="mt-4 text-[10px] leading-relaxed text-white/30">맨먼스 단가 평균 {MM_RATE.toLocaleString()}만원 (혼합 인력 기준) 적용. 시니어 비중에 따라 변동될 수 있습니다.</p>
+                <p className="mt-4 text-[10px] leading-relaxed text-slate-400">맨먼스 단가 평균 {MM_RATE.toLocaleString()}만원 (혼합 인력 기준) 적용. 시니어 비중에 따라 변동될 수 있습니다.</p>
               </div>
 
               <div className="space-y-2">
@@ -1006,12 +1034,12 @@ export default function EstimatePage() {
                   className="flex w-full items-center justify-center gap-2 bg-[#2979FF] py-3 text-[13px] font-bold text-white transition-all hover:bg-[#1E6AE1]">
                   상세 견적서 받기 <ArrowRight className="h-4 w-4" />
                 </button>
-                <Link href="/about#문의" className="flex w-full items-center justify-center border border-white/15 py-3 text-[13px] font-bold text-white/60 transition-all hover:bg-white/5 hover:text-white">
+                <Link href="/about#문의" className="flex w-full items-center justify-center border border-slate-300 bg-white py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-50">
                   직접 상담 요청
                 </Link>
               </div>
 
-              <p className="text-[10px] leading-relaxed text-white/25">
+              <p className="text-[10px] leading-relaxed text-slate-400">
                 본 견적은 자동 계산된 참고 금액이며 실제 계약 금액과 다를 수 있습니다. 정확한 견적은 기능 명세서 기반의 상세 상담 후 확정됩니다.
               </p>
             </div>
@@ -1020,21 +1048,21 @@ export default function EstimatePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12">
+      <footer className="border-t border-slate-200 bg-white py-12">
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <Logo height={20} className="text-white" />
-                <span className="text-[13px] text-white/30">제이씨랩</span>
+                <Logo height={20} className="text-slate-900" />
+                <span className="text-[13px] text-slate-500">제이씨랩</span>
               </div>
-              <p className="mt-2 text-[11px] text-white/15">App Development Studio · contact@jaicylab.com</p>
-              <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
+              <p className="mt-2 text-[11px] text-slate-400">App Development Studio · contact@jaicylab.com</p>
+              <p className="text-[10px] text-slate-300">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
-            <div className="flex gap-4 text-[12px] text-white/25">
-              <Link href="/" className="transition-colors hover:text-white/50">홈</Link>
-              <Link href="/about" className="transition-colors hover:text-white/50">회사소개</Link>
-              <Link href="/about#문의" className="transition-colors hover:text-white/50">문의</Link>
+            <div className="flex gap-4 text-[12px] text-slate-400">
+              <Link href="/" className="transition-colors hover:text-slate-700">홈</Link>
+              <Link href="/about" className="transition-colors hover:text-slate-700">회사소개</Link>
+              <Link href="/about#문의" className="transition-colors hover:text-slate-700">문의</Link>
             </div>
           </div>
         </div>
