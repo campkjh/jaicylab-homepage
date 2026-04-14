@@ -936,7 +936,7 @@ export default function EstimatePage() {
         {/* Spline 3D — 히어로 배경 */}
         <div className="pointer-events-none relative h-[380px] w-full overflow-hidden md:h-[460px]">
           <iframe
-            src="https://app.spline.design/community/file/c8c72536-d10b-41f0-8096-8984eb3d7637/embed"
+            src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
             className="absolute inset-0 h-full w-full border-none"
             style={{ pointerEvents: 'none', background: 'transparent' }}
             loading="eager"
