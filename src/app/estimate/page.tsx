@@ -684,6 +684,9 @@ export default function EstimatePage() {
   const [timeline, setTimeline] = useState('normal')
   const [contact, setContact] = useState({ company: '', name: '', phone: '', email: '', memo: '' })
   const [files, setFiles] = useState<File[]>([])
+  const [quickOpen, setQuickOpen] = useState(false)
+  const [quick, setQuick] = useState({ name: '', phone: '', email: '' })
+  const [quickSending, setQuickSending] = useState(false)
   const [sending, setSending] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [activePkg, setActivePkg] = useState<string | null>('shop')
@@ -844,15 +847,67 @@ export default function EstimatePage() {
     return { baseSum, nativeAdd, designAdd, timeAdd, subtotal, vat, total, totalMM, team, calMonths: calAdjusted, designMult, timeMult }
   }, [selected, design, timeline, nativeMode])
 
+  function buildSummary() {
+    return {
+      subtotal: calc.subtotal,
+      vat: calc.vat,
+      total: calc.subtotal + calc.vat,
+      totalMM: calc.totalMM,
+      calMonths: calc.calMonths,
+      selectedCount: selected.size,
+      activePkg: activePkg ? (PACKAGES.find(p => p.id === activePkg)?.label ?? activePkg) : null,
+      activeTier: activeTier ? (TIER_META[activeTier]?.label ?? activeTier) : null,
+      nativeMode: nativeMode.label,
+      design: DESIGNS.find(d => d.id === design)?.label,
+      timeline: TIMELINES.find(t => t.id === timeline)?.label,
+    }
+  }
+
+  async function sendInquiry(payload: { name: string; phone: string; email: string }) {
+    const res = await fetch('/api/inquiry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, summary: buildSummary() }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || '전송 실패')
+    }
+    return res.json()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!contact.name || !contact.phone) { toast.error('담당자명과 연락처를 입력해주세요'); return }
     if (selected.size === 0) { toast.error('견적 항목을 1개 이상 선택해주세요'); return }
     setSending(true)
-    await new Promise(r => setTimeout(r, 1000))
-    toast.success('견적서 요청이 접수되었습니다. 영업일 기준 1일 내 회신드릴게요.')
-    setContact({ company: '', name: '', phone: '', email: '', memo: '' }); setFiles([])
-    setSending(false)
+    try {
+      await sendInquiry({ name: contact.name, phone: contact.phone, email: contact.email })
+      const fileNote = files.length ? ` (첨부 ${files.length}개는 회신 메일로 전달 부탁드려요)` : ''
+      toast.success(`견적 신청이 접수되었습니다.${fileNote}`)
+      setContact({ company: '', name: '', phone: '', email: '', memo: '' }); setFiles([])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function handleQuickSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quick.name || !quick.phone) { toast.error('이름과 연락처는 필수입니다'); return }
+    if (selected.size === 0) { toast.error('견적 항목을 1개 이상 선택해주세요'); return }
+    setQuickSending(true)
+    try {
+      await sendInquiry(quick)
+      toast.success('신청 완료! 영업일 기준 1일 내 연락드릴게요.')
+      setQuick({ name: '', phone: '', email: '' })
+      setQuickOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
+    } finally {
+      setQuickSending(false)
+    }
   }
 
   const totalItems = CATEGORIES.reduce((a, c) => a + c.items.length, 0)
@@ -876,9 +931,25 @@ export default function EstimatePage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className={`border-b border-slate-200/70 pt-[110px] pb-10 transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        <div className="mx-auto max-w-[1320px] px-6">
+      {/* Hero + Spline */}
+      <section className={`relative border-b border-slate-200/70 pt-[60px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+        {/* Spline 3D — 히어로 배경 */}
+        <div className="pointer-events-none relative h-[380px] w-full overflow-hidden md:h-[460px]">
+          <iframe
+            src="https://app.spline.design/community/file/c8c72536-d10b-41f0-8096-8984eb3d7637/embed"
+            className="absolute inset-0 h-full w-full border-none"
+            style={{ pointerEvents: 'none', background: 'transparent' }}
+            loading="eager"
+            title="Estimate Hero Animation"
+          />
+          {/* 하단 페이드 — 콘텐츠와 자연스럽게 연결 */}
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#fafafa] via-[#fafafa]/85 to-transparent" />
+          {/* 상단/좌우 코너 소프트닝 */}
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#fafafa]/60 to-transparent" />
+        </div>
+
+        {/* 텍스트 영역 — 애니메이션 위로 자연스럽게 올라옴 */}
+        <div className="relative z-10 mx-auto -mt-28 max-w-[1320px] px-6 pb-10 md:-mt-32">
           <p className="text-[12px] font-semibold text-[#2979FF]">Self Estimate</p>
           <h1 className="mt-2 text-[38px] font-bold leading-[1.05] tracking-tight text-slate-900 md:text-[48px]">
             상세 항목별 자가견적
@@ -1192,7 +1263,7 @@ export default function EstimatePage() {
                 <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="추가 전달사항 (참고 서비스, 예상 사용자 수, 특별 요구사항 등)" value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
-                  <Send className="h-4 w-4" /> {sending ? '전송 중...' : '상세 견적서 받기'}
+                  <Send className="h-4 w-4" /> {sending ? '전송 중...' : '견적받고 할인받기'}
                 </button>
               </form>
             </div>
@@ -1261,9 +1332,11 @@ export default function EstimatePage() {
               </div>
 
               <div className="space-y-2">
-                <button type="button" onClick={() => document.querySelector('form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#2979FF] py-3 text-[13px] font-bold text-white transition-all duration-200 hover:bg-[#1E6AE1] hover:shadow-[0_8px_24px_rgba(41,121,255,0.35)] active:scale-[0.98]">
-                  상세 견적서 받기 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <button type="button" onClick={() => setQuickOpen(true)}
+                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98]">
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <span className="relative">견적받고 할인받기</span>
+                  <ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
                 <Link href="/about#문의" className="flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-50">
                   직접 상담 요청
@@ -1277,6 +1350,90 @@ export default function EstimatePage() {
           </aside>
         </div>
       </section>
+
+      {/* Quick Inquiry Modal — 견적받고 할인받기 */}
+      {quickOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out] sm:items-center"
+          onClick={() => !quickSending && setQuickOpen(false)}
+        >
+          <div
+            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.25)] sm:rounded-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => !quickSending && setQuickOpen(false)}
+              aria-label="닫기"
+              className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* 헤더 */}
+            <div className="bg-gradient-to-br from-[#2979FF] to-[#1E6AE1] px-7 pb-7 pt-8 text-white">
+              <p className="text-[11px] font-semibold tracking-wider opacity-80">LIMITED OFFER</p>
+              <h2 className="mt-2 text-[24px] font-bold leading-tight tracking-tight">견적받고<br />할인받기 🎁</h2>
+              <p className="mt-3 text-[13px] leading-relaxed text-white/80">
+                지금 신청하시면 담당 PM이 <b className="text-white">1영업일 내</b> 맞춤 견적서와<br />
+                <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
+              </p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur">
+                <Sparkles className="h-3 w-3" />
+                현재 공급가 {calc.subtotal.toLocaleString()}만원 기준
+              </div>
+            </div>
+
+            {/* 폼 */}
+            <form onSubmit={handleQuickSubmit} className="space-y-3 px-7 py-6">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">이름 <span className="text-[#2979FF]">*</span></label>
+                <input
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
+                  placeholder="홍길동"
+                  value={quick.name}
+                  onChange={e => setQuick({ ...quick, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">연락처 <span className="text-[#2979FF]">*</span></label>
+                <input
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
+                  placeholder="010-0000-0000"
+                  value={quick.phone}
+                  onChange={e => setQuick({ ...quick, phone: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">이메일</label>
+                <input
+                  type="email"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
+                  placeholder="you@example.com"
+                  value={quick.email}
+                  onChange={e => setQuick({ ...quick, email: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={quickSending}
+                className="group relative mt-5 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] text-[15px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98] disabled:opacity-60"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <Send className="relative h-4 w-4" />
+                <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
+              </button>
+
+              <p className="pt-1 text-center text-[11px] text-slate-400">
+                제출 시 개인정보 수집·이용에 동의하는 것으로 간주됩니다.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-slate-200/70 bg-white py-12">
