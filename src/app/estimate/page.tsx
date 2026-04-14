@@ -832,26 +832,24 @@ export default function EstimatePage() {
                       </div>
                     )}
 
-                    {/* 비슷한 서비스 예시 — 호버 시 슬라이드 다운 */}
+                    {/* 비슷한 서비스 예시 — 상시 노출 */}
                     {PACKAGE_EXAMPLES[p.id] && (
-                      <div className="mt-auto max-h-0 overflow-hidden opacity-0 transition-all duration-400 ease-out group-hover:max-h-24 group-hover:opacity-100 group-hover:mt-3">
-                        <div className="border-t border-slate-100 pt-3">
-                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                            {PACKAGE_EXAMPLES[p.id].map((ex, i) => (
-                              <div key={ex.domain} style={{ animationDelay: `${i * 60}ms` }} className="flex animate-[fadeUp_0.3s_ease-out_both] items-center gap-1.5">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
-                                  alt={ex.name}
-                                  width={16} height={16}
-                                  className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
-                                  onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                                />
-                                <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
-                              </div>
-                            ))}
-                          </div>
+                      <div className="mt-3 border-t border-slate-100 pt-3">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                          {PACKAGE_EXAMPLES[p.id].map(ex => (
+                            <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
+                                alt={ex.name}
+                                width={16} height={16}
+                                className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
+                                onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                              />
+                              <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
