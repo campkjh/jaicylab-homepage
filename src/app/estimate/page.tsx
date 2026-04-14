@@ -1372,21 +1372,26 @@ export default function EstimatePage() {
 
             {/* 헤더 — Spline 애니메이션 배경 */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#2979FF] to-[#1E6AE1] px-7 pb-7 pt-8 text-white">
-              <div className="pointer-events-none absolute inset-0 opacity-90">
+              {/* Spline 영역 — 헤더 우측 전체를 채우고 워터마크 덮기 */}
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-[55%] overflow-hidden">
                 <iframe
                   src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
-                  className="absolute -right-12 -top-8 h-[260px] w-[260px] border-none"
-                  style={{ pointerEvents: 'none', background: 'transparent' }}
+                  className="absolute inset-0 h-[120%] w-[120%] border-none"
+                  style={{ pointerEvents: 'none', background: 'transparent', transform: 'translate(-10%, -10%) scale(1.05)' }}
                   loading="eager"
                   title="Reward Animation"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2979FF] via-[#2979FF]/50 to-transparent" />
+                {/* 하단 워터마크 가리기 */}
+                <div className="absolute bottom-0 right-0 h-12 w-36 bg-gradient-to-tl from-[#1E6AE1] via-[#1E6AE1]/95 to-transparent" />
+                {/* 좌측 텍스트 가독성 페이드 */}
+                <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#2979FF] to-transparent" />
               </div>
-              <div className="relative z-10">
+              <div className="relative z-10 max-w-[60%]">
                 <p className="text-[11px] font-semibold tracking-wider opacity-80">LIMITED OFFER</p>
                 <h2 className="mt-2 text-[24px] font-bold leading-tight tracking-tight">견적받고<br />할인받기</h2>
                 <p className="mt-3 text-[13px] leading-relaxed text-white/80">
-                  지금 신청하시면 담당 PM이 <b className="text-white">1영업일 내</b> 맞춤 견적서와<br />
+                  지금 신청하시면 담당 PM이<br />
+                  <b className="text-white">1영업일 내 맞춤 견적서</b>와<br />
                   <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
                 </p>
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur">
