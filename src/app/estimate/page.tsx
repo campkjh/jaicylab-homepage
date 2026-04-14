@@ -1375,7 +1375,7 @@ export default function EstimatePage() {
               {/* Spline 전체 배경 */}
               <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <iframe
-                  src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
+                  src="https://my.spline.design/metalcardsanimation-G3wZmyzxTsKLadm6za8TNMHl/"
                   className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 border-none"
                   style={{ pointerEvents: 'none', background: 'transparent' }}
                   loading="eager"
