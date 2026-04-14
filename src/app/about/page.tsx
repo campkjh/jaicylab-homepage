@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ChevronRight, MapPin, Phone, Mail, Building2, FileText, Users, Clock, Send, Shield, X, CheckCircle, Zap, BarChart3, Smartphone, Server, Sparkles, Code2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
+import { FileDropzone } from '@/components/FileDropzone'
 
 const NAV = ['회사소개', '서비스', '프로세스', '비전', '자료실', '문의']
 const EXTRA_LINKS = [{ href: '/estimate', label: '자가견적' }]
@@ -46,6 +47,7 @@ function CountUp({ target, suffix = '' }: { target: number; suffix?: string }) {
 export default function AboutPage() {
   const [inquiry, setInquiry] = useState({ company: '', name: '', phone: '', email: '', message: '' })
   const [sending, setSending] = useState(false)
+  const [files, setFiles] = useState<File[]>([])
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
   const [scrollY, setScrollY] = useState(0)
@@ -62,7 +64,8 @@ export default function AboutPage() {
     e.preventDefault()
     if (!inquiry.name || !inquiry.phone || !inquiry.message) { toast.error('필수 항목을 입력해주세요'); return }
     setSending(true); await new Promise(r => setTimeout(r, 1000))
-    toast.success('문의가 접수되었습니다.'); setInquiry({ company: '', name: '', phone: '', email: '', message: '' }); setSending(false)
+    const fileNote = files.length ? ` (첨부 ${files.length}개)` : ''
+    toast.success(`문의가 접수되었습니다.${fileNote}`); setInquiry({ company: '', name: '', phone: '', email: '', message: '' }); setFiles([]); setSending(false)
   }
 
   return (
@@ -313,6 +316,7 @@ export default function AboutPage() {
                 <input key={f.k} className="h-12 w-full border border-white/8 bg-white/[0.03] px-4 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF] focus:bg-[#2979FF]/[0.02]" placeholder={f.ph} value={(inquiry as Record<string, string>)[f.k]} onChange={e => setInquiry({ ...inquiry, [f.k]: e.target.value })} required={f.req} />
               ))}
               <textarea className="h-40 w-full resize-none border border-white/8 bg-white/[0.03] px-4 py-3 text-[14px] text-white outline-none transition-all placeholder-white/20 focus:border-[#2979FF]" placeholder="프로젝트 내용 *  (어떤 앱을 만들고 싶으신지, 예상 일정, 참고 서비스 등 자유롭게 적어주세요)" value={inquiry.message} onChange={e => setInquiry({ ...inquiry, message: e.target.value })} required />
+              <FileDropzone theme="dark" files={files} onChange={setFiles} />
               <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 bg-white py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-[0.98] disabled:opacity-50">
                 <Send className="h-4 w-4" /> {sending ? '전송 중...' : '문의하기'}
               </button>

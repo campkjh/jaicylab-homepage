@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
+import { FileDropzone } from '@/components/FileDropzone'
 import { PACKAGES, PACKAGE_CATEGORIES, PACKAGE_EXAMPLES, TIER_ORDER, TIER_META, type TierId, type Pkg } from '@/data/packages'
 
 // ───────────────────────────── DATA ─────────────────────────────
@@ -682,6 +683,7 @@ export default function EstimatePage() {
   const [design, setDesign] = useState('custom')
   const [timeline, setTimeline] = useState('normal')
   const [contact, setContact] = useState({ company: '', name: '', phone: '', email: '', memo: '' })
+  const [files, setFiles] = useState<File[]>([])
   const [sending, setSending] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const [activePkg, setActivePkg] = useState<string | null>('shop')
@@ -829,7 +831,7 @@ export default function EstimatePage() {
     setSending(true)
     await new Promise(r => setTimeout(r, 1000))
     toast.success('견적서 요청이 접수되었습니다. 영업일 기준 1일 내 회신드릴게요.')
-    setContact({ company: '', name: '', phone: '', email: '', memo: '' })
+    setContact({ company: '', name: '', phone: '', email: '', memo: '' }); setFiles([])
     setSending(false)
   }
 
@@ -1128,6 +1130,7 @@ export default function EstimatePage() {
                   <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="이메일" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
                 <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="추가 전달사항 (참고 서비스, 예상 사용자 수, 특별 요구사항 등)" value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
                   <Send className="h-4 w-4" /> {sending ? '전송 중...' : '상세 견적서 받기'}
                 </button>
