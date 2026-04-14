@@ -6,8 +6,9 @@ import { ChevronRight, MapPin, Phone, Mail, Building2, FileText, Users, Clock, S
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 import { FileDropzone } from '@/components/FileDropzone'
+import { TechMarquee } from '@/components/TechMarquee'
 
-const NAV = ['회사소개', '서비스', '프로세스', '비전', '자료실', '문의']
+const NAV = ['회사소개', '기술스택', '서비스', '프로세스', '비전', '자료실', '문의']
 const EXTRA_LINKS = [{ href: '/estimate', label: '자가견적' }]
 
 function useReveal() {
@@ -177,6 +178,35 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* 기술 스택 — 화이트 섹션 */}
+      <section id="기술스택" className="border-t border-white/5 bg-white py-24">
+        <div className="mx-auto max-w-[1100px] px-6">
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">TECH STACK</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight text-slate-900">사용 가능한 언어 · 프레임워크</h2></Reveal>
+          <Reveal delay={200}>
+            <p className="mt-4 max-w-[620px] text-[14px] leading-relaxed text-slate-500">
+              iOS · Android 네이티브부터 크로스플랫폼, 웹, 백엔드까지. 프로젝트 성격에 맞춰 최적의 기술을 선택합니다.
+            </p>
+          </Reveal>
+          <Reveal delay={300}>
+            <div className="mt-10">
+              <TechMarquee />
+            </div>
+          </Reveal>
+          <Reveal delay={400}>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {[
+                'Swift / SwiftUI', 'Kotlin / Compose', 'React Native', 'Flutter',
+                'Next.js / React', 'Vue.js / Nuxt', 'Node.js / NestJS', 'Spring Boot',
+                'Ionic / Capacitor', 'Supabase / Firebase', 'PostgreSQL / MongoDB', 'AWS / GCP / Vercel',
+              ].map(t => (
+                <span key={t} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-600">{t}</span>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* 서비스 */}
       <section id="서비스" className="border-t border-white/5 py-28 bg-white/[0.01]">
         <div className="mx-auto max-w-[1100px] px-6">
@@ -299,9 +329,9 @@ export default function AboutPage() {
             </Reveal>
             <Reveal delay={300}>
               <div className="mt-8 space-y-3 text-[13px] text-white/50">
-                <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#2979FF]" /> contact@jaicylab.com</p>
-                <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#2979FF]" /> 070-0000-0000</p>
-                <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#2979FF]" /> 대한민국 · 서울</p>
+                <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#2979FF]" /> jaicylab2009@gmail.com</p>
+                <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#2979FF]" /> 010-9433-5674</p>
+                <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#2979FF]" /> 수원시 장안구 서부로 2066 제2공학관 27505</p>
               </div>
             </Reveal>
           </div>
@@ -334,7 +364,7 @@ export default function AboutPage() {
                 <Logo height={20} className="text-white" />
                 <span className="text-[13px] text-white/30">제이씨랩</span>
               </div>
-              <p className="mt-2 text-[11px] text-white/15">App Development Studio | T 070-0000-0000 | E contact@jaicylab.com</p>
+              <p className="mt-2 text-[11px] text-white/15">App Development Studio | T 010-9433-5674 | E jaicylab2009@gmail.com</p>
               <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
             <div className="flex gap-4 text-[12px] text-white/25">
@@ -358,7 +388,7 @@ export default function AboutPage() {
               <p><strong className="text-white/80">제3조 (처리 목적)</strong><br />프로젝트 문의 응대, 계약 검토, 서비스 개선</p>
               <p><strong className="text-white/80">제4조 (보유·파기)</strong><br />목적 달성 후 지체 없이 파기합니다.</p>
               <p><strong className="text-white/80">제5조 (제3자 제공)</strong><br />동의 없이 제3자에게 제공하지 않습니다.</p>
-              <p><strong className="text-white/80">제6조 (문의)</strong><br />contact@jaicylab.com</p>
+              <p><strong className="text-white/80">제6조 (문의)</strong><br />jaicylab2009@gmail.com</p>
               <p className="text-white/15">시행일자: 2026년 1월 1일</p>
             </div>
           </div>

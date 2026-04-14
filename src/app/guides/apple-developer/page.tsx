@@ -393,7 +393,7 @@ export default function AppleDeveloperGuidePage() {
                 <Logo height={20} className="text-white" />
                 <span className="text-[13px] text-white/30">제이씨랩</span>
               </div>
-              <p className="mt-2 text-[11px] text-white/15">App Development Studio · contact@jaicylab.com</p>
+              <p className="mt-2 text-[11px] text-white/15">App Development Studio · jaicylab2009@gmail.com</p>
               <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
             <div className="flex gap-4 text-[12px] text-white/25">

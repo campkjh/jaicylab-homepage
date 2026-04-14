@@ -1227,7 +1227,7 @@ export default function EstimatePage() {
                 <Logo height={20} className="text-slate-900" />
                 <span className="text-[13px] text-slate-500">제이씨랩</span>
               </div>
-              <p className="mt-2 text-[11px] text-slate-400">App Development Studio · contact@jaicylab.com</p>
+              <p className="mt-2 text-[11px] text-slate-400">App Development Studio · jaicylab2009@gmail.com</p>
               <p className="text-[10px] text-slate-300">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
             <div className="flex gap-4 text-[12px] text-slate-400">
