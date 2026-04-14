@@ -8,6 +8,8 @@ type InquiryBody = {
   name: string
   phone: string
   email: string
+  memo?: string
+  items?: string[]
   summary?: {
     subtotal?: number
     vat?: number
@@ -30,7 +32,7 @@ function escapeHtml(v: string) {
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as InquiryBody
-    const { name, phone, email, summary } = body
+    const { name, phone, email, summary, memo, items } = body
 
     if (!name || !phone) {
       return NextResponse.json({ error: '이름과 연락처는 필수입니다.' }, { status: 400 })
@@ -68,6 +70,16 @@ export async function POST(req: Request) {
       if (typeof summary.totalMM === 'number')  lines.push(`총 맨먼스: ${summary.totalMM.toFixed(1)} MM`)
       if (typeof summary.calMonths === 'number') lines.push(`예상 기간: ${summary.calMonths.toFixed(1)} 개월`)
     }
+    if (items && items.length) {
+      lines.push('')
+      lines.push(`— 선택된 기능 (${items.length}개) —`)
+      items.forEach(i => lines.push(`• ${i}`))
+    }
+    if (memo) {
+      lines.push('')
+      lines.push('— 요청사항 —')
+      lines.push(memo)
+    }
 
     const text = lines.join('\n')
     const html = `
@@ -81,6 +93,20 @@ export async function POST(req: Request) {
             ${email ? `<tr><td style="padding:6px 0;color:#9AA3B2">이메일</td><td style="padding:6px 0;font-weight:600">${escapeHtml(email)}</td></tr>` : ''}
           </tbody>
         </table>
+        ${memo ? `
+          <div style="margin-top:20px;padding:16px;background:#141414;border:1px solid #222;border-radius:10px">
+            <div style="font-size:11px;color:#82B1FF;font-weight:700;margin-bottom:8px">요청사항</div>
+            <div style="font-size:13px;color:#CDD3DD;line-height:1.8;white-space:pre-wrap">${escapeHtml(memo)}</div>
+          </div>
+        ` : ''}
+        ${items && items.length ? `
+          <div style="margin-top:20px;padding:16px;background:#0E0E0E;border:1px solid #222;border-radius:10px">
+            <div style="font-size:11px;color:#82B1FF;font-weight:700;margin-bottom:10px">선택된 기능 (${items.length}개)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${items.map(i => `<span style="display:inline-block;padding:4px 10px;border:1px solid #2C2C2C;border-radius:999px;font-size:11px;color:#CDD3DD;background:#1A1A1A">${escapeHtml(i)}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
         ${summary ? `
           <div style="margin-top:20px;padding:16px;background:#141414;border:1px solid #222;border-radius:10px">
             <div style="font-size:11px;color:#82B1FF;font-weight:700;margin-bottom:8px">견적 요약</div>

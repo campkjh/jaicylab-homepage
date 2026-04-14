@@ -686,17 +686,27 @@ export default function EstimatePage() {
   const [contact, setContact] = useState({ company: '', name: '', phone: '', email: '', memo: '' })
   const [files, setFiles] = useState<File[]>([])
   const [quickOpen, setQuickOpen] = useState(false)
-  const [quick, setQuick] = useState({ name: '', phone: '', email: '' })
+  const [quick, setQuick] = useState({ name: '', phone: '', email: '', memo: '' })
   const [quickSending, setQuickSending] = useState(false)
+  const [aiDrafting, setAiDrafting] = useState(false)
 
-  // UnicornStudio 재초기화 (모달 열릴 때마다)
+  // UnicornStudio 재초기화 (모달 열릴 때마다 재시도)
   useEffect(() => {
     if (!quickOpen) return
-    const t = setTimeout(() => {
+    let cancelled = false
+    let attempts = 0
+    function tryInit() {
+      if (cancelled) return
       const us = (window as unknown as { UnicornStudio?: { init?: () => void } }).UnicornStudio
-      if (us?.init) us.init()
-    }, 50)
-    return () => clearTimeout(t)
+      if (us?.init) {
+        us.init()
+        return
+      }
+      attempts += 1
+      if (attempts < 40) setTimeout(tryInit, 100)
+    }
+    setTimeout(tryInit, 80)
+    return () => { cancelled = true }
   }, [quickOpen])
   const [sending, setSending] = useState(false)
   const [scrollY, setScrollY] = useState(0)
@@ -874,11 +884,12 @@ export default function EstimatePage() {
     }
   }
 
-  async function sendInquiry(payload: { name: string; phone: string; email: string }) {
+  async function sendInquiry(payload: { name: string; phone: string; email: string; memo?: string }) {
+    const selectedLabels = Array.from(selected).map(id => ITEM_LOOKUP[id]?.label).filter(Boolean) as string[]
     const res = await fetch('/api/inquiry', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, summary: buildSummary() }),
+      body: JSON.stringify({ ...payload, summary: buildSummary(), items: selectedLabels }),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -910,14 +921,46 @@ export default function EstimatePage() {
     if (selected.size === 0) { toast.error('견적 항목을 1개 이상 선택해주세요'); return }
     setQuickSending(true)
     try {
-      await sendInquiry(quick)
+      await sendInquiry({ name: quick.name, phone: quick.phone, email: quick.email, memo: quick.memo })
       toast.success('신청 완료! 영업일 기준 1일 내 연락드릴게요.')
-      setQuick({ name: '', phone: '', email: '' })
+      setQuick({ name: '', phone: '', email: '', memo: '' })
       setQuickOpen(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
     } finally {
       setQuickSending(false)
+    }
+  }
+
+  async function handleAiDraft() {
+    if (selected.size === 0) { toast.error('견적 항목을 먼저 선택해주세요'); return }
+    setAiDrafting(true)
+    try {
+      const selectedLabels = Array.from(selected).map(id => ITEM_LOOKUP[id]?.label).filter(Boolean) as string[]
+      const pkg = activePkg ? PACKAGES.find(p => p.id === activePkg) : null
+      const res = await fetch('/api/ai-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: selectedLabels,
+          packageName: pkg?.label,
+          tier: activeTier ? TIER_META[activeTier]?.label : undefined,
+          subtotal: calc.subtotal,
+          totalMM: calc.totalMM,
+          calMonths: calc.calMonths,
+          nativeMode: nativeMode.label,
+          design: DESIGNS.find(d => d.id === design)?.label,
+          timeline: TIMELINES.find(t => t.id === timeline)?.label,
+        }),
+      })
+      if (!res.ok) throw new Error('생성 실패')
+      const data = await res.json() as { text: string; ai?: boolean }
+      setQuick(q => ({ ...q, memo: data.text }))
+      toast.success(data.ai ? 'AI가 요청사항을 작성했어요.' : '템플릿으로 초안을 작성했어요.')
+    } catch {
+      toast.error('생성에 실패했어요. 직접 작성 부탁드려요.')
+    } finally {
+      setAiDrafting(false)
     }
   }
 
@@ -1377,16 +1420,28 @@ export default function EstimatePage() {
           onClick={() => !quickSending && setQuickOpen(false)}
         >
           <div
-            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
+            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
             onClick={e => e.stopPropagation()}
           >
-            {/* UnicornStudio 전체 배경 */}
-            <div className="pointer-events-none absolute inset-0 bg-white">
+            {/* UnicornStudio — 상단 고정 높이 영역 */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[260px] overflow-hidden">
               <div
                 data-us-project="62NofPZ8VN0npDqUw1vB"
-                className="absolute inset-0 h-full w-full"
-                style={{ pointerEvents: 'none' }}
+                className="absolute inset-0"
+                style={{ pointerEvents: 'none', width: '100%', height: '100%' }}
               />
+              {/* 그라데이션 블러 — 하단으로 갈수록 블러 강 */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-[55%]"
+                style={{
+                  backdropFilter: 'blur(22px)',
+                  WebkitBackdropFilter: 'blur(22px)',
+                  maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 35%, black 75%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 35%, black 75%)',
+                }}
+              />
+              {/* 화이트 페이드 — 자연스럽게 흰 영역으로 흘러감 */}
+              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-white/0 via-white/70 to-white" />
             </div>
 
             {/* 닫기 */}
@@ -1400,8 +1455,8 @@ export default function EstimatePage() {
             </button>
 
             <div className="relative z-10">
-              {/* 헤더 — 검정 텍스트, 딤 없음 */}
-              <div className="px-7 pb-4 pt-8 text-slate-900">
+              {/* 헤더 — 검정 텍스트 (애니메이션 아래 위치) */}
+              <div className="px-7 pb-4 pt-[180px] text-slate-900">
                 <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
                   <Sparkles className="h-3 w-3" />
                   LIMITED OFFER · 공급가 {calc.subtotal.toLocaleString()}만원
@@ -1411,6 +1466,41 @@ export default function EstimatePage() {
                   <b>1영업일 내 맞춤 견적서</b>와 <b>최대 15% 할인 제안</b>을 함께 드려요.
                 </p>
               </div>
+
+              {/* 선택된 항목 요약 태그 — 카드 없이 플로우로 */}
+              {selected.size > 0 && (() => {
+                const labels = Array.from(selected).map(id => ITEM_LOOKUP[id]?.label).filter(Boolean) as string[]
+                const shown = labels.slice(0, 12)
+                const remain = labels.length - shown.length
+                return (
+                  <div className="px-7 pb-1 pt-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-bold tracking-wide text-slate-700">선택한 항목 · {labels.length}개</p>
+                      {activePkg && activeTier && (
+                        <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>
+                          {TIER_META[activeTier].label}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {shown.map((label, i) => (
+                        <span
+                          key={i}
+                          className="rounded-lg bg-white/70 px-2 py-[3px] text-[11px] font-medium text-slate-700 backdrop-blur"
+                          style={{ border: '0.4px solid rgba(15, 23, 42, 0.15)' }}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                      {remain > 0 && (
+                        <span className="rounded-lg bg-slate-900 px-2 py-[3px] text-[11px] font-semibold text-white">
+                          +{remain}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* 폼 */}
               <form onSubmit={handleQuickSubmit} className="px-7 pb-7 pt-2">
@@ -1450,6 +1540,34 @@ export default function EstimatePage() {
                       </span>
                     </div>
                   ))}
+
+                  {/* 요청사항 textarea + AI 작성 */}
+                  <div className="group relative">
+                    <textarea
+                      id="quick-memo"
+                      value={quick.memo}
+                      onChange={e => setQuick({ ...quick, memo: e.target.value })}
+                      placeholder=" "
+                      rows={5}
+                      className="peer w-full resize-none rounded-xl border border-white/60 bg-white/40 px-4 pb-4 pt-7 text-[13px] font-medium leading-relaxed text-slate-900 outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-slate-900 focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                    />
+                    <label
+                      htmlFor="quick-memo"
+                      className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
+                    >
+                      요청사항
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAiDraft}
+                      disabled={aiDrafting || selected.size === 0}
+                      className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-slate-800 hover:to-slate-600 active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+                      title="선택한 항목 기반으로 요청사항 초안을 생성합니다"
+                    >
+                      <Sparkles className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
+                      {aiDrafting ? '작성 중...' : 'AI로 작성'}
+                    </button>
+                  </div>
                 </div>
 
                 <button
