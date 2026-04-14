@@ -1381,10 +1381,8 @@ export default function EstimatePage() {
                   loading="eager"
                   title="Reward Animation"
                 />
-                {/* 우측 하단 워터마크 가리기 */}
-                <div className="absolute bottom-0 right-0 h-12 w-40 bg-gradient-to-tl from-slate-900 via-slate-900/90 to-transparent" />
-                {/* 하단 페이드 — 폼 영역과 연결 */}
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
+                {/* 하단 페이드 — 폼 영역과 연결 (텍스트 가독성만 확보) */}
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/60 via-slate-900/15 to-transparent" />
               </div>
 
               {/* 텍스트 */}
