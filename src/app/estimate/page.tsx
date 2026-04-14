@@ -1351,99 +1351,104 @@ export default function EstimatePage() {
         </div>
       </section>
 
-      {/* Quick Inquiry Modal — 견적받고 할인받기 */}
+      {/* Quick Inquiry Modal — 글래스모피즘 + 전체 Spline 배경 */}
       {quickOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out] sm:items-center"
+          className="fixed inset-0 z-[100] flex items-end justify-center animate-[fadeIn_0.2s_ease-out] sm:items-center"
           onClick={() => !quickSending && setQuickOpen(false)}
         >
           <div
-            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.25)] sm:rounded-2xl"
+            className="relative mx-auto w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] overflow-hidden rounded-t-3xl shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
             onClick={e => e.stopPropagation()}
           >
+            {/* Spline 전체 배경 */}
+            <div className="pointer-events-none absolute inset-0 bg-white">
+              <iframe
+                src="https://my.spline.design/metalcardsanimation-G3wZmyzxTsKLadm6za8TNMHl/"
+                className="absolute inset-0 h-full w-full border-none"
+                style={{ pointerEvents: 'none', background: 'transparent' }}
+                loading="eager"
+                title="Reward Animation"
+              />
+            </div>
+
+            {/* 닫기 */}
             <button
               type="button"
               onClick={() => !quickSending && setQuickOpen(false)}
               aria-label="닫기"
-              className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900"
+              className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-slate-900 backdrop-blur-md transition-all hover:bg-white/90"
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* 헤더 — Spline 100% 배경, 파랑 제거 */}
-            <div className="relative h-[220px] overflow-hidden bg-slate-900">
-              {/* Spline 전체 배경 */}
-              <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <iframe
-                  src="https://my.spline.design/metalcardsanimation-G3wZmyzxTsKLadm6za8TNMHl/"
-                  className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 border-none"
-                  style={{ pointerEvents: 'none', background: 'transparent' }}
-                  loading="eager"
-                  title="Reward Animation"
-                />
-                {/* 하단 페이드 — 폼 영역과 연결 (텍스트 가독성만 확보) */}
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/60 via-slate-900/15 to-transparent" />
-              </div>
-
-              {/* 텍스트 */}
-              <div className="relative z-10 flex h-full flex-col justify-end px-7 pb-5 text-white">
-                <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur">
+            <div className="relative z-10">
+              {/* 헤더 — 검정 텍스트, 딤 없음 */}
+              <div className="px-7 pb-4 pt-8 text-slate-900">
+                <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
                   <Sparkles className="h-3 w-3" />
                   LIMITED OFFER · 공급가 {calc.subtotal.toLocaleString()}만원
                 </div>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight drop-shadow-sm">견적받고 할인받기</h2>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-white/85">
-                  <b className="text-white">1영업일 내 맞춤 견적서</b>와 <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
+                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-slate-900">견적받고 할인받기</h2>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-slate-700">
+                  <b>1영업일 내 맞춤 견적서</b>와 <b>최대 15% 할인 제안</b>을 함께 드려요.
                 </p>
               </div>
+
+              {/* 폼 — 글래스모피즘 */}
+              <form onSubmit={handleQuickSubmit} className="mx-5 mb-5 rounded-2xl border border-white/50 bg-white/45 p-5 shadow-[0_8px_32px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl">
+                <div className="space-y-3">
+                  {[
+                    { key: 'name',  label: '이름',   required: true,  value: quick.name,  placeholder: '홍길동' },
+                    { key: 'phone', label: '연락처', required: true,  value: quick.phone, placeholder: '010-0000-0000' },
+                    { key: 'email', label: '이메일', required: false, value: quick.email, placeholder: 'you@example.com' },
+                  ].map(f => (
+                    <div key={f.key} className="group relative">
+                      <input
+                        id={`quick-${f.key}`}
+                        type={f.key === 'email' ? 'email' : 'text'}
+                        value={f.value}
+                        onChange={e => setQuick({ ...quick, [f.key]: e.target.value })}
+                        required={f.required}
+                        placeholder=" "
+                        className="peer h-14 w-full rounded-xl border border-white/60 bg-white/40 px-4 pt-5 text-[14px] font-medium text-slate-900 outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-slate-900 focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                      />
+                      <label
+                        htmlFor={`quick-${f.key}`}
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
+                      >
+                        {f.label}{f.required && <span className="ml-0.5 text-[#2979FF]">*</span>}
+                      </label>
+                      {/* 포커스 시 하단 언더라인 스트로크 */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-slate-900 transition-all duration-400 peer-focus:w-[calc(100%-32px)]"
+                      />
+                      {/* 플레이스홀더 (포커스 시만) */}
+                      <span
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] text-slate-300 opacity-0 transition-opacity duration-200 peer-focus:opacity-100"
+                        style={{ top: '32px' }}
+                      >
+                        {f.value ? '' : f.placeholder}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={quickSending}
+                  className="group relative mt-5 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 text-[15px] font-bold text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
+                </button>
+
+                <p className="pt-3 text-center text-[11px] text-slate-500">
+                  제출 시 개인정보 수집·이용에 동의하는 것으로 간주됩니다.
+                </p>
+              </form>
             </div>
-
-            {/* 폼 */}
-            <form onSubmit={handleQuickSubmit} className="space-y-3 px-7 py-6">
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">이름 <span className="text-[#2979FF]">*</span></label>
-                <input
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
-                  placeholder="홍길동"
-                  value={quick.name}
-                  onChange={e => setQuick({ ...quick, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">연락처 <span className="text-[#2979FF]">*</span></label>
-                <input
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
-                  placeholder="010-0000-0000"
-                  value={quick.phone}
-                  onChange={e => setQuick({ ...quick, phone: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold text-slate-600">이메일</label>
-                <input
-                  type="email"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white"
-                  placeholder="you@example.com"
-                  value={quick.email}
-                  onChange={e => setQuick({ ...quick, email: e.target.value })}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={quickSending}
-                className="group relative mt-5 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] text-[15px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98] disabled:opacity-60"
-              >
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
-              </button>
-
-              <p className="pt-1 text-center text-[11px] text-slate-400">
-                제출 시 개인정보 수집·이용에 동의하는 것으로 간주됩니다.
-              </p>
-            </form>
           </div>
         </div>
       )}
