@@ -696,6 +696,26 @@ export default function EstimatePage() {
 
   const carouselRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
+  const presetSectionRef = useRef<HTMLElement>(null)
+  const [presetStuck, setPresetStuck] = useState(false)
+
+  useEffect(() => {
+    const el = presetSectionRef.current
+    if (!el) return
+    function check() {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      // 섹션 하단이 헤더(60px) 위로 올라가면 stuck
+      setPresetStuck(rect.bottom < 60)
+    }
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+    }
+  }, [])
   const [pill, setPill] = useState<{ left: number; top: number; width: number; height: number } | null>(null)
 
   useLayoutEffect(() => {
@@ -870,7 +890,7 @@ export default function EstimatePage() {
       </section>
 
       {/* PACKAGES CAROUSEL */}
-      <section className="relative border-b border-slate-200/70 bg-white py-12">
+      <section ref={presetSectionRef} className="relative border-b border-slate-200/70 bg-white py-12">
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -979,6 +999,46 @@ export default function EstimatePage() {
           </div>
         )
       })()}
+
+      {/* Sticky Compact Preset Bar — 프리셋 섹션 스크롤 아웃 시 헤더 아래 부착 */}
+      <div
+        aria-hidden={!presetStuck}
+        className={`fixed inset-x-0 top-[60px] z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl transition-all duration-300 ease-out ${
+          presetStuck ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none -translate-y-4 opacity-0'
+        }`}
+      >
+        <div className="mx-auto max-w-[1320px] px-4">
+          <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto py-2.5">
+            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">PRESETS</span>
+            {filteredPackages.map(p => {
+              const isActive = activePkg === p.id
+              const tier = isActive && activeTier ? activeTier : 'basic'
+              const price = priceOf(p.tiers[tier])
+              const Icon = ICON_LUCIDE[p.iconKey] ?? FileText
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
+                  className={`group flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
+                    isActive
+                      ? 'border-slate-900 bg-slate-900 text-white shadow-[0_4px_14px_rgba(15,23,42,0.2)]'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white/15' : 'bg-slate-100'}`}>
+                    <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-slate-700'}`} strokeWidth={2} />
+                  </div>
+                  <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
+                  <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-white/75' : 'text-[#2979FF]'}`}>
+                    {price.toLocaleString()}만
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* Body */}
       <section className="py-12" id="categories-section">
