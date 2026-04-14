@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Smartphone, Server, Sparkles, Code2, Layers, Rocket } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { ClientMarquee } from '@/components/ClientMarquee'
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
@@ -74,6 +75,12 @@ export default function HomePage() {
               <Link href="/about" className="border border-white/15 px-7 py-3.5 text-[15px] font-bold text-white/70 transition-all hover:bg-white/5 hover:text-white">
                 회사소개 보기
               </Link>
+            </div>
+
+            {/* 고객사 / 파트너 마퀴 */}
+            <div className="mt-10">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-white/30">함께한 팀 · 레퍼런스</p>
+              <ClientMarquee />
             </div>
 
             {/* Stack badges */}

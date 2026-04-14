@@ -64,9 +64,35 @@ export default function AboutPage() {
   async function handleInquiry(e: React.FormEvent) {
     e.preventDefault()
     if (!inquiry.name || !inquiry.phone || !inquiry.message) { toast.error('필수 항목을 입력해주세요'); return }
-    setSending(true); await new Promise(r => setTimeout(r, 1000))
-    const fileNote = files.length ? ` (첨부 ${files.length}개)` : ''
-    toast.success(`문의가 접수되었습니다.${fileNote}`); setInquiry({ company: '', name: '', phone: '', email: '', message: '' }); setFiles([]); setSending(false)
+    setSending(true)
+    try {
+      const res = await fetch('/api/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: inquiry.name,
+          phone: inquiry.phone,
+          email: inquiry.email,
+          memo: [
+            inquiry.company ? `회사명: ${inquiry.company}` : '',
+            '',
+            inquiry.message,
+            files.length ? `\n(첨부 파일 ${files.length}개 — 회신 메일로 전달 부탁드려요)` : '',
+          ].filter(Boolean).join('\n'),
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || '전송 실패')
+      }
+      toast.success('문의가 접수되었습니다. 영업일 기준 1일 내 회신드릴게요.')
+      setInquiry({ company: '', name: '', phone: '', email: '', message: '' })
+      setFiles([])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
