@@ -1370,34 +1370,33 @@ export default function EstimatePage() {
               <X className="h-4 w-4" />
             </button>
 
-            {/* 헤더 — Spline 애니메이션 배경 */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#2979FF] to-[#1E6AE1] px-7 pb-7 pt-8 text-white">
-              {/* Spline 영역 — 헤더 우측 전체를 채우고 워터마크 덮기 */}
-              <div className="pointer-events-none absolute right-0 top-0 h-full w-[55%] overflow-hidden">
+            {/* 헤더 — Spline 100% 배경, 파랑 제거 */}
+            <div className="relative h-[220px] overflow-hidden bg-slate-900">
+              {/* Spline 전체 배경 */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <iframe
                   src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
-                  className="absolute inset-0 h-[120%] w-[120%] border-none"
-                  style={{ pointerEvents: 'none', background: 'transparent', transform: 'translate(-10%, -10%) scale(1.05)' }}
+                  className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 border-none"
+                  style={{ pointerEvents: 'none', background: 'transparent' }}
                   loading="eager"
                   title="Reward Animation"
                 />
-                {/* 하단 워터마크 가리기 */}
-                <div className="absolute bottom-0 right-0 h-12 w-36 bg-gradient-to-tl from-[#1E6AE1] via-[#1E6AE1]/95 to-transparent" />
-                {/* 좌측 텍스트 가독성 페이드 */}
-                <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#2979FF] to-transparent" />
+                {/* 우측 하단 워터마크 가리기 */}
+                <div className="absolute bottom-0 right-0 h-12 w-40 bg-gradient-to-tl from-slate-900 via-slate-900/90 to-transparent" />
+                {/* 하단 페이드 — 폼 영역과 연결 */}
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
               </div>
-              <div className="relative z-10 max-w-[60%]">
-                <p className="text-[11px] font-semibold tracking-wider opacity-80">LIMITED OFFER</p>
-                <h2 className="mt-2 text-[24px] font-bold leading-tight tracking-tight">견적받고<br />할인받기</h2>
-                <p className="mt-3 text-[13px] leading-relaxed text-white/80">
-                  지금 신청하시면 담당 PM이<br />
-                  <b className="text-white">1영업일 내 맞춤 견적서</b>와<br />
-                  <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
-                </p>
-                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold backdrop-blur">
+
+              {/* 텍스트 */}
+              <div className="relative z-10 flex h-full flex-col justify-end px-7 pb-5 text-white">
+                <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur">
                   <Sparkles className="h-3 w-3" />
-                  현재 공급가 {calc.subtotal.toLocaleString()}만원 기준
+                  LIMITED OFFER · 공급가 {calc.subtotal.toLocaleString()}만원
                 </div>
+                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight drop-shadow-sm">견적받고 할인받기</h2>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-white/85">
+                  <b className="text-white">1영업일 내 맞춤 견적서</b>와 <b className="text-white">최대 15% 할인 제안</b>을 함께 드려요.
+                </p>
               </div>
             </div>
 
