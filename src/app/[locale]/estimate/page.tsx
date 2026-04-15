@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react'
 import Script from 'next/script'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import {
   Check, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Send, AlertCircle, Search, X,
   Smartphone, Palette, ShieldCheck, CreditCard, Bell, MessageSquare, Image as ImgIcon, MapPin,

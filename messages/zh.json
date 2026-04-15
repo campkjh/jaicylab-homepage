@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "brand": "JAICYLAB",
+    "siteName": "JAICYLAB — 应用开发工作室",
+    "description": "把创意变成应用。JAICYLAB 是一家覆盖 iOS、Android、React Native、Flutter、Next.js 的应用开发工作室,提供从策划、设计、开发到 AI 集成与上线运营的一站式服务。",
+    "keywords": "JAICYLAB,应用开发,App开发,移动应用,iOS开发,Android开发,React Native,Flutter,Next.js,跨平台,AI集成,MVP开发,韩国应用开发"
+  },
+  "nav": {
+    "about": "公司介绍",
+    "services": "服务",
+    "estimate": "在线报价",
+    "guides": "指南",
+    "contact": "联系",
+    "ctaPrimary": "委托项目",
+    "home": "首页"
+  },
+  "language": {
+    "label": "语言",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文"
+  }
+}

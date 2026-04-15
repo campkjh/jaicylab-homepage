@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "brand": "제이씨랩",
+    "siteName": "제이씨랩 — JAICYLAB",
+    "description": "아이디어를 앱으로 구현하는 제이씨랩. iOS · Android · React Native · Flutter · Next.js 기반 앱 개발부터 AI 통합까지, 기획·디자인·개발·운영을 한 팀이 책임지는 앱 개발 스튜디오.",
+    "keywords": "제이씨랩,JAICYLAB,앱 개발,앱 제작,앱개발 회사,앱 개발 스튜디오,iOS 개발,안드로이드 개발,React Native,Flutter,Next.js,모바일 앱 외주,앱 개발 견적,MVP 개발,앱 개발 대행,크로스플랫폼,반응형 웹,AI 통합,수원 앱개발,서울 앱개발"
+  },
+  "nav": {
+    "about": "회사소개",
+    "services": "서비스",
+    "estimate": "자가견적",
+    "guides": "가이드",
+    "contact": "문의",
+    "ctaPrimary": "프로젝트 의뢰",
+    "home": "홈"
+  },
+  "language": {
+    "label": "언어",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文"
+  }
+}

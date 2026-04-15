@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { ArrowRight, CheckCircle2, AlertTriangle, ExternalLink, CreditCard, Shield, FileText, Mail, ChevronRight, Apple, Building2, User, Key } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 

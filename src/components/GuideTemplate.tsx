@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import {
   ArrowRight, CheckCircle2, AlertTriangle, ExternalLink, ChevronRight,
   type LucideIcon,

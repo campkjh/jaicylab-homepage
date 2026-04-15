@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { ChevronRight, MapPin, Phone, Mail, Building2, FileText, Users, Clock, Send, Shield, X, CheckCircle, Zap, BarChart3, Smartphone, Server, Sparkles, Code2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'

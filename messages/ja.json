@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "brand": "JAICYLAB",
+    "siteName": "JAICYLAB — アプリ開発スタジオ",
+    "description": "アイデアをアプリへ。JAICYLABはiOS・Android・React Native・Flutter・Next.jsによるアプリ開発からAI統合まで、企画・デザイン・開発・運用を一気通貫で担うアプリ開発スタジオです。",
+    "keywords": "JAICYLAB,アプリ開発,モバイルアプリ,iOS開発,Android開発,React Native,Flutter,Next.js,クロスプラットフォーム,AI統合,MVP開発,韓国 アプリ開発,ソウル アプリ開発"
+  },
+  "nav": {
+    "about": "会社紹介",
+    "services": "サービス",
+    "estimate": "見積もり",
+    "guides": "ガイド",
+    "contact": "お問い合わせ",
+    "ctaPrimary": "プロジェクト依頼",
+    "home": "ホーム"
+  },
+  "language": {
+    "label": "言語",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文"
+  }
+}

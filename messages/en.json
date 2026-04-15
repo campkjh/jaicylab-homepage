@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "brand": "JAICYLAB",
+    "siteName": "JAICYLAB — App Development Studio",
+    "description": "JAICYLAB turns ideas into apps. A studio covering iOS, Android, React Native, Flutter, and Next.js — from product strategy and design to development, AI integration, and post-launch operations.",
+    "keywords": "JAICYLAB,app development,mobile app,iOS development,Android development,React Native,Flutter,Next.js,cross-platform,AI integration,MVP development,app studio Korea,Seoul app developer,Suwon app developer"
+  },
+  "nav": {
+    "about": "About",
+    "services": "Services",
+    "estimate": "Get Estimate",
+    "guides": "Guides",
+    "contact": "Contact",
+    "ctaPrimary": "Start a Project",
+    "home": "Home"
+  },
+  "language": {
+    "label": "Language",
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文"
+  }
+}
