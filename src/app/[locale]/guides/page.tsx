@@ -52,7 +52,7 @@ const CARDS_KO: Group[] = [
   ]},
   { label: '소셜 로그인 · 국내 오픈 API', items: [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: '' },
-    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', category: 'NAVER', title: 'Naver Developers', desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: '' },
+    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: '' },
   ]},
   { label: '클라우드 · 인프라', items: [
     { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: '' },
@@ -77,7 +77,7 @@ const CARDS_EN: Group[] = [
   ]},
   { label: 'Social Login & Korean Open APIs', items: [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao Login, Maps, Share, AlimTalk. App registration, key hash, consent-item review.', meta: 'Free · some items reviewed', accent: '' },
-    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', category: 'NAVER', title: 'Naver Developers', desc: 'Naver Login, Search, Papago Translate. Client ID/Secret issuance, callback URL setup.', meta: 'Free · instant issuance', accent: '' },
+    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver Login, Search, Papago Translate. Client ID/Secret issuance, callback URL setup.', meta: 'Free · instant issuance', accent: '' },
   ]},
   { label: 'Cloud & Infrastructure', items: [
     { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM push, Auth, Firestore. iOS APNs key upload, Android google-services.json, service accounts.', meta: 'Spark free · Blaze metered', accent: '' },
@@ -102,7 +102,7 @@ const CARDS_JA: Group[] = [
   ]},
   { label: 'ソーシャルログイン・韓国オープンAPI', items: [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakaoログイン・地図・シェア・アラームトーク。アプリ登録、キーハッシュ、同意項目の審査まで。', meta: '無料 · 一部審査あり', accent: '' },
-    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', category: 'NAVER', title: 'Naver Developers', desc: 'Naverログイン・検索・Papago翻訳。Client ID/Secret発行、Callback URL設定。', meta: '無料 · 即時発行', accent: '' },
+    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naverログイン・検索・Papago翻訳。Client ID/Secret発行、Callback URL設定。', meta: '無料 · 即時発行', accent: '' },
   ]},
   { label: 'クラウド・インフラ', items: [
     { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCMプッシュ・Auth・Firestore。iOS APNsキーのアップロード、Android google-services.json、サービスアカウント。', meta: 'Spark無料 · Blaze従量', accent: '' },
@@ -127,7 +127,7 @@ const CARDS_ZH: Group[] = [
   ]},
   { label: '社交登录 · 韩国开放 API', items: [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao 登录、地图、分享、AlimTalk。应用注册、Key Hash、同意项审核。', meta: '免费 · 部分审核', accent: '' },
-    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', category: 'NAVER', title: 'Naver Developers', desc: 'Naver 登录、搜索、Papago 翻译。Client ID/Secret 申请、回调 URL 设置。', meta: '免费 · 即时发放', accent: '' },
+    { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver 登录、搜索、Papago 翻译。Client ID/Secret 申请、回调 URL 设置。', meta: '免费 · 即时发放', accent: '' },
   ]},
   { label: '云 · 基础设施', items: [
     { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM 推送、Auth、Firestore。iOS APNs 密钥上传、Android google-services.json、服务账号。', meta: 'Spark 免费 · Blaze 按量', accent: '' },
