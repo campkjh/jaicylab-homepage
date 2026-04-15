@@ -372,6 +372,7 @@ export default function Page() {
     <GuideTemplate
       {...d}
       badge={{ icon: <Globe className="h-3.5 w-3.5 text-white/80" />, text: d.badge.text }}
+      heroImage="/네이버 개발자 히어로섹션.jpg"
     />
   )
 }
