@@ -47,7 +47,7 @@ type Group = { label: string; items: GuideCard[] }
 
 const CARDS_KO: Group[] = [
   { label: '앱 스토어 · 개발자 계정', items: [
-    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', category: 'APPLE', title: 'Apple Developer 계정', desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: '' },
+    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', preview: '/videoframe_65606-1-832x468.jpg', category: 'APPLE', title: 'Apple Developer 계정', desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: '' },
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: '' },
   ]},
   { label: '소셜 로그인 · 국내 오픈 API', items: [
@@ -72,7 +72,7 @@ const CARDS_KO: Group[] = [
 
 const CARDS_EN: Group[] = [
   { label: 'App Stores & Developer Accounts', items: [
-    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', category: 'APPLE', title: 'Apple Developer Account', desc: 'Required for iOS release. Individual vs. organization, DUNS, $99 annual fee, App Store Connect setup.', meta: '$99/year · 1–7 day review', accent: '' },
+    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', preview: '/videoframe_65606-1-832x468.jpg', category: 'APPLE', title: 'Apple Developer Account', desc: 'Required for iOS release. Individual vs. organization, DUNS, $99 annual fee, App Store Connect setup.', meta: '$99/year · 1–7 day review', accent: '' },
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android app registration. $25 one-time fee, identity verification, 14-day Closed Testing rule.', meta: '$25 (once) · 1–3 day review', accent: '' },
   ]},
   { label: 'Social Login & Korean Open APIs', items: [
@@ -97,7 +97,7 @@ const CARDS_EN: Group[] = [
 
 const CARDS_JA: Group[] = [
   { label: 'アプリストア・開発者アカウント', items: [
-    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', category: 'APPLE', title: 'Apple Developerアカウント', desc: 'iOSアプリ公開に必須。個人/法人の選択、DUNS、年会費$99、App Store Connectのセットアップまで。', meta: '$99/年 · 1〜7日審査', accent: '' },
+    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', preview: '/videoframe_65606-1-832x468.jpg', category: 'APPLE', title: 'Apple Developerアカウント', desc: 'iOSアプリ公開に必須。個人/法人の選択、DUNS、年会費$99、App Store Connectのセットアップまで。', meta: '$99/年 · 1〜7日審査', accent: '' },
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Androidアプリ登録。$25一回払い、本人確認、Closed Testing 14日ルールまで。', meta: '$25(1回) · 1〜3日審査', accent: '' },
   ]},
   { label: 'ソーシャルログイン・韓国オープンAPI', items: [
@@ -122,7 +122,7 @@ const CARDS_JA: Group[] = [
 
 const CARDS_ZH: Group[] = [
   { label: '应用商店 · 开发者账号', items: [
-    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', category: 'APPLE', title: 'Apple Developer 账号', desc: 'iOS 上架必备。个人/公司选择、DUNS、$99 年费、App Store Connect 配置。', meta: '$99/年 · 1–7 天审核', accent: '' },
+    { href: '/guides/apple-developer', icon: ICON.apple, iconBg: '#000000', preview: '/videoframe_65606-1-832x468.jpg', category: 'APPLE', title: 'Apple Developer 账号', desc: 'iOS 上架必备。个人/公司选择、DUNS、$99 年费、App Store Connect 配置。', meta: '$99/年 · 1–7 天审核', accent: '' },
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android 应用注册。$25 一次性费用、身份验证、Closed Testing 14 天规则。', meta: '$25(一次性) · 1–3 天审核', accent: '' },
   ]},
   { label: '社交登录 · 韩国开放 API', items: [
