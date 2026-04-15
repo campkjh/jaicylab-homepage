@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
+import { motion } from 'framer-motion'
 import { Link } from '@/i18n/navigation'
 import Image, { type StaticImageData } from 'next/image'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { Reveal } from '@/components/Reveal'
+import { Reveal, Stagger, StaggerItem, PressableMotion } from '@/components/Reveal'
 import AppleIcon from './apple-developer.svg'
 import PlayIcon from './google-play.svg'
 import KakaoIcon from './kakao.svg'
@@ -228,27 +229,44 @@ export default function GuidesIndexPage() {
           <div className="mx-auto max-w-[1100px] px-6">
             <Reveal><p className="text-[11px] font-bold tracking-wider text-[#82b1ff]">{String(gi + 1).padStart(2, '0')} · {g.label.toUpperCase()}</p></Reveal>
             <Reveal delay={80}><h2 className="mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {g.items.map((c, i) => (
-                <Reveal key={c.href} delay={i * 80}>
-                  <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_14px_42px_rgba(41,121,255,0.12)]">
-                    <div className="flex items-start justify-between">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl shadow-[0_6px_18px_rgba(15,23,42,0.3)]" style={{ backgroundColor: c.iconBg ?? '#ffffff' }}>
-                        <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
+            <Stagger stagger={0.07} className="mt-10 grid gap-4 md:grid-cols-2">
+              {g.items.map((c) => (
+                <StaggerItem key={c.href}>
+                  <motion.div
+                    whileHover={{ y: -6, scale: 1.01 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                    className="h-full"
+                  >
+                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_18px_54px_rgba(41,121,255,0.16)]">
+                      <div className="flex items-start justify-between">
+                        <motion.div
+                          whileHover={{ scale: 1.08, rotate: -4 }}
+                          transition={{ type: 'spring', stiffness: 420, damping: 14 }}
+                          className="flex h-11 w-11 items-center justify-center rounded-xl shadow-[0_6px_18px_rgba(15,23,42,0.3)]"
+                          style={{ backgroundColor: c.iconBg ?? '#ffffff' }}
+                        >
+                          <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
+                        </motion.div>
+                        <motion.div
+                          initial={{ x: 0 }}
+                          whileHover={{ x: 4 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                        >
+                          <ArrowRight className="h-4 w-4 text-white/25 group-hover:text-white" />
+                        </motion.div>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-white/25 transition-all group-hover:translate-x-1 group-hover:text-white" />
-                    </div>
-                    <p className="mt-5 text-[10px] font-bold tracking-wider text-white/30">{c.category}</p>
-                    <h3 className="mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
-                    <p className="mt-2 flex-1 text-[13px] leading-relaxed text-white/45">{c.desc}</p>
-                    <div className="mt-5 flex items-center gap-2 text-[11px] font-medium text-white/40">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#82b1ff]" />
-                      {c.meta}
-                    </div>
-                  </Link>
-                </Reveal>
+                      <p className="mt-5 text-[10px] font-bold tracking-wider text-white/30">{c.category}</p>
+                      <h3 className="mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
+                      <p className="mt-2 flex-1 text-[13px] leading-relaxed text-white/45">{c.desc}</p>
+                      <div className="mt-5 flex items-center gap-2 text-[11px] font-medium text-white/40">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#82b1ff]" />
+                        {c.meta}
+                      </div>
+                    </Link>
+                  </motion.div>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           </div>
         </section>
       ))}
@@ -261,10 +279,17 @@ export default function GuidesIndexPage() {
           <Reveal delay={120}><p className="mt-4 text-[15px] text-white/50">{h.ctaDesc}</p></Reveal>
           <Reveal delay={240}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
-                {h.ctaAsk} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link href="/estimate" className="rounded-xl border border-white/20 px-8 py-4 text-[15px] font-bold text-white/80 transition-all hover:bg-white/5 hover:text-white">{h.ctaSelf}</Link>
+              <PressableMotion>
+                <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black shadow-[0_10px_40px_rgba(255,255,255,0.12)]">
+                  {h.ctaAsk}
+                  <motion.span whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.span>
+                </Link>
+              </PressableMotion>
+              <PressableMotion>
+                <Link href="/estimate" className="rounded-xl border border-white/20 px-8 py-4 text-[15px] font-bold text-white/80 hover:bg-white/5 hover:text-white">{h.ctaSelf}</Link>
+              </PressableMotion>
             </div>
           </Reveal>
         </div>

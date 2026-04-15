@@ -7,7 +7,9 @@ import { ArrowRight, Smartphone, Server, Sparkles, Code2, Layers, Rocket } from 
 import { Logo } from '@/components/Logo'
 import { ClientMarquee } from '@/components/ClientMarquee'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { Reveal } from '@/components/Reveal'
+import { Reveal, Stagger, StaggerItem, PressableMotion } from '@/components/Reveal'
+
+const EASE = [0.16, 1, 0.3, 1] as const
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
@@ -208,35 +210,61 @@ export default function HomePage() {
         </div>
         <div className="relative z-10 flex flex-1 items-center px-6 lg:px-16">
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            initial="hidden"
+            animate="visible"
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } }}
             className="w-full max-w-[560px]"
           >
-            <p className="mb-4 text-[12px] font-bold tracking-wide text-[#2979FF]">{c.hero.eyebrow}</p>
-            <h1 className="text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
-              <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">{c.hero.title1}</span><br />
-              <span className="bg-gradient-to-r from-[#2979FF] to-[#82b1ff] bg-clip-text text-transparent">{c.hero.title2}</span>
-            </h1>
-            <p className="mt-6 whitespace-pre-line text-[15px] leading-relaxed text-white/40">{c.hero.desc}</p>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <Link href="/estimate" className="group flex items-center gap-2 bg-white px-7 py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
-                {c.hero.cta1}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link href="/about" className="border border-white/15 px-7 py-3.5 text-[15px] font-bold text-white/70 transition-all hover:bg-white/5 hover:text-white">
-                {c.hero.cta2}
-              </Link>
-            </div>
-            <div className="mt-10">
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-white/30">{c.hero.refs}</p>
-              <ClientMarquee />
-            </div>
-            <div className="mt-12 flex flex-wrap gap-2">
-              {['iOS', 'Android', 'React Native', 'Next.js', 'Node.js', 'AI / LLM'].map((t) => (
-                <span key={t} className="border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[11px] tracking-wider text-white/40">{t}</span>
-              ))}
-            </div>
+            <StaggerItem>
+              <p className="mb-4 text-[12px] font-bold tracking-wide text-[#2979FF]">{c.hero.eyebrow}</p>
+            </StaggerItem>
+            <StaggerItem>
+              <h1 className="text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
+                <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">{c.hero.title1}</span><br />
+                <span className="bg-gradient-to-r from-[#2979FF] to-[#82b1ff] bg-clip-text text-transparent">{c.hero.title2}</span>
+              </h1>
+            </StaggerItem>
+            <StaggerItem>
+              <p className="mt-6 whitespace-pre-line text-[15px] leading-relaxed text-white/40">{c.hero.desc}</p>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <PressableMotion>
+                  <Link href="/estimate" className="group flex items-center gap-2 bg-white px-7 py-3.5 text-[15px] font-bold text-black shadow-[0_10px_40px_rgba(255,255,255,0.15)]">
+                    {c.hero.cta1}
+                    <motion.span initial={{ x: 0 }} whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.span>
+                  </Link>
+                </PressableMotion>
+                <PressableMotion>
+                  <Link href="/about" className="border border-white/15 px-7 py-3.5 text-[15px] font-bold text-white/70 hover:bg-white/5 hover:text-white">
+                    {c.hero.cta2}
+                  </Link>
+                </PressableMotion>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="mt-10">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-white/30">{c.hero.refs}</p>
+                <ClientMarquee />
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="mt-12 flex flex-wrap gap-2">
+                {['iOS', 'Android', 'React Native', 'Next.js', 'Node.js', 'AI / LLM'].map((t, i) => (
+                  <motion.span
+                    key={t}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: EASE, delay: 0.8 + i * 0.04 }}
+                    className="border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[11px] tracking-wider text-white/40"
+                  >
+                    {t}
+                  </motion.span>
+                ))}
+              </div>
+            </StaggerItem>
           </motion.div>
         </div>
       </section>
@@ -249,17 +277,27 @@ export default function HomePage() {
           <Reveal delay={80}>
             <h2 className="mt-3 whitespace-pre-line text-[36px] font-bold tracking-tight">{c.services.title}</h2>
           </Reveal>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <Stagger stagger={0.07} className="mt-14 grid gap-4 md:grid-cols-3">
             {c.services.items.map((s, i) => (
-              <Reveal key={i} delay={i * 60}>
-                <motion.div whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="group border border-white/8 p-6 transition-colors duration-300 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03] hover:shadow-[0_8px_32px_rgba(41,121,255,0.08)]">
-                  <div className="flex h-12 w-12 items-center justify-center bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 group-hover:scale-110">{serviceIcons[i]}</div>
+              <StaggerItem key={i}>
+                <motion.div
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                  className="group h-full border border-white/8 p-6 transition-colors duration-300 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03] hover:shadow-[0_14px_50px_rgba(41,121,255,0.12)]"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.12, rotate: -4 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 14 }}
+                    className="flex h-12 w-12 items-center justify-center bg-[#2979FF]/10 text-[#2979FF]"
+                  >
+                    {serviceIcons[i]}
+                  </motion.div>
                   <h3 className="mt-4 text-[17px] font-bold">{s.title}</h3>
                   <p className="mt-2 text-[13px] leading-relaxed text-white/40">{s.desc}</p>
                 </motion.div>
-              </Reveal>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -271,19 +309,23 @@ export default function HomePage() {
           <Reveal delay={80}>
             <h2 className="mt-3 text-[32px] font-bold tracking-tight">{c.process.title}</h2>
           </Reveal>
-          <div className="mt-12 space-y-4">
+          <Stagger stagger={0.08} className="mt-12 space-y-4">
             {c.process.items.map((p, i) => (
-              <Reveal key={i} delay={i * 60}>
-                <div className="flex items-start gap-6 border-l-2 border-[#2979FF] pl-6 py-2 transition-all hover:pl-8">
+              <StaggerItem key={i}>
+                <motion.div
+                  whileHover={{ x: 8 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="flex items-start gap-6 border-l-2 border-[#2979FF] pl-6 py-2"
+                >
                   <span className="text-[32px] font-bold text-[#2979FF]/20">{p.phase}</span>
                   <div>
                     <h3 className="text-[17px] font-bold">{p.title}</h3>
                     <p className="mt-1 text-[13px] text-white/40">{p.desc}</p>
                   </div>
-                </div>
-              </Reveal>
+                </motion.div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -293,9 +335,14 @@ export default function HomePage() {
             <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">{c.cta.title}</span>
           </h2>
           <p className="mt-4 text-[15px] text-white/40">{c.cta.desc}</p>
-          <Link href="/about#contact" className="group mt-10 inline-flex items-center gap-2 bg-white px-8 py-4 text-[15px] font-bold text-black transition-all animate-[pulseRing_2.5s_ease-out_infinite] hover:bg-white/90 hover:animate-none hover:scale-[1.03] active:scale-95">
-            {c.cta.button} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          <PressableMotion className="mt-10 inline-block">
+            <Link href="/about#contact" className="group inline-flex items-center gap-2 bg-white px-8 py-4 text-[15px] font-bold text-black shadow-[0_10px_50px_rgba(255,255,255,0.2)] animate-[pulseRing_2.5s_ease-out_infinite] hover:animate-none">
+              {c.cta.button}
+              <motion.span whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+                <ArrowRight className="h-4 w-4" />
+              </motion.span>
+            </Link>
+          </PressableMotion>
         </div>
       </section>
 
