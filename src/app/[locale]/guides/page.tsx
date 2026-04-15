@@ -51,7 +51,7 @@ const CARDS_KO: Group[] = [
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', preview: '/148e7bca11442f664e89e844d628c247.jpg', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: '' },
   ]},
   { label: '소셜 로그인 · 국내 오픈 API', items: [
-    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: '' },
+    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: '' },
   ]},
   { label: '클라우드 · 인프라', items: [
@@ -76,7 +76,7 @@ const CARDS_EN: Group[] = [
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', preview: '/148e7bca11442f664e89e844d628c247.jpg', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android app registration. $25 one-time fee, identity verification, 14-day Closed Testing rule.', meta: '$25 (once) · 1–3 day review', accent: '' },
   ]},
   { label: 'Social Login & Korean Open APIs', items: [
-    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao Login, Maps, Share, AlimTalk. App registration, key hash, consent-item review.', meta: 'Free · some items reviewed', accent: '' },
+    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao Login, Maps, Share, AlimTalk. App registration, key hash, consent-item review.', meta: 'Free · some items reviewed', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver Login, Search, Papago Translate. Client ID/Secret issuance, callback URL setup.', meta: 'Free · instant issuance', accent: '' },
   ]},
   { label: 'Cloud & Infrastructure', items: [
@@ -101,7 +101,7 @@ const CARDS_JA: Group[] = [
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', preview: '/148e7bca11442f664e89e844d628c247.jpg', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Androidアプリ登録。$25一回払い、本人確認、Closed Testing 14日ルールまで。', meta: '$25(1回) · 1〜3日審査', accent: '' },
   ]},
   { label: 'ソーシャルログイン・韓国オープンAPI', items: [
-    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakaoログイン・地図・シェア・アラームトーク。アプリ登録、キーハッシュ、同意項目の審査まで。', meta: '無料 · 一部審査あり', accent: '' },
+    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakaoログイン・地図・シェア・アラームトーク。アプリ登録、キーハッシュ、同意項目の審査まで。', meta: '無料 · 一部審査あり', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naverログイン・検索・Papago翻訳。Client ID/Secret発行、Callback URL設定。', meta: '無料 · 即時発行', accent: '' },
   ]},
   { label: 'クラウド・インフラ', items: [
@@ -126,7 +126,7 @@ const CARDS_ZH: Group[] = [
     { href: '/guides/google-play', icon: ICON.play, iconBg: '#ffffff', preview: '/148e7bca11442f664e89e844d628c247.jpg', category: 'GOOGLE PLAY', title: 'Google Play Console', desc: 'Android 应用注册。$25 一次性费用、身份验证、Closed Testing 14 天规则。', meta: '$25(一次性) · 1–3 天审核', accent: '' },
   ]},
   { label: '社交登录 · 韩国开放 API', items: [
-    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao 登录、地图、分享、AlimTalk。应用注册、Key Hash、同意项审核。', meta: '免费 · 部分审核', accent: '' },
+    { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao 登录、地图、分享、AlimTalk。应用注册、Key Hash、同意项审核。', meta: '免费 · 部分审核', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver 登录、搜索、Papago 翻译。Client ID/Secret 申请、回调 URL 设置。', meta: '免费 · 即时发放', accent: '' },
   ]},
   { label: '云 · 基础设施', items: [
