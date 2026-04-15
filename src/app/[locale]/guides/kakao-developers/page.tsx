@@ -379,6 +379,7 @@ export default function Page() {
     <GuideTemplate
       {...d}
       badge={{ icon: <MessageCircle className="h-3.5 w-3.5 text-white/80" />, text: d.badge.text }}
+      heroImage="/f4ee65f8331b2f59809a66f17f4f6f83.gif"
     />
   )
 }
