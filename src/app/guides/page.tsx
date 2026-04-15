@@ -42,6 +42,7 @@ function Reveal({ children, delay = 0, className = '' }: { children: React.React
 type GuideCard = {
   href: string
   icon: StaticImageData
+  iconBg?: string
   category: string
   title: string
   desc: string
@@ -53,15 +54,15 @@ const GROUPS: { label: string; items: GuideCard[] }[] = [
   {
     label: '앱 스토어 · 개발자 계정',
     items: [
-      { href: '/guides/apple-developer',  icon: AppleIcon,       category: 'APPLE',       title: 'Apple Developer 계정',    desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: 'from-slate-400 to-slate-600' },
-      { href: '/guides/google-play',      icon: PlayIcon,        category: 'GOOGLE PLAY', title: 'Google Play Console',     desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: 'from-emerald-500 to-green-700' },
+      { href: '/guides/apple-developer',  icon: AppleIcon,       iconBg: '#000000', category: 'APPLE',       title: 'Apple Developer 계정',    desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: 'from-slate-400 to-slate-600' },
+      { href: '/guides/google-play',      icon: PlayIcon,        iconBg: '#ffffff', category: 'GOOGLE PLAY', title: 'Google Play Console',     desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: 'from-emerald-500 to-green-700' },
     ],
   },
   {
     label: '소셜 로그인 · 국내 오픈 API',
     items: [
-      { href: '/guides/kakao-developers', icon: KakaoIcon,       category: 'KAKAO',       title: 'Kakao Developers',        desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: 'from-yellow-400 to-amber-600' },
-      { href: '/guides/naver-developers', icon: NaverDevIcon,    category: 'NAVER',       title: 'Naver Developers',        desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: 'from-green-500 to-emerald-700' },
+      { href: '/guides/kakao-developers', icon: KakaoIcon,       iconBg: '#FFCA2C', category: 'KAKAO',       title: 'Kakao Developers',        desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: 'from-yellow-400 to-amber-600' },
+      { href: '/guides/naver-developers', icon: NaverDevIcon,    iconBg: '#00E261', category: 'NAVER',       title: 'Naver Developers',        desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: 'from-green-500 to-emerald-700' },
     ],
   },
   {
@@ -71,7 +72,7 @@ const GROUPS: { label: string; items: GuideCard[] }[] = [
       { href: '/guides/naver-cloud',  icon: NaverCloudIcon,  category: 'NCP',            title: 'Naver Cloud Platform',    desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: 'from-sky-500 to-blue-700' },
       { href: '/guides/aws',          icon: AwsIcon,         category: 'AWS',            title: 'Amazon Web Services',     desc: '루트 계정 보호, IAM·MFA, 액세스 키, 예산 알림, 서울 리전 선택까지 안전한 초기 셋업.', meta: '12개월 프리티어 · 카드 필수', accent: 'from-amber-600 to-orange-700' },
       { href: '/guides/supabase',     icon: SupabaseIcon,    category: 'SUPABASE',       title: 'Supabase',                desc: 'PostgreSQL·Auth·Storage·Realtime. 프로젝트 생성, RLS 정책, 키 분리.', meta: '무료 2개 · Pro $25/월', accent: 'from-emerald-500 to-teal-700' },
-      { href: '/guides/vercel',       icon: VercelIcon,      category: 'VERCEL',         title: 'Vercel 배포',             desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: 'from-slate-500 to-slate-800' },
+      { href: '/guides/vercel',       icon: VercelIcon,      iconBg: '#000000', category: 'VERCEL',         title: 'Vercel 배포',             desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: 'from-slate-500 to-slate-800' },
     ],
   },
   {
@@ -84,7 +85,7 @@ const GROUPS: { label: string; items: GuideCard[] }[] = [
   {
     label: '고객 응대 · 운영',
     items: [
-      { href: '/guides/channeltalk', icon: ChannelTalkIcon,    category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: 'from-rose-500 to-pink-700' },
+      { href: '/guides/channeltalk', icon: ChannelTalkIcon,    iconBg: '#572DFF', category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: 'from-rose-500 to-pink-700' },
     ],
   },
 ]
@@ -157,7 +158,7 @@ export default function GuidesIndexPage() {
                 <Reveal key={c.href} delay={i * 80}>
                   <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_14px_42px_rgba(41,121,255,0.12)]">
                     <div className="flex items-start justify-between">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-[0_6px_18px_rgba(15,23,42,0.3)]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl shadow-[0_6px_18px_rgba(15,23,42,0.3)]" style={{ backgroundColor: c.iconBg ?? '#ffffff' }}>
                         <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
                       </div>
                       <ArrowRight className="h-4 w-4 text-white/25 transition-all group-hover:translate-x-1 group-hover:text-white" />
