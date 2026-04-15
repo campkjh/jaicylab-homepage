@@ -1,12 +1,77 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import {
   ArrowRight, CheckCircle2, AlertTriangle, ExternalLink, ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+
+type Locale = 'ko' | 'en' | 'ja' | 'zh'
+
+const CHROME: Record<Locale, {
+  brand: string
+  nav: { about: string; estimate: string; guides: string; contact: string; cta: string }
+  stepByStep: string; stepsTitle: string; overviewTitle: string
+  pitfallsLabel: string; pitfallsTitle: string
+  resourcesLabel: string; resourcesTitle: string
+  viewSteps: string
+  ctaTitleDefault: string; ctaDescDefault: string
+  ctaAsk: string; ctaOther: string
+  footerHome: string; footerAbout: string; footerEstimate: string; footerGuides: string
+}> = {
+  ko: {
+    brand: '제이씨랩',
+    nav: { about: '회사소개', estimate: '자가견적', guides: '가이드', contact: '문의', cta: '프로젝트 의뢰' },
+    stepByStep: 'Step by Step', stepsTitle: '단계별 가이드', overviewTitle: '시작 전 체크',
+    pitfallsLabel: 'Pitfalls', pitfallsTitle: '자주 막히는 부분',
+    resourcesLabel: 'Resources', resourcesTitle: '공식 링크',
+    viewSteps: '단계별 보기',
+    ctaTitleDefault: '등록이 복잡하면\n대행해 드려요',
+    ctaDescDefault: '제이씨랩이 진행하는 프로젝트는 개발자 계정 셋업부터 출시·운영까지 모두 포함됩니다.',
+    ctaAsk: '대행 문의하기', ctaOther: '다른 가이드 보기',
+    footerHome: '홈', footerAbout: '회사소개', footerEstimate: '자가견적', footerGuides: '가이드',
+  },
+  en: {
+    brand: 'JAICYLAB',
+    nav: { about: 'About', estimate: 'Estimate', guides: 'Guides', contact: 'Contact', cta: 'Start a Project' },
+    stepByStep: 'Step by Step', stepsTitle: 'Step-by-step Guide', overviewTitle: 'Before you start',
+    pitfallsLabel: 'Pitfalls', pitfallsTitle: 'Common blockers',
+    resourcesLabel: 'Resources', resourcesTitle: 'Official links',
+    viewSteps: 'View steps',
+    ctaTitleDefault: 'If setup is a headache,\nwe\'ll handle it',
+    ctaDescDefault: 'Projects at JAICYLAB include everything from developer account setup to launch and ops.',
+    ctaAsk: 'Ask us to handle it', ctaOther: 'More guides',
+    footerHome: 'Home', footerAbout: 'About', footerEstimate: 'Estimate', footerGuides: 'Guides',
+  },
+  ja: {
+    brand: 'JAICYLAB',
+    nav: { about: '会社紹介', estimate: '見積もり', guides: 'ガイド', contact: 'お問い合わせ', cta: 'プロジェクト依頼' },
+    stepByStep: 'Step by Step', stepsTitle: 'ステップ別ガイド', overviewTitle: '開始前チェック',
+    pitfallsLabel: 'Pitfalls', pitfallsTitle: '詰まりやすいポイント',
+    resourcesLabel: 'Resources', resourcesTitle: '公式リンク',
+    viewSteps: 'ステップを見る',
+    ctaTitleDefault: '登録が面倒なら\n代行します',
+    ctaDescDefault: 'JAICYLABのプロジェクトには開発者アカウントの準備から公開・運用まで一貫して含まれます。',
+    ctaAsk: '代行を依頼する', ctaOther: '他のガイドを見る',
+    footerHome: 'ホーム', footerAbout: '会社紹介', footerEstimate: '見積もり', footerGuides: 'ガイド',
+  },
+  zh: {
+    brand: 'JAICYLAB',
+    nav: { about: '公司介绍', estimate: '在线报价', guides: '指南', contact: '联系', cta: '委托项目' },
+    stepByStep: 'Step by Step', stepsTitle: '分步指南', overviewTitle: '开始前检查',
+    pitfallsLabel: 'Pitfalls', pitfallsTitle: '常见卡点',
+    resourcesLabel: 'Resources', resourcesTitle: '官方链接',
+    viewSteps: '查看步骤',
+    ctaTitleDefault: '嫌配置麻烦?\n可以全权代办',
+    ctaDescDefault: 'JAICYLAB 承接的项目,从开发者账号配置到上线与运营全部包含在内。',
+    ctaAsk: '委托代办', ctaOther: '更多指南',
+    footerHome: '首页', footerAbout: '公司介绍', footerEstimate: '在线报价', footerGuides: '指南',
+  },
+}
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
@@ -42,44 +107,29 @@ export type GuideStep = {
 export type GuideResource = { title: string; desc: string; href: string }
 
 export type GuideProps = {
-  // 헤더 뱃지·타이틀
   badge: { icon: React.ReactNode; text: string }
   titleTop: string
   titleBottom: string
   description: string
-
-  // 상단 CTA 버튼
   primaryCta?: { label: string; href: string; external?: boolean }
-
-  // 요약 배지 (3칸)
   stats?: { label: string; value: string }[]
-
-  // 배경 (Spline 또는 단색 그라데이션)
   splineUrl?: string
-
-  // 개요 체크리스트
   overviewTitle?: string
   overviewDesc?: string
   overviewItems?: { icon: React.ReactNode; title: string; desc: string }[]
-
-  // 메인 스텝
   stepsLabel?: string
   stepsTitle?: string
   steps: GuideStep[]
-
-  // 주의사항
   pitfalls?: { title: string; desc: string }[]
-
-  // 외부 링크
   resources?: GuideResource[]
-
-  // CTA 섹션
   ctaTitle?: string
   ctaDesc?: string
 }
 
 export function GuideTemplate(p: GuideProps) {
   const [scrollY, setScrollY] = useState(0)
+  const locale = useLocale() as Locale
+  const cm = CHROME[locale] ?? CHROME.ko
   useEffect(() => {
     const h = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', h, { passive: true })
@@ -92,19 +142,21 @@ export function GuideTemplate(p: GuideProps) {
         <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-white" />
-            <span className="text-[12px] font-normal text-white/30">제이씨랩</span>
+            <span className="text-[12px] font-normal text-white/30">{cm.brand}</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">회사소개</Link>
-            <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">자가견적</Link>
-            <Link href="/guides" className="text-[13px] font-bold text-white transition-all">가이드</Link>
-            <Link href="/about#문의" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">문의</Link>
+            <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.about}</Link>
+            <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.estimate}</Link>
+            <Link href="/guides" className="text-[13px] font-bold text-white transition-all">{cm.nav.guides}</Link>
+            <Link href="/about#contact" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.contact}</Link>
           </nav>
-          <Link href="/about#문의" className="rounded-xl bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">프로젝트 의뢰</Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link href="/about#contact" className="rounded-xl bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">{cm.nav.cta}</Link>
+          </div>
         </div>
       </header>
 
-      {/* Hero */}
       <section className="relative flex min-h-[80vh] items-center justify-center pt-[60px]">
         {p.splineUrl && (
           <div className="absolute inset-0 overflow-hidden">
@@ -140,7 +192,7 @@ export function GuideTemplate(p: GuideProps) {
                 </a>
               )}
               <a href="#steps" className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-[15px] font-bold text-white/80 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white">
-                단계별 보기
+                {cm.viewSteps}
               </a>
             </div>
           </Reveal>
@@ -164,13 +216,12 @@ export function GuideTemplate(p: GuideProps) {
         </div>
       </section>
 
-      {/* 개요 */}
       {p.overviewItems && p.overviewItems.length > 0 && (
         <section className="border-t border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent py-24">
           <div className="mx-auto max-w-[1000px] px-6">
             <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">Overview</p></Reveal>
             <Reveal delay={80}>
-              <h2 className="mt-3 text-[30px] font-bold leading-tight tracking-tight md:text-[36px]">{p.overviewTitle ?? '시작 전 체크'}</h2>
+              <h2 className="mt-3 text-[30px] font-bold leading-tight tracking-tight md:text-[36px]">{p.overviewTitle ?? cm.overviewTitle}</h2>
             </Reveal>
             {p.overviewDesc && (
               <Reveal delay={160}>
@@ -194,12 +245,11 @@ export function GuideTemplate(p: GuideProps) {
         </section>
       )}
 
-      {/* Steps */}
       <section id="steps" className="border-t border-white/5 py-24">
         <div className="mx-auto max-w-[1000px] px-6">
-          <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">{p.stepsLabel ?? 'Step by Step'}</p></Reveal>
+          <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">{p.stepsLabel ?? cm.stepByStep}</p></Reveal>
           <Reveal delay={80}>
-            <h2 className="mt-3 text-[30px] font-bold leading-tight tracking-tight md:text-[36px]">{p.stepsTitle ?? '단계별 가이드'}</h2>
+            <h2 className="mt-3 text-[30px] font-bold leading-tight tracking-tight md:text-[36px]">{p.stepsTitle ?? cm.stepsTitle}</h2>
           </Reveal>
 
           <div className="mt-14 space-y-4">
@@ -234,13 +284,12 @@ export function GuideTemplate(p: GuideProps) {
         </div>
       </section>
 
-      {/* Pitfalls */}
       {p.pitfalls && p.pitfalls.length > 0 && (
         <section className="border-t border-white/5 bg-white/[0.01] py-24">
           <div className="mx-auto max-w-[1000px] px-6">
-            <Reveal><p className="text-[12px] font-semibold text-amber-400/80">Pitfalls</p></Reveal>
+            <Reveal><p className="text-[12px] font-semibold text-amber-400/80">{cm.pitfallsLabel}</p></Reveal>
             <Reveal delay={80}>
-              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-tight md:text-[32px]">자주 막히는 부분</h2>
+              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-tight md:text-[32px]">{cm.pitfallsTitle}</h2>
             </Reveal>
 
             <div className="mt-12 grid gap-3 md:grid-cols-2">
@@ -260,13 +309,12 @@ export function GuideTemplate(p: GuideProps) {
         </section>
       )}
 
-      {/* Resources */}
       {p.resources && p.resources.length > 0 && (
         <section className="border-t border-white/5 py-24">
           <div className="mx-auto max-w-[1000px] px-6">
-            <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">Resources</p></Reveal>
+            <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">{cm.resourcesLabel}</p></Reveal>
             <Reveal delay={80}>
-              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-tight md:text-[32px]">공식 링크</h2>
+              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-tight md:text-[32px]">{cm.resourcesTitle}</h2>
             </Reveal>
 
             <div className="mt-12 grid gap-3 md:grid-cols-2">
@@ -287,26 +335,25 @@ export function GuideTemplate(p: GuideProps) {
         </section>
       )}
 
-      {/* CTA */}
       <section className="border-t border-white/5 bg-gradient-to-b from-transparent to-white/[0.02] py-28">
         <div className="mx-auto max-w-[720px] px-6 text-center">
           <Reveal>
-            <h2 className="text-[34px] font-bold leading-tight tracking-tight md:text-[44px]">
-              {p.ctaTitle ?? '등록이 복잡하면\n대행해 드려요'}
+            <h2 className="whitespace-pre-line text-[34px] font-bold leading-tight tracking-tight md:text-[44px]">
+              {p.ctaTitle ?? cm.ctaTitleDefault}
             </h2>
           </Reveal>
           <Reveal delay={120}>
             <p className="mt-4 whitespace-pre-line text-[15px] text-white/50">
-              {p.ctaDesc ?? '제이씨랩이 진행하는 프로젝트는 개발자 계정 셋업부터 출시·운영까지 모두 포함됩니다.'}
+              {p.ctaDesc ?? cm.ctaDescDefault}
             </p>
           </Reveal>
           <Reveal delay={240}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link href="/about#문의" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
-                대행 문의하기 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
+                {cm.ctaAsk} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link href="/guides" className="rounded-xl border border-white/20 px-8 py-4 text-[15px] font-bold text-white/80 transition-all hover:bg-white/5 hover:text-white">
-                다른 가이드 보기
+                {cm.ctaOther}
               </Link>
             </div>
           </Reveal>
@@ -319,16 +366,16 @@ export function GuideTemplate(p: GuideProps) {
             <div>
               <div className="flex items-center gap-3">
                 <Logo height={20} className="text-white" />
-                <span className="text-[13px] text-white/30">제이씨랩</span>
+                <span className="text-[13px] text-white/30">{cm.brand}</span>
               </div>
               <p className="mt-2 text-[11px] text-white/15">App Development Studio · jaicylab2009@gmail.com</p>
               <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
             <div className="flex gap-4 text-[12px] text-white/25">
-              <Link href="/" className="transition-colors hover:text-white/50">홈</Link>
-              <Link href="/about" className="transition-colors hover:text-white/50">회사소개</Link>
-              <Link href="/estimate" className="transition-colors hover:text-white/50">자가견적</Link>
-              <Link href="/guides" className="transition-colors hover:text-white/50">가이드</Link>
+              <Link href="/" className="transition-colors hover:text-white/50">{cm.footerHome}</Link>
+              <Link href="/about" className="transition-colors hover:text-white/50">{cm.footerAbout}</Link>
+              <Link href="/estimate" className="transition-colors hover:text-white/50">{cm.footerEstimate}</Link>
+              <Link href="/guides" className="transition-colors hover:text-white/50">{cm.footerGuides}</Link>
             </div>
           </div>
         </div>
@@ -337,5 +384,4 @@ export function GuideTemplate(p: GuideProps) {
   )
 }
 
-// 외부에서 lucide 아이콘 사용할 수 있게 re-export
 export type { LucideIcon }
