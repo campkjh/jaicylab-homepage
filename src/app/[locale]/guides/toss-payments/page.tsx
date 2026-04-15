@@ -388,6 +388,7 @@ export default function TossPaymentsGuidePage() {
       titleBottom={d.titleBottom}
       description={d.description}
       primaryCta={{ label: d.primaryCtaLabel, href: 'https://www.tosspayments.com' }}
+      heroImage="/tds-kv-text-hero.png"
       stats={d.stats}
       overviewTitle={d.overviewTitle}
       overviewDesc={d.overviewDesc}

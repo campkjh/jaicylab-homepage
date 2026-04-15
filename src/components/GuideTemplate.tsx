@@ -95,6 +95,7 @@ export type GuideProps = {
   primaryCta?: { label: string; href: string; external?: boolean }
   stats?: { label: string; value: string }[]
   splineUrl?: string
+  heroImage?: string
   overviewTitle?: string
   overviewDesc?: string
   overviewItems?: { icon: React.ReactNode; title: string; desc: string }[]
@@ -142,6 +143,11 @@ export function GuideTemplate(p: GuideProps) {
         {p.splineUrl && (
           <div className="absolute inset-0 overflow-hidden">
             <iframe src={p.splineUrl} className="h-full w-full border-none" style={{ pointerEvents: 'none' }} />
+          </div>
+        )}
+        {p.heroImage && (
+          <div className="absolute inset-0 overflow-hidden">
+            <img src={p.heroImage} alt="" className="h-full w-full object-cover" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-transparent to-[#050505]" />

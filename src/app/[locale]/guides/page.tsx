@@ -29,6 +29,7 @@ type GuideCard = {
   href: string
   icon: StaticImageData
   iconBg?: string
+  preview?: string
   category: string
   title: string
   desc: string
@@ -61,7 +62,7 @@ const CARDS_KO: Group[] = [
     { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel 배포', desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: '' },
   ]},
   { label: '결제 · PG', items: [
-    { href: '/guides/toss-payments', icon: ICON.toss, category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: '' },
+    { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: '' },
   ]},
   { label: '고객 응대 · 운영', items: [
@@ -86,7 +87,7 @@ const CARDS_EN: Group[] = [
     { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel Deployment', desc: 'GitHub integration, env vars, custom domain DNS, preview deploys, function regions.', meta: 'Hobby free · Pro $20/mo', accent: '' },
   ]},
   { label: 'Payments & PG', items: [
-    { href: '/guides/toss-payments', icon: ICON.toss, category: 'TOSS PAYMENTS', title: 'Toss Payments Merchant', desc: 'PG integration: test keys → merchant contract → live keys → webhook & settlement automation.', meta: '2–5 day review · 2.5–3.5% fee', accent: '' },
+    { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments Merchant', desc: 'PG integration: test keys → merchant contract → live keys → webhook & settlement automation.', meta: '2–5 day review · 2.5–3.5% fee', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne (formerly Iamport)', desc: 'Multiple PGs behind one API. V2 channel registration, payment verification, webhook signatures.', meta: 'PortOne free · PG fees only', accent: '' },
   ]},
   { label: 'Customer Support & Ops', items: [
@@ -111,7 +112,7 @@ const CARDS_JA: Group[] = [
     { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercelデプロイ', desc: 'GitHub連携、環境変数、カスタムドメインDNS、Previewデプロイ、Functionsリージョン。', meta: 'Hobby無料 · Pro $20/月', accent: '' },
   ]},
   { label: '決済・PG', items: [
-    { href: '/guides/toss-payments', icon: ICON.toss, category: 'TOSS PAYMENTS', title: 'トスペイメンツ加盟店', desc: 'PG連携。テストキー → 加盟店契約 → 本番キー → Webhook・精算の自動化。', meta: '2〜5日審査 · 手数料2.5〜3.5%', accent: '' },
+    { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'トスペイメンツ加盟店', desc: 'PG連携。テストキー → 加盟店契約 → 本番キー → Webhook・精算の自動化。', meta: '2〜5日審査 · 手数料2.5〜3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne(旧Iamport)', desc: '複数のPGを1つのAPIで。V2チャンネル登録、決済検証、Webhook署名まで。', meta: 'PortOne無料 · PG手数料のみ', accent: '' },
   ]},
   { label: 'カスタマーサポート・運営', items: [
@@ -136,7 +137,7 @@ const CARDS_ZH: Group[] = [
     { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel 部署', desc: 'GitHub 接入、环境变量、自定义域名 DNS、Preview 部署、Functions 区域。', meta: 'Hobby 免费 · Pro $20/月', accent: '' },
   ]},
   { label: '支付 · PG', items: [
-    { href: '/guides/toss-payments', icon: ICON.toss, category: 'TOSS PAYMENTS', title: 'Toss Payments 商户', desc: 'PG 对接:测试密钥 → 商户签约 → 生产密钥 → Webhook 与清算自动化。', meta: '2–5 天审核 · 费率 2.5~3.5%', accent: '' },
+    { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments 商户', desc: 'PG 对接:测试密钥 → 商户签约 → 生产密钥 → Webhook 与清算自动化。', meta: '2–5 天审核 · 费率 2.5~3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne(原 Iamport)', desc: '多家 PG 统一到一个 API。V2 Channel 注册、支付校验、Webhook 签名。', meta: 'PortOne 免费 · 仅 PG 费率', accent: '' },
   ]},
   { label: '客服 · 运营', items: [
@@ -238,7 +239,16 @@ export default function GuidesIndexPage() {
                     className="h-full"
                   >
                     <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_18px_54px_rgba(41,121,255,0.16)]">
-                      <div className="flex items-start justify-between">
+                      {c.preview && (
+                        <>
+                          <div
+                            className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-25 transition-all duration-700 ease-out group-hover:scale-100 group-hover:opacity-70"
+                            style={{ backgroundImage: `url(${c.preview})` }}
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-[#050505]/70 transition-all duration-500 group-hover:from-[#050505]/85 group-hover:via-[#050505]/55 group-hover:to-[#050505]/20" />
+                        </>
+                      )}
+                      <div className="relative flex items-start justify-between">
                         <motion.div
                           whileHover={{ scale: 1.08, rotate: -4 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 14 }}
@@ -255,10 +265,10 @@ export default function GuidesIndexPage() {
                           <ArrowRight className="h-4 w-4 text-white/25 group-hover:text-white" />
                         </motion.div>
                       </div>
-                      <p className="mt-5 text-[10px] font-bold tracking-wider text-white/30">{c.category}</p>
-                      <h3 className="mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
-                      <p className="mt-2 flex-1 text-[13px] leading-relaxed text-white/45">{c.desc}</p>
-                      <div className="mt-5 flex items-center gap-2 text-[11px] font-medium text-white/40">
+                      <p className="relative mt-5 text-[10px] font-bold tracking-wider text-white/30">{c.category}</p>
+                      <h3 className="relative mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
+                      <p className="relative mt-2 flex-1 text-[13px] leading-relaxed text-white/45">{c.desc}</p>
+                      <div className="relative mt-5 flex items-center gap-2 text-[11px] font-medium text-white/40">
                         <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#82b1ff]" />
                         {c.meta}
                       </div>
