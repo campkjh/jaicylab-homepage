@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
+import { motion } from 'framer-motion'
 import { Link } from '@/i18n/navigation'
 import { ArrowRight, Smartphone, Server, Sparkles, Code2, Layers, Rocket } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { ClientMarquee } from '@/components/ClientMarquee'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { Reveal } from '@/components/Reveal'
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
@@ -162,11 +163,8 @@ const CONTENT: Record<Locale, {
 }
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false)
   const locale = useLocale() as Locale
   const c = CONTENT[locale] ?? CONTENT.ko
-
-  useEffect(() => { setMounted(true) }, [])
 
   const serviceIcons = [
     <Smartphone key="s1" className="h-6 w-6" />,
@@ -209,7 +207,12 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 via-transparent to-[#050505]" />
         </div>
         <div className="relative z-10 flex flex-1 items-center px-6 lg:px-16">
-          <div className={`w-full max-w-[560px] transition-all duration-1000 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-[560px]"
+          >
             <p className="mb-4 text-[12px] font-bold tracking-wide text-[#2979FF]">{c.hero.eyebrow}</p>
             <h1 className="text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
               <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">{c.hero.title1}</span><br />
@@ -234,21 +237,27 @@ export default function HomePage() {
                 <span key={t} className="border border-white/8 bg-white/[0.02] px-3 py-1.5 text-[11px] tracking-wider text-white/40">{t}</span>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       <section id="services" className="border-t border-white/5 py-28">
         <div className="mx-auto max-w-[1100px] px-6">
-          <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">{c.services.label}</p>
-          <h2 className="mt-3 whitespace-pre-line text-[36px] font-bold tracking-tight">{c.services.title}</h2>
+          <Reveal>
+            <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">{c.services.label}</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <h2 className="mt-3 whitespace-pre-line text-[36px] font-bold tracking-tight">{c.services.title}</h2>
+          </Reveal>
           <div className="mt-14 grid gap-4 md:grid-cols-3">
             {c.services.items.map((s, i) => (
-              <div key={i} className="group border border-white/8 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03] hover:shadow-[0_8px_32px_rgba(41,121,255,0.08)]">
-                <div className="flex h-12 w-12 items-center justify-center bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 group-hover:scale-110">{serviceIcons[i]}</div>
-                <h3 className="mt-4 text-[17px] font-bold">{s.title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/40">{s.desc}</p>
-              </div>
+              <Reveal key={i} delay={i * 60}>
+                <motion.div whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="group border border-white/8 p-6 transition-colors duration-300 hover:border-[#2979FF]/30 hover:bg-[#2979FF]/[0.03] hover:shadow-[0_8px_32px_rgba(41,121,255,0.08)]">
+                  <div className="flex h-12 w-12 items-center justify-center bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 group-hover:scale-110">{serviceIcons[i]}</div>
+                  <h3 className="mt-4 text-[17px] font-bold">{s.title}</h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-white/40">{s.desc}</p>
+                </motion.div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -256,17 +265,23 @@ export default function HomePage() {
 
       <section id="process" className="border-t border-white/5 bg-white/[0.01] py-28">
         <div className="mx-auto max-w-[1000px] px-6">
-          <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">{c.process.label}</p>
-          <h2 className="mt-3 text-[32px] font-bold tracking-tight">{c.process.title}</h2>
+          <Reveal>
+            <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">{c.process.label}</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <h2 className="mt-3 text-[32px] font-bold tracking-tight">{c.process.title}</h2>
+          </Reveal>
           <div className="mt-12 space-y-4">
             {c.process.items.map((p, i) => (
-              <div key={i} className="flex items-start gap-6 border-l-2 border-[#2979FF] pl-6 py-2 transition-all hover:pl-8">
-                <span className="text-[32px] font-bold text-[#2979FF]/20">{p.phase}</span>
-                <div>
-                  <h3 className="text-[17px] font-bold">{p.title}</h3>
-                  <p className="mt-1 text-[13px] text-white/40">{p.desc}</p>
+              <Reveal key={i} delay={i * 60}>
+                <div className="flex items-start gap-6 border-l-2 border-[#2979FF] pl-6 py-2 transition-all hover:pl-8">
+                  <span className="text-[32px] font-bold text-[#2979FF]/20">{p.phase}</span>
+                  <div>
+                    <h3 className="text-[17px] font-bold">{p.title}</h3>
+                    <p className="mt-1 text-[13px] text-white/40">{p.desc}</p>
+                  </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>

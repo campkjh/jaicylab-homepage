@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import {
@@ -9,6 +9,9 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { Reveal } from '@/components/Reveal'
+
+export { Reveal }
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
@@ -71,28 +74,6 @@ const CHROME: Record<Locale, {
     ctaAsk: '委托代办', ctaOther: '更多指南',
     footerHome: '首页', footerAbout: '公司介绍', footerEstimate: '在线报价', footerGuides: '指南',
   },
-}
-
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const ob = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.15 })
-    ob.observe(el)
-    return () => ob.disconnect()
-  }, [])
-  return { ref, visible }
-}
-
-export function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const { ref, visible } = useReveal()
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-8 opacity-0 blur-[4px]'} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
-    </div>
-  )
 }
 
 export type GuideStep = {

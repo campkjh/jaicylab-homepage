@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import Image, { type StaticImageData } from 'next/image'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { Reveal } from '@/components/Reveal'
 import AppleIcon from './apple-developer.svg'
 import PlayIcon from './google-play.svg'
 import KakaoIcon from './kakao.svg'
@@ -22,26 +23,6 @@ import ChannelTalkIcon from './channeltalk.svg'
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const ob = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.15 })
-    ob.observe(el)
-    return () => ob.disconnect()
-  }, [])
-  return { ref, visible }
-}
-function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const { ref, visible } = useReveal()
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-8 opacity-0 blur-[4px]'} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
-    </div>
-  )
-}
 
 type GuideCard = {
   href: string

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useInView } from 'framer-motion'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { ChevronRight, MapPin, Phone, Mail, Building2, FileText, Users, Clock, Send, Shield, X, CheckCircle, Zap, BarChart3, Smartphone, Server, Sparkles, Code2 } from 'lucide-react'
@@ -9,6 +10,7 @@ import { Logo } from '@/components/Logo'
 import { FileDropzone } from '@/components/FileDropzone'
 import { TechMarquee } from '@/components/TechMarquee'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { Reveal } from '@/components/Reveal'
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
@@ -543,31 +545,10 @@ const CONTENT: Record<Locale, Content> = {
   },
 }
 
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const ob = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.15 })
-    ob.observe(el)
-    return () => ob.disconnect()
-  }, [])
-  return { ref, visible }
-}
-
-function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const { ref, visible } = useReveal()
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-10 opacity-0 blur-[4px]'} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
-    </div>
-  )
-}
-
 function CountUp({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [val, setVal] = useState(0)
-  const { ref, visible } = useReveal()
+  const ref = useRef<HTMLSpanElement>(null)
+  const visible = useInView(ref, { once: true, amount: 0.3 })
   useEffect(() => {
     if (!visible) return
     const dur = 1500; const st = Date.now()
