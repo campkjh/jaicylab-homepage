@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Apple, Play, MessageCircle, Globe, Flame, Cloud, CreditCard, ChevronRight } from 'lucide-react'
+import { ArrowRight, Apple, Play, MessageCircle, Globe, Flame, Cloud, CreditCard, ChevronRight, Database, Triangle } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 
 function useReveal() {
@@ -54,14 +54,24 @@ const GROUPS: { label: string; items: GuideCard[] }[] = [
   {
     label: '클라우드 · 인프라',
     items: [
-      { href: '/guides/firebase',     icon: <Flame className="h-5 w-5" />, category: 'FIREBASE',       title: 'Firebase / GCP',          desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: 'from-orange-500 to-amber-700' },
-      { href: '/guides/naver-cloud',  icon: <Cloud className="h-5 w-5" />, category: 'NCP',            title: 'Naver Cloud Platform',    desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: 'from-sky-500 to-blue-700' },
+      { href: '/guides/firebase',     icon: <Flame className="h-5 w-5" />,    category: 'FIREBASE',       title: 'Firebase / GCP',          desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: 'from-orange-500 to-amber-700' },
+      { href: '/guides/naver-cloud',  icon: <Cloud className="h-5 w-5" />,    category: 'NCP',            title: 'Naver Cloud Platform',    desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: 'from-sky-500 to-blue-700' },
+      { href: '/guides/aws',          icon: <Cloud className="h-5 w-5" />,    category: 'AWS',            title: 'Amazon Web Services',     desc: '루트 계정 보호, IAM·MFA, 액세스 키, 예산 알림, 서울 리전 선택까지 안전한 초기 셋업.', meta: '12개월 프리티어 · 카드 필수', accent: 'from-amber-600 to-orange-700' },
+      { href: '/guides/supabase',     icon: <Database className="h-5 w-5" />, category: 'SUPABASE',       title: 'Supabase',                desc: 'PostgreSQL·Auth·Storage·Realtime. 프로젝트 생성, RLS 정책, 키 분리.', meta: '무료 2개 · Pro $25/월', accent: 'from-emerald-500 to-teal-700' },
+      { href: '/guides/vercel',       icon: <Triangle className="h-5 w-5" />, category: 'VERCEL',         title: 'Vercel 배포',             desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: 'from-slate-500 to-slate-800' },
     ],
   },
   {
     label: '결제 · PG',
     items: [
       { href: '/guides/toss-payments', icon: <CreditCard className="h-5 w-5" />, category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: 'from-blue-500 to-indigo-700' },
+      { href: '/guides/portone',       icon: <CreditCard className="h-5 w-5" />, category: 'PORTONE',       title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: 'from-violet-500 to-purple-700' },
+    ],
+  },
+  {
+    label: '고객 응대 · 운영',
+    items: [
+      { href: '/guides/channeltalk', icon: <MessageCircle className="h-5 w-5" />, category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: 'from-rose-500 to-pink-700' },
     ],
   },
 ]

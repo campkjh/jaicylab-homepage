@@ -15,6 +15,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/guides/naver-developers`,       lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/guides/firebase`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/guides/naver-cloud`,            lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/guides/aws`,                    lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/guides/supabase`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/guides/vercel`,                 lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/guides/toss-payments`,          lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/guides/portone`,                lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/guides/channeltalk`,            lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
   ]
 }
