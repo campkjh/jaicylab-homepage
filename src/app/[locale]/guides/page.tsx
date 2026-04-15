@@ -63,7 +63,7 @@ const CARDS_KO: Group[] = [
   ]},
   { label: '결제 · PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: '' },
-    { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: '' },
+    { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: '' },
   ]},
   { label: '고객 응대 · 운영', items: [
     { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: '' },
@@ -88,7 +88,7 @@ const CARDS_EN: Group[] = [
   ]},
   { label: 'Payments & PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments Merchant', desc: 'PG integration: test keys → merchant contract → live keys → webhook & settlement automation.', meta: '2–5 day review · 2.5–3.5% fee', accent: '' },
-    { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne (formerly Iamport)', desc: 'Multiple PGs behind one API. V2 channel registration, payment verification, webhook signatures.', meta: 'PortOne free · PG fees only', accent: '' },
+    { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne (formerly Iamport)', desc: 'Multiple PGs behind one API. V2 channel registration, payment verification, webhook signatures.', meta: 'PortOne free · PG fees only', accent: '' },
   ]},
   { label: 'Customer Support & Ops', items: [
     { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: 'Korea\'s leading live chat. Channel setup, web/app SDK, memberHash, webhook automation.', meta: '3 agents free · Pro from ₩39,000', accent: '' },
@@ -113,7 +113,7 @@ const CARDS_JA: Group[] = [
   ]},
   { label: '決済・PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'トスペイメンツ加盟店', desc: 'PG連携。テストキー → 加盟店契約 → 本番キー → Webhook・精算の自動化。', meta: '2〜5日審査 · 手数料2.5〜3.5%', accent: '' },
-    { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne(旧Iamport)', desc: '複数のPGを1つのAPIで。V2チャンネル登録、決済検証、Webhook署名まで。', meta: 'PortOne無料 · PG手数料のみ', accent: '' },
+    { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne(旧Iamport)', desc: '複数のPGを1つのAPIで。V2チャンネル登録、決済検証、Webhook署名まで。', meta: 'PortOne無料 · PG手数料のみ', accent: '' },
   ]},
   { label: 'カスタマーサポート・運営', items: [
     { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: '韓国の代表的ライブチャット。チャンネル開設、Web/App SDK、memberHash、Webhook自動化。', meta: '無料3名 · Pro ₩39,000〜', accent: '' },
@@ -138,7 +138,7 @@ const CARDS_ZH: Group[] = [
   ]},
   { label: '支付 · PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments 商户', desc: 'PG 对接:测试密钥 → 商户签约 → 生产密钥 → Webhook 与清算自动化。', meta: '2–5 天审核 · 费率 2.5~3.5%', accent: '' },
-    { href: '/guides/portone', icon: ICON.portone, category: 'PORTONE', title: 'PortOne(原 Iamport)', desc: '多家 PG 统一到一个 API。V2 Channel 注册、支付校验、Webhook 签名。', meta: 'PortOne 免费 · 仅 PG 费率', accent: '' },
+    { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne(原 Iamport)', desc: '多家 PG 统一到一个 API。V2 Channel 注册、支付校验、Webhook 签名。', meta: 'PortOne 免费 · 仅 PG 费率', accent: '' },
   ]},
   { label: '客服 · 运营', items: [
     { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: '韩国主流在线客服。频道开通、Web/App SDK、memberHash、Webhook 自动化。', meta: '3 人免费 · Pro ₩39,000 起', accent: '' },

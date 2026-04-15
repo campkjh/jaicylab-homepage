@@ -410,6 +410,7 @@ export default function PortoneGuidePage() {
       titleBottom={d.titleBottom}
       description={d.description}
       primaryCta={{ label: d.primaryCtaLabel, href: 'https://admin.portone.io' }}
+      heroImage="/cb.png"
       stats={d.stats}
       overviewTitle={d.overviewTitle}
       overviewDesc={d.overviewDesc}
