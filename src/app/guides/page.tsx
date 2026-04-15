@@ -2,8 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Apple, Play, MessageCircle, Globe, Flame, Cloud, CreditCard, ChevronRight, Database, Triangle } from 'lucide-react'
+import Image, { type StaticImageData } from 'next/image'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import AppleIcon from './애플 디벨로퍼.svg'
+import PlayIcon from './플레이 콘솔.svg'
+import KakaoIcon from './카카오.svg'
+import NaverDevIcon from './네이버 개발자.svg'
+import FirebaseIcon from './파이어베이스.svg'
+import NaverCloudIcon from './네이버 클라우드 콘솔.svg'
+import AwsIcon from './아마존.svg'
+import SupabaseIcon from './supabase.svg'
+import VercelIcon from './vercel.svg'
+import TossIcon from './토스.svg'
+import PortoneIcon from './portone.svg'
+import ChannelTalkIcon from './채널톡.svg'
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
@@ -28,7 +41,7 @@ function Reveal({ children, delay = 0, className = '' }: { children: React.React
 
 type GuideCard = {
   href: string
-  icon: React.ReactNode
+  icon: StaticImageData
   category: string
   title: string
   desc: string
@@ -40,38 +53,38 @@ const GROUPS: { label: string; items: GuideCard[] }[] = [
   {
     label: '앱 스토어 · 개발자 계정',
     items: [
-      { href: '/guides/apple-developer',  icon: <Apple className="h-5 w-5" />,         category: 'APPLE',       title: 'Apple Developer 계정',    desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: 'from-slate-400 to-slate-600' },
-      { href: '/guides/google-play',      icon: <Play className="h-5 w-5" />,          category: 'GOOGLE PLAY', title: 'Google Play Console',     desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: 'from-emerald-500 to-green-700' },
+      { href: '/guides/apple-developer',  icon: AppleIcon,       category: 'APPLE',       title: 'Apple Developer 계정',    desc: 'iOS 앱 출시에 필수. 개인/법인 선택부터 DUNS, 연회비 $99 결제, App Store Connect 셋업까지.', meta: '$99/년 · 1–7일 심사', accent: 'from-slate-400 to-slate-600' },
+      { href: '/guides/google-play',      icon: PlayIcon,        category: 'GOOGLE PLAY', title: 'Google Play Console',     desc: 'Android 앱 등록. $25 일회성 등록비, 신원 확인, Closed Testing 14일 규정까지.', meta: '$25 (1회) · 1–3일 심사', accent: 'from-emerald-500 to-green-700' },
     ],
   },
   {
     label: '소셜 로그인 · 국내 오픈 API',
     items: [
-      { href: '/guides/kakao-developers', icon: <MessageCircle className="h-5 w-5" />, category: 'KAKAO',       title: 'Kakao Developers',        desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: 'from-yellow-400 to-amber-600' },
-      { href: '/guides/naver-developers', icon: <Globe className="h-5 w-5" />,         category: 'NAVER',       title: 'Naver Developers',        desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: 'from-green-500 to-emerald-700' },
+      { href: '/guides/kakao-developers', icon: KakaoIcon,       category: 'KAKAO',       title: 'Kakao Developers',        desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: 'from-yellow-400 to-amber-600' },
+      { href: '/guides/naver-developers', icon: NaverDevIcon,    category: 'NAVER',       title: 'Naver Developers',        desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: 'from-green-500 to-emerald-700' },
     ],
   },
   {
     label: '클라우드 · 인프라',
     items: [
-      { href: '/guides/firebase',     icon: <Flame className="h-5 w-5" />,    category: 'FIREBASE',       title: 'Firebase / GCP',          desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: 'from-orange-500 to-amber-700' },
-      { href: '/guides/naver-cloud',  icon: <Cloud className="h-5 w-5" />,    category: 'NCP',            title: 'Naver Cloud Platform',    desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: 'from-sky-500 to-blue-700' },
-      { href: '/guides/aws',          icon: <Cloud className="h-5 w-5" />,    category: 'AWS',            title: 'Amazon Web Services',     desc: '루트 계정 보호, IAM·MFA, 액세스 키, 예산 알림, 서울 리전 선택까지 안전한 초기 셋업.', meta: '12개월 프리티어 · 카드 필수', accent: 'from-amber-600 to-orange-700' },
-      { href: '/guides/supabase',     icon: <Database className="h-5 w-5" />, category: 'SUPABASE',       title: 'Supabase',                desc: 'PostgreSQL·Auth·Storage·Realtime. 프로젝트 생성, RLS 정책, 키 분리.', meta: '무료 2개 · Pro $25/월', accent: 'from-emerald-500 to-teal-700' },
-      { href: '/guides/vercel',       icon: <Triangle className="h-5 w-5" />, category: 'VERCEL',         title: 'Vercel 배포',             desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: 'from-slate-500 to-slate-800' },
+      { href: '/guides/firebase',     icon: FirebaseIcon,    category: 'FIREBASE',       title: 'Firebase / GCP',          desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: 'from-orange-500 to-amber-700' },
+      { href: '/guides/naver-cloud',  icon: NaverCloudIcon,  category: 'NCP',            title: 'Naver Cloud Platform',    desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: 'from-sky-500 to-blue-700' },
+      { href: '/guides/aws',          icon: AwsIcon,         category: 'AWS',            title: 'Amazon Web Services',     desc: '루트 계정 보호, IAM·MFA, 액세스 키, 예산 알림, 서울 리전 선택까지 안전한 초기 셋업.', meta: '12개월 프리티어 · 카드 필수', accent: 'from-amber-600 to-orange-700' },
+      { href: '/guides/supabase',     icon: SupabaseIcon,    category: 'SUPABASE',       title: 'Supabase',                desc: 'PostgreSQL·Auth·Storage·Realtime. 프로젝트 생성, RLS 정책, 키 분리.', meta: '무료 2개 · Pro $25/월', accent: 'from-emerald-500 to-teal-700' },
+      { href: '/guides/vercel',       icon: VercelIcon,      category: 'VERCEL',         title: 'Vercel 배포',             desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: 'from-slate-500 to-slate-800' },
     ],
   },
   {
     label: '결제 · PG',
     items: [
-      { href: '/guides/toss-payments', icon: <CreditCard className="h-5 w-5" />, category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: 'from-blue-500 to-indigo-700' },
-      { href: '/guides/portone',       icon: <CreditCard className="h-5 w-5" />, category: 'PORTONE',       title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: 'from-violet-500 to-purple-700' },
+      { href: '/guides/toss-payments', icon: TossIcon,        category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: 'from-blue-500 to-indigo-700' },
+      { href: '/guides/portone',       icon: PortoneIcon,     category: 'PORTONE',       title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: 'from-violet-500 to-purple-700' },
     ],
   },
   {
     label: '고객 응대 · 운영',
     items: [
-      { href: '/guides/channeltalk', icon: <MessageCircle className="h-5 w-5" />, category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: 'from-rose-500 to-pink-700' },
+      { href: '/guides/channeltalk', icon: ChannelTalkIcon,    category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: 'from-rose-500 to-pink-700' },
     ],
   },
 ]
@@ -144,8 +157,8 @@ export default function GuidesIndexPage() {
                 <Reveal key={c.href} delay={i * 80}>
                   <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_14px_42px_rgba(41,121,255,0.12)]">
                     <div className="flex items-start justify-between">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${c.accent} shadow-[0_6px_18px_rgba(15,23,42,0.3)]`}>
-                        {c.icon}
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-[0_6px_18px_rgba(15,23,42,0.3)]">
+                        <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
                       </div>
                       <ArrowRight className="h-4 w-4 text-white/25 transition-all group-hover:translate-x-1 group-hover:text-white" />
                     </div>
