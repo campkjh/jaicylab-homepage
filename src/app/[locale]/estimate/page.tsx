@@ -18,7 +18,10 @@ import {
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 import { FileDropzone } from '@/components/FileDropzone'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { useLocale } from 'next-intl'
 import { PACKAGES, PACKAGE_CATEGORIES, PACKAGE_EXAMPLES, TIER_ORDER, TIER_META, type TierId, type Pkg } from '@/data/packages'
+import { ESTIMATE_CONTENT, type Locale } from './content'
 
 // ───────────────────────────── DATA ─────────────────────────────
 
@@ -544,12 +547,13 @@ const TIER_HEX: Record<TierId, string> = {
 // ───────────────────────────── PackageCard ─────────────────────────────
 
 function PackageCard({
-  p, idx, isActivePkg, activeTier, applyTier, onHoverEnter, onHoverLeave,
+  p, idx, isActivePkg, activeTier, applyTier, onHoverEnter, onHoverLeave, c,
 }: {
   p: Pkg; idx: number; isActivePkg: boolean; activeTier: TierId | null;
   applyTier: (pkg: Pkg, tier: TierId) => void;
   onHoverEnter: (tier: TierId, rect: DOMRect) => void;
   onHoverLeave: (tier: TierId) => void;
+  c: typeof ESTIMATE_CONTENT['ko'];
 }) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [pill, setPill] = useState<{ left: number; width: number; color: string } | null>(null)
@@ -609,10 +613,10 @@ function PackageCard({
           <circle cx="8" cy="8" r="6" />
           <path d="M8 4.5 V8 L10.5 9.5" />
         </svg>
-        <span className="font-medium">평균 개발 기간</span>
+        <span className="font-medium">{c.avgDevPeriod}</span>
         <span className="text-slate-300">·</span>
-        <span className="font-semibold text-slate-700">{avgMonths.toFixed(1)}개월</span>
-        <span className="text-slate-400">(Basic 기준)</span>
+        <span className="font-semibold text-slate-700">{avgMonths.toFixed(1)}{c.monthsSuffix}</span>
+        <span className="text-slate-400">{c.basicReference}</span>
       </div>
 
       {/* 알약 티어 버튼 + 슬라이딩 인디케이터 (색 변화·라디얼 펄스 없음) */}
@@ -648,13 +652,13 @@ function PackageCard({
         <div className="mt-3 flex items-center gap-1.5 text-[11px]">
           <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>{TIER_META[activeTier].label}</span>
           <span className="text-slate-300">·</span>
-          <span className="text-slate-500">{p.tiers[activeTier].length}개 · {priceOf(p.tiers[activeTier]).toLocaleString()}만</span>
+          <span className="text-slate-500">{c.pricingItemsCount(p.tiers[activeTier].length, priceOf(p.tiers[activeTier]).toLocaleString())}</span>
         </div>
       )}
 
       {PACKAGE_EXAMPLES[p.id] && (
         <div className="mt-3 border-t border-slate-100 pt-3">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">비슷한 서비스</p>
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{c.similarService}</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             {PACKAGE_EXAMPLES[p.id].map(ex => (
               <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
@@ -679,6 +683,8 @@ function PackageCard({
 // ───────────────────────────── PAGE ─────────────────────────────
 
 export default function EstimatePage() {
+  const localeRaw = useLocale() as Locale
+  const c = ESTIMATE_CONTENT[localeRaw] ?? ESTIMATE_CONTENT.ko
   const [selected, setSelected] = useState<Set<string>>(new Set(PACKAGES.find(p => p.id === 'shop')!.tiers.basic))
   const [open, setOpen] = useState<Set<string>>(new Set(['platform']))
   const [design, setDesign] = useState('custom')
@@ -893,23 +899,23 @@ export default function EstimatePage() {
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      throw new Error(data.error || '전송 실패')
+      throw new Error(data.error || c.errSendFail)
     }
     return res.json()
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!contact.name || !contact.phone) { toast.error('담당자명과 연락처를 입력해주세요'); return }
-    if (selected.size === 0) { toast.error('견적 항목을 1개 이상 선택해주세요'); return }
+    if (!contact.name || !contact.phone) { toast.error(c.toastNeedName); return }
+    if (selected.size === 0) { toast.error(c.toastNeedItem); return }
     setSending(true)
     try {
       await sendInquiry({ name: contact.name, phone: contact.phone, email: contact.email })
-      const fileNote = files.length ? ` (첨부 ${files.length}개는 회신 메일로 전달 부탁드려요)` : ''
-      toast.success(`견적 신청이 접수되었습니다.${fileNote}`)
+      const fileNote = files.length ? c.toastFileNote(files.length) : ''
+      toast.success(c.toastInquiryReceived(fileNote))
       setContact({ company: '', name: '', phone: '', email: '', memo: '' }); setFiles([])
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
+      toast.error(err instanceof Error ? err.message : c.toastSendFailed)
     } finally {
       setSending(false)
     }
@@ -917,23 +923,23 @@ export default function EstimatePage() {
 
   async function handleQuickSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!quick.name || !quick.phone) { toast.error('이름과 연락처는 필수입니다'); return }
-    if (selected.size === 0) { toast.error('견적 항목을 1개 이상 선택해주세요'); return }
+    if (!quick.name || !quick.phone) { toast.error(c.toastNeedName); return }
+    if (selected.size === 0) { toast.error(c.toastNeedItem); return }
     setQuickSending(true)
     try {
       await sendInquiry({ name: quick.name, phone: quick.phone, email: quick.email, memo: quick.memo })
-      toast.success('신청 완료! 영업일 기준 1일 내 연락드릴게요.')
+      toast.success(c.toastQuickOk)
       setQuick({ name: '', phone: '', email: '', memo: '' })
       setQuickOpen(false)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '전송에 실패했어요.')
+      toast.error(err instanceof Error ? err.message : c.toastSendFailed)
     } finally {
       setQuickSending(false)
     }
   }
 
   async function handleAiDraft() {
-    if (selected.size === 0) { toast.error('견적 항목을 먼저 선택해주세요'); return }
+    if (selected.size === 0) { toast.error(c.toastNeedItemFirst); return }
     setAiDrafting(true)
     try {
       const selectedLabels = Array.from(selected).map(id => ITEM_LOOKUP[id]?.label).filter(Boolean) as string[]
@@ -953,12 +959,12 @@ export default function EstimatePage() {
           timeline: TIMELINES.find(t => t.id === timeline)?.label,
         }),
       })
-      if (!res.ok) throw new Error('생성 실패')
+      if (!res.ok) throw new Error(c.errSendFail)
       const data = await res.json() as { text: string; ai?: boolean }
       setQuick(q => ({ ...q, memo: data.text }))
-      toast.success(data.ai ? 'AI가 요청사항을 작성했어요.' : '템플릿으로 초안을 작성했어요.')
+      toast.success(data.ai ? c.toastAiOk : c.toastAiTemplateOk)
     } catch {
-      toast.error('생성에 실패했어요. 직접 작성 부탁드려요.')
+      toast.error(c.toastAiFail)
     } finally {
       setAiDrafting(false)
     }
@@ -982,14 +988,17 @@ export default function EstimatePage() {
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-slate-900" />
-            <span className="text-[12px] font-normal text-slate-500">제이씨랩</span>
+            <span className="text-[12px] font-normal text-slate-500">{c.brand}</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">회사소개</Link>
-            <Link href="/estimate" className="text-[13px] font-bold text-slate-900 transition-all">자가견적</Link>
-            <Link href="/about#문의" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">문의</Link>
+            <Link href="/about" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">{c.navAbout}</Link>
+            <Link href="/estimate" className="text-[13px] font-bold text-slate-900 transition-all">{c.navEstimate}</Link>
+            <Link href="/about#문의" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">{c.navContact}</Link>
           </nav>
-          <Link href="/about#문의" className="rounded-xl bg-slate-900 px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-slate-800 active:scale-95">프로젝트 의뢰</Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link href="/about#문의" className="rounded-xl bg-slate-900 px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-slate-800 active:scale-95">{c.ctaProject}</Link>
+          </div>
         </div>
       </header>
 
@@ -1012,12 +1021,12 @@ export default function EstimatePage() {
 
         {/* 텍스트 영역 — 애니메이션 위로 자연스럽게 올라옴 */}
         <div className="relative z-10 mx-auto -mt-20 max-w-[1320px] px-6 pb-10 md:-mt-24">
-          <p className="text-[12px] font-semibold text-[#2979FF]">Self Estimate</p>
+          <p className="text-[12px] font-semibold text-[#2979FF]">{c.heroEyebrow}</p>
           <h1 className="mt-2 text-[38px] font-bold leading-[1.05] tracking-tight text-slate-900 md:text-[48px]">
-            상세 항목별 자가견적
+            {c.heroTitle}
           </h1>
           <p className="mt-4 max-w-[640px] text-[14px] leading-relaxed text-slate-500">
-            17개 카테고리 · {totalItems}개 세부 항목 · {PACKAGES.length}가지 패키지 × 5단계 티어. 네이티브/크로스, 디자인 수준, 일정 보정, 부가세까지 실시간 계산됩니다.
+            {c.heroDescTemplate(totalItems, PACKAGES.length)}
           </p>
         </div>
       </section>
@@ -1027,11 +1036,11 @@ export default function EstimatePage() {
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[12px] font-semibold text-[#2979FF]">Quick Start</p>
-              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{PACKAGES.length}개 패키지 프리셋</h2>
-              <p className="mt-2 text-[13px] text-slate-500">서비스 유형과 5단계 티어 중 원하는 조합을 선택하면 자동으로 체크됩니다.</p>
+              <p className="text-[12px] font-semibold text-[#2979FF]">{c.quickStartEyebrow}</p>
+              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
+              <p className="mt-2 text-[13px] text-slate-500">{c.packageDesc}</p>
             </div>
-            {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">선택 초기화</button>}
+            {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">{c.resetSelection}</button>}
           </div>
 
           {/* 카테고리 필터 — 슬라이딩 알약 인디케이터 */}
@@ -1062,12 +1071,12 @@ export default function EstimatePage() {
 
           {/* Carousel */}
           <div className="relative mt-6">
-            <button type="button" onClick={() => scrollCarousel('left')} aria-label="이전"
+            <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
               className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
               <ChevronLeft className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:-translate-x-0.5" />
             </button>
-            <button type="button" onClick={() => scrollCarousel('right')} aria-label="다음"
+            <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
               className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
               <ChevronRight className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -1077,7 +1086,7 @@ export default function EstimatePage() {
               className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-6"
               style={{ scrollbarWidth: 'none' }}>
               {filteredPackages.map((p, idx) => (
-                <PackageCard key={p.id} p={p} idx={idx}
+                <PackageCard key={p.id} p={p} idx={idx} c={c}
                   isActivePkg={activePkg === p.id}
                   activeTier={activeTier}
                   applyTier={applyTier}
@@ -1109,11 +1118,11 @@ export default function EstimatePage() {
                 <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${meta.soft}`}>{meta.label}</span>
                 <span className="text-[11px] text-slate-500">{meta.desc}</span>
               </div>
-              <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}만</span>
+              <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}{c.manwonSuffix}</span>
             </div>
             <p className="mt-2 text-[12px] font-bold text-slate-900">{pkg.label}</p>
             <div className="mt-3">
-              <p className="mb-1.5 text-[10px] font-bold text-slate-400">포함 항목 ({tierIds.length}개)</p>
+              <p className="mb-1.5 text-[10px] font-bold text-slate-400">{c.includedItems(tierIds.length)}</p>
               <ul className="space-y-1">
                 {tierIds.slice(0, 10).map(id => {
                   const item = ITEM_LOOKUP[id]
@@ -1125,7 +1134,7 @@ export default function EstimatePage() {
                   ) : null
                 })}
                 {tierIds.length > 10 && (
-                  <li className="pl-5 text-[10px] text-slate-400">…외 {tierIds.length - 10}개</li>
+                  <li className="pl-5 text-[10px] text-slate-400">{c.moreItems(tierIds.length - 10)}</li>
                 )}
               </ul>
             </div>
@@ -1142,7 +1151,7 @@ export default function EstimatePage() {
       >
         <div className="mx-auto max-w-[1320px] px-4">
           <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto py-2.5">
-            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">PRESETS</span>
+            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">{c.presets}</span>
             {filteredPackages.map(p => {
               const isActive = activePkg === p.id
               const tier = isActive && activeTier ? activeTier : 'basic'
@@ -1164,7 +1173,7 @@ export default function EstimatePage() {
                   </div>
                   <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
                   <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-white/75' : 'text-[#2979FF]'}`}>
-                    {price.toLocaleString()}만
+                    {price.toLocaleString()}{c.manwonSuffix}
                   </span>
                 </button>
               )
@@ -1182,18 +1191,18 @@ export default function EstimatePage() {
 
             {/* 프로젝트 조건 */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
-              <p className="text-[12px] font-semibold text-slate-400">Project Condition</p>
+              <p className="text-[12px] font-semibold text-slate-400">{c.projectCondition}</p>
 
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="mb-2 text-[11px] font-medium text-slate-500">개발 방식 (자동 감지)</p>
+                  <p className="mb-2 text-[11px] font-medium text-slate-500">{c.devModeLabel}</p>
                   <div className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'border-[#2979FF]/40 bg-[#2979FF]/5' : 'border-slate-200 bg-slate-50'}`}>
                     <div>
-                      <p className="text-[13px] font-bold text-slate-900">{nativeMode.label}</p>
+                      <p className="text-[13px] font-bold text-slate-900">{nativeMode.id === 'both-native' ? c.devModeBothNative : nativeMode.id === 'single-native' ? c.devModeSingleNative : c.devModeCross}</p>
                       <p className="mt-0.5 text-[11px] text-slate-500">
-                        {nativeMode.id === 'both-native' && 'iOS+Android 네이티브 양쪽 → 앱 기능 항목에 ×1.6 가중'}
-                        {nativeMode.id === 'single-native' && '단일 네이티브 → 앱 기능 항목에 ×1.1 가중'}
-                        {nativeMode.id === 'cross' && '크로스플랫폼 또는 단일 OS → 가중 없음'}
+                        {nativeMode.id === 'both-native' && c.devModeBothNativeDesc}
+                        {nativeMode.id === 'single-native' && c.devModeSingleNativeDesc}
+                        {nativeMode.id === 'cross' && c.devModeCrossDesc}
                       </p>
                     </div>
                     <span className="text-[14px] font-bold text-[#2979FF]">×{nativeMode.mult.toFixed(2)}</span>
@@ -1202,27 +1211,33 @@ export default function EstimatePage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="mb-2 text-[11px] font-medium text-slate-500">디자인 수준</p>
+                    <p className="mb-2 text-[11px] font-medium text-slate-500">{c.designLevel}</p>
                     <div className="flex gap-2">
-                      {DESIGNS.map(d => (
+                      {DESIGNS.map(d => {
+                        const dl = d.id === 'template' ? c.designs.template : d.id === 'custom' ? c.designs.custom : c.designs.premium
+                        return (
                         <button key={d.id} type="button" onClick={() => setDesign(d.id)}
                           className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
-                          {d.label}
+                          {dl}
                           <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                   <div>
-                    <p className="mb-2 text-[11px] font-medium text-slate-500">일정</p>
+                    <p className="mb-2 text-[11px] font-medium text-slate-500">{c.timeline}</p>
                     <div className="flex gap-2">
-                      {TIMELINES.map(t => (
+                      {TIMELINES.map(t => {
+                        const tl = t.id === 'normal' ? c.timelines.normal : t.id === 'fast' ? c.timelines.fast : c.timelines.urgent
+                        return (
                         <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
                           className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
-                          {t.label}
+                          {tl}
                           <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1235,7 +1250,7 @@ export default function EstimatePage() {
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="항목 검색 (예: 결제, 로그인, 채팅, 푸시…)"
+                placeholder={c.searchPlaceholder}
                 className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all placeholder-slate-400 focus:border-[#2979FF] focus:shadow-[0_4px_16px_rgba(41,121,255,0.1)]"
               />
               {query && (
@@ -1245,7 +1260,7 @@ export default function EstimatePage() {
               )}
               {q && (
                 <p className="mt-2 pl-2 text-[11px] text-slate-500">
-                  {Object.values(searchMatches ?? {}).reduce((a, s) => a + s.size, 0)}개 항목이 &ldquo;<span className="font-semibold text-[#2979FF]">{query}</span>&rdquo;와 일치합니다.
+                  {c.searchMatchesTemplate(Object.values(searchMatches ?? {}).reduce((a, s) => a + s.size, 0), query)}
                 </p>
               )}
             </div>
@@ -1263,13 +1278,13 @@ export default function EstimatePage() {
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 hover:scale-110">{cat.icon}</div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400">{cat.tag}</p>
-                        <p className="text-[15px] font-bold text-slate-900">{cat.title}</p>
+                        <p className="text-[11px] font-medium text-slate-400">{c.categoryTitles[cat.id]?.tag ?? cat.tag}</p>
+                        <p className="text-[15px] font-bold text-slate-900">{c.categoryTitles[cat.id]?.title ?? cat.title}</p>
                       </div>
                     </button>
                     <div className="flex items-center gap-3">
                       <span className="text-[11px] text-slate-400">{selCount}/{cat.items.length}</span>
-                      {catTotal > 0 && <span className="text-[12px] font-bold text-[#2979FF]">+{catTotal.toLocaleString()}만</span>}
+                      {catTotal > 0 && <span className="text-[12px] font-bold text-[#2979FF]">+{catTotal.toLocaleString()}{c.manwonSuffix}</span>}
                       {!searchMatches && (
                         <button type="button" onClick={() => toggleCat(cat.id)} className="text-slate-400 hover:text-slate-700">
                           <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -1282,9 +1297,9 @@ export default function EstimatePage() {
                     <div className="animate-[fadeUp_0.3s_ease-out] border-t border-slate-100">
                       {!searchMatches && (
                         <div className="flex items-center justify-end gap-3 px-5 py-2 text-[10px] text-slate-400">
-                          <button type="button" onClick={() => selectAllInCat(cat.id)} className="transition-colors hover:text-slate-700">전체 선택</button>
+                          <button type="button" onClick={() => selectAllInCat(cat.id)} className="transition-colors hover:text-slate-700">{c.selectAll}</button>
                           <span className="text-slate-200">|</span>
-                          <button type="button" onClick={() => clearCat(cat.id)} className="transition-colors hover:text-slate-700">전체 해제</button>
+                          <button type="button" onClick={() => clearCat(cat.id)} className="transition-colors hover:text-slate-700">{c.clearAll}</button>
                         </div>
                       )}
                       <ul>
@@ -1298,7 +1313,7 @@ export default function EstimatePage() {
                                   {active && <Check className="h-3.5 w-3.5 animate-[checkIn_0.25s_ease-out] text-white" />}
                                 </div>
                                 <span className={`flex-1 text-[13px] ${active ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'}`}>{item.label}</span>
-                                <span className={`text-[12px] ${active ? 'font-bold text-[#2979FF]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}만</span>
+                                <span className={`text-[12px] ${active ? 'font-bold text-[#2979FF]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
                               </button>
                             </li>
                           )
@@ -1312,20 +1327,20 @@ export default function EstimatePage() {
 
             {/* 견적서 요청 */}
             <div className="mt-12 rounded-2xl border border-slate-200 bg-white p-7">
-              <p className="text-[12px] font-semibold text-[#2979FF]">Request Quotation</p>
-              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">상세 견적서 요청</h2>
-              <p className="mt-2 text-[13px] text-slate-500">현재 선택 내용을 기반으로 담당 PM이 영업일 기준 1일 내 정식 견적서와 일정 제안을 드립니다.</p>
+              <p className="text-[12px] font-semibold text-[#2979FF]">{c.requestEyebrow}</p>
+              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.requestTitle}</h2>
+              <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="회사명 / 소속" value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="담당자명 *" value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="연락처 *" value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="이메일" type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder="추가 전달사항 (참고 서비스, 예상 사용자 수, 특별 요구사항 등)" value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
-                  <Send className="h-4 w-4" /> {sending ? '전송 중...' : '견적받고 할인받기'}
+                  <Send className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
                 </button>
               </form>
             </div>
@@ -1337,40 +1352,40 @@ export default function EstimatePage() {
               <div className="relative overflow-hidden rounded-2xl border-2 border-[#2979FF] bg-gradient-to-br from-white to-[#f0f7ff] p-6 shadow-[0_12px_40px_rgba(41,121,255,0.12)] transition-all duration-300 hover:shadow-[0_16px_56px_rgba(41,121,255,0.18)]">
                 <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#2979FF]/10 blur-3xl" />
                 <div className="relative">
-                  <p className="text-[12px] font-semibold text-[#2979FF]">Total Estimate</p>
-                  <p className="mt-3 text-[11px] text-slate-500">공급가 <span className="text-slate-400">· VAT 별도</span></p>
+                  <p className="text-[12px] font-semibold text-[#2979FF]">{c.totalEstimate}</p>
+                  <p className="mt-3 text-[11px] text-slate-500">{c.supplyPrice} <span className="text-slate-400">{c.vatExcluded}</span></p>
                   <p key={calc.subtotal} className="mt-1 animate-[priceBump_0.35s_ease-out] bg-gradient-to-r from-slate-900 to-[#2979FF] bg-clip-text text-[42px] font-bold leading-tight tracking-tight text-transparent">
-                    {fmt(calc.subtotal)}<span className="ml-1 text-[14px] font-medium text-slate-400">원</span>
+                    {fmt(calc.subtotal)}<span className="ml-1 text-[14px] font-medium text-slate-400">{c.wonSuffix}</span>
                   </p>
 
                   <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-[12px]">
-                    <div className="flex justify-between text-slate-500"><span>항목 합계</span><span className="text-slate-900">{calc.baseSum.toLocaleString()}만</span></div>
+                    <div className="flex justify-between text-slate-500"><span>{c.itemsTotal}</span><span className="text-slate-900">{calc.baseSum.toLocaleString()}{c.manwonSuffix}</span></div>
                     {calc.nativeAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>네이티브 보정 (×{nativeMode.mult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.nativeAdd).toLocaleString()}만</span></div>
+                      <div className="flex justify-between text-slate-500"><span>{c.nativeAdjust} (×{nativeMode.mult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.nativeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                     )}
                     {calc.designAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>디자인 보정 (×{calc.designMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.designAdd).toLocaleString()}만</span></div>
+                      <div className="flex justify-between text-slate-500"><span>{c.designAdjust} (×{calc.designMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.designAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                     )}
                     {calc.timeAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>일정 보정 (×{calc.timeMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.timeAdd).toLocaleString()}만</span></div>
+                      <div className="flex justify-between text-slate-500"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                     )}
-                    <div className="flex justify-between border-t border-slate-100 pt-2 text-[13px]"><span className="font-bold text-slate-900">공급가</span><span className="font-bold text-[#2979FF]">{calc.subtotal.toLocaleString()}만</span></div>
-                    <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><span className="text-slate-900">+{calc.vat.toLocaleString()}만</span></div>
-                    <div className="flex justify-between text-slate-500"><span>VAT 포함 최종</span><span className="text-slate-700">{(calc.subtotal + calc.vat).toLocaleString()}만</span></div>
+                    <div className="flex justify-between border-t border-slate-100 pt-2 text-[13px]"><span className="font-bold text-slate-900">{c.supplyPriceBold}</span><span className="font-bold text-[#2979FF]">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between text-slate-500"><span>{c.vatLine}</span><span className="text-slate-900">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between text-slate-500"><span>{c.vatIncludedFinal}</span><span className="text-slate-700">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span></div>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
-                <p className="text-[12px] font-semibold text-slate-400">Team Allocation</p>
+                <p className="text-[12px] font-semibold text-slate-400">{c.teamAllocation}</p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[11px] text-slate-500">총 맨먼스</p>
+                    <p className="text-[11px] text-slate-500">{c.totalMM}</p>
                     <p className="mt-1 text-[24px] font-bold text-[#2979FF]">{calc.totalMM.toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">MM</span></p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-slate-500">예상 기간</p>
-                    <p className="mt-1 text-[24px] font-bold text-[#2979FF]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">개월</span></p>
+                    <p className="text-[11px] text-slate-500">{c.estDuration}</p>
+                    <p className="mt-1 text-[24px] font-bold text-[#2979FF]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">{c.monthsUnit}</span></p>
                   </div>
                 </div>
 
@@ -1378,7 +1393,7 @@ export default function EstimatePage() {
                   <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4">
                     {calc.team.map(({ role, mm }, i) => (
                       <li key={role} style={{ animationDelay: `${i * 40}ms` }} className="flex animate-[fadeUp_0.4s_ease-out_both] items-center justify-between text-[12px]">
-                        <span className="text-slate-600">{ROLE_LABEL[role] || role}</span>
+                        <span className="text-slate-600">{c.roleLabels[role] || role}</span>
                         <span className="font-mono text-slate-900">{mm.toFixed(1)} MM</span>
                       </li>
                     ))}
@@ -1386,27 +1401,27 @@ export default function EstimatePage() {
                 ) : (
                   <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-700">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>좌측에서 항목을 선택해주세요.</span>
+                    <span>{c.selectItemsNotice}</span>
                   </div>
                 )}
 
-                <p className="mt-4 text-[10px] leading-relaxed text-slate-400">맨먼스 단가 평균 {MM_RATE.toLocaleString()}만원 (혼합 인력 기준) 적용.</p>
+                <p className="mt-4 text-[10px] leading-relaxed text-slate-400">{c.mmFootnote(MM_RATE.toLocaleString())}</p>
               </div>
 
               <div className="space-y-2">
                 <button type="button" onClick={() => setQuickOpen(true)}
                   className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98]">
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <span className="relative">견적받고 할인받기</span>
+                  <span className="relative">{c.ctaGetDiscount}</span>
                   <ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
                 <Link href="/about#문의" className="flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-50">
-                  직접 상담 요청
+                  {c.ctaDirectConsult}
                 </Link>
               </div>
 
               <p className="text-[10px] leading-relaxed text-slate-400">
-                본 견적은 자동 계산된 참고 금액이며 실제 계약 금액과 다를 수 있습니다. 정확한 견적은 기능 명세서 기반의 상세 상담 후 확정됩니다.
+                {c.disclaimer}
               </p>
             </div>
           </aside>
@@ -1448,7 +1463,7 @@ export default function EstimatePage() {
             <button
               type="button"
               onClick={() => !quickSending && setQuickOpen(false)}
-              aria-label="닫기"
+              aria-label={c.ariaClose}
               className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-slate-900 backdrop-blur-md transition-all hover:bg-white/90"
             >
               <X className="h-4 w-4" />
@@ -1459,12 +1474,10 @@ export default function EstimatePage() {
               <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-[160px] text-slate-900" style={{ animationDelay: '80ms' }}>
                 <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
                   <Sparkles className="h-3 w-3" />
-                  LIMITED OFFER · 공급가 {calc.subtotal.toLocaleString()}만원
+                  {c.limitedOfferTemplate(calc.subtotal.toLocaleString())}
                 </div>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-slate-900">견적받고 할인받기</h2>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-slate-700">
-                  <b>1영업일 내 맞춤 견적서</b>와 <b>최대 15% 할인 제안</b>을 함께 드려요.
-                </p>
+                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-slate-900">{c.modalTitle}</h2>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-slate-700" dangerouslySetInnerHTML={{ __html: c.modalSubtitle }} />
               </div>
 
               {/* 선택된 항목 요약 태그 — 카드 없이 플로우로 */}
@@ -1475,7 +1488,7 @@ export default function EstimatePage() {
                 return (
                   <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-1 pt-2" style={{ animationDelay: '180ms' }}>
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold tracking-wide text-slate-700">선택한 항목 · {labels.length}개</p>
+                      <p className="text-[11px] font-bold tracking-wide text-slate-700">{c.selectedItemsTemplate(labels.length)}</p>
                       {activePkg && activeTier && (
                         <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>
                           {TIER_META[activeTier].label}
@@ -1506,9 +1519,9 @@ export default function EstimatePage() {
               <form onSubmit={handleQuickSubmit} className="px-7 pb-7 pt-2">
                 <div className="space-y-3">
                   {[
-                    { key: 'name',  label: '이름',   required: true,  value: quick.name,  placeholder: '홍길동' },
-                    { key: 'phone', label: '연락처', required: true,  value: quick.phone, placeholder: '010-0000-0000' },
-                    { key: 'email', label: '이메일', required: false, value: quick.email, placeholder: 'you@example.com' },
+                    { key: 'name',  label: c.quickName,   required: true,  value: quick.name,  placeholder: c.quickNamePh },
+                    { key: 'phone', label: c.quickPhone, required: true,  value: quick.phone, placeholder: c.quickPhonePh },
+                    { key: 'email', label: c.quickEmail, required: false, value: quick.email, placeholder: c.quickEmailPh },
                   ].map((f, i) => (
                     <div key={f.key} className="group relative animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: `${260 + i * 70}ms` }}>
                       <input
@@ -1555,17 +1568,17 @@ export default function EstimatePage() {
                       htmlFor="quick-memo"
                       className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
                     >
-                      요청사항
+                      {c.requestNote}
                     </label>
                     <button
                       type="button"
                       onClick={handleAiDraft}
                       disabled={aiDrafting || selected.size === 0}
                       className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-slate-800 hover:to-slate-600 active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
-                      title="선택한 항목 기반으로 요청사항 초안을 생성합니다"
+                      title={c.aiDraftTitle}
                     >
                       <Sparkles className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
-                      {aiDrafting ? '작성 중...' : 'AI로 작성'}
+                      {aiDrafting ? c.aiDraftWriting : c.aiDraftLabel}
                     </button>
                   </div>
                 </div>
@@ -1577,11 +1590,11 @@ export default function EstimatePage() {
                   className="group relative mt-5 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 text-[15px] font-bold text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <span className="relative">{quickSending ? '전송 중...' : '제출하고 할인 받기'}</span>
+                  <span className="relative">{quickSending ? c.quickSending : c.submitQuickCta}</span>
                 </button>
 
                 <p className="pt-3 text-center text-[11px] text-slate-500">
-                  제출 시 개인정보 수집·이용에 동의하는 것으로 간주됩니다.
+                  {c.quickConsent}
                 </p>
               </form>
             </div>
@@ -1596,15 +1609,15 @@ export default function EstimatePage() {
             <div>
               <div className="flex items-center gap-3">
                 <Logo height={20} className="text-slate-900" />
-                <span className="text-[13px] text-slate-500">제이씨랩</span>
+                <span className="text-[13px] text-slate-500">{c.footerTag}</span>
               </div>
-              <p className="mt-2 text-[11px] text-slate-400">App Development Studio · jaicylab2009@gmail.com</p>
-              <p className="text-[10px] text-slate-300">Copyright &copy; JAICYLAB. All rights reserved.</p>
+              <p className="mt-2 text-[11px] text-slate-400">{c.footerTagline}</p>
+              <p className="text-[10px] text-slate-300">{c.footerCopyright}</p>
             </div>
             <div className="flex gap-4 text-[12px] text-slate-400">
-              <Link href="/" className="transition-colors hover:text-slate-700">홈</Link>
-              <Link href="/about" className="transition-colors hover:text-slate-700">회사소개</Link>
-              <Link href="/about#문의" className="transition-colors hover:text-slate-700">문의</Link>
+              <Link href="/" className="transition-colors hover:text-slate-700">{c.footerHome}</Link>
+              <Link href="/about" className="transition-colors hover:text-slate-700">{c.footerAbout}</Link>
+              <Link href="/about#문의" className="transition-colors hover:text-slate-700">{c.footerContact}</Link>
             </div>
           </div>
         </div>
