@@ -36,9 +36,9 @@ export function PageHeader({
   action?: React.ReactNode
 }) {
   return (
-    <header className="mb-7 flex items-start justify-between gap-4">
+    <header className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-7 sm:flex-row sm:items-start sm:gap-4">
       <div>
-        <h1 className="text-[26px] leading-tight font-semibold tracking-tight text-ink">{title}</h1>
+        <h1 className="text-[22px] leading-tight font-semibold tracking-tight text-ink sm:text-[26px]">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
       </div>
       {action}

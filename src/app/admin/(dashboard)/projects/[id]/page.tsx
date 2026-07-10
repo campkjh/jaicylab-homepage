@@ -59,7 +59,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           className="-ml-1 w-full rounded-md border border-transparent bg-transparent px-1 text-[30px] leading-tight font-semibold tracking-tight text-ink outline-none transition hover:border-line focus:border-brand"
         />
 
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
           <Field label="클라이언트">
             <Select name="client_id" defaultValue={project.client_id ?? ''}>
               <option value="">미지정</option>

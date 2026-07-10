@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/admin/actions'
@@ -30,11 +31,59 @@ export default function Sidebar({
   const { users } = usePresence()
   const others = users.filter(u => u.name !== admin)
 
+  // 모바일 서랍. 화면을 옮기면 닫는다.
+  const [open, setOpen] = useState(false)
+  useEffect(() => setOpen(false), [pathname])
+
   return (
-    <aside className="sticky top-0 flex h-dvh w-[228px] shrink-0 flex-col border-r border-line bg-canvas px-3 py-4">
-      <Link href="/admin" className="mb-5 block rounded-lg px-2 py-2.5 transition hover:bg-hover">
-        <Wordmark className="h-[18px] w-auto text-brand" />
-      </Link>
+    <>
+      {/* 모바일 상단 바 */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-canvas px-3 lg:hidden">
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="메뉴 열기"
+          aria-expanded={open}
+          className="flex size-9 items-center justify-center rounded-lg text-ink-soft transition hover:bg-hover"
+        >
+          <span className="flex h-3.5 w-4 flex-col justify-between">
+            <span className="h-0.5 w-full rounded-full bg-current" />
+            <span className="h-0.5 w-full rounded-full bg-current" />
+            <span className="h-0.5 w-full rounded-full bg-current" />
+          </span>
+        </button>
+        <Link href="/admin" className="py-1">
+          <Wordmark className="h-4 w-auto text-brand" />
+        </Link>
+        <Link href="/admin/settings" className="ml-auto">
+          <Avatar name={admin} url={myAvatar} size="md" />
+        </Link>
+      </header>
+
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[240px] shrink-0 flex-col border-r border-line bg-canvas px-3 py-4 transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:w-[228px] lg:translate-x-0 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <Link href="/admin" className="block rounded-lg px-2 py-2.5 transition hover:bg-hover">
+            <Wordmark className="h-[18px] w-auto text-brand" />
+          </Link>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="메뉴 닫기"
+            className="flex size-8 items-center justify-center rounded-lg text-ink-muted transition hover:bg-hover lg:hidden"
+          >
+            <Icon name="x" className="size-4" />
+          </button>
+        </div>
 
       <nav className="flex flex-col gap-0.5">
         {NAV.map(({ href, label, icon, exact }) => {
@@ -92,7 +141,8 @@ export default function Sidebar({
             로그아웃
           </button>
         </form>
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   )
 }

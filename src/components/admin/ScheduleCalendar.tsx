@@ -52,7 +52,7 @@ function EventChip({ event, onClick }: { event: ScheduleEvent; onClick: () => vo
       className={`flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 ${EVENT_COLOR[event.color]?.chip ?? EVENT_COLOR.blue.chip}`}
     >
       <span className="min-w-0 flex-1 truncate">{event.title}</span>
-      {event.event_time && <span className="shrink-0 tabular-nums opacity-70">{event.event_time}</span>}
+      {event.event_time && <span className="hidden shrink-0 tabular-nums opacity-70 sm:inline">{event.event_time}</span>}
     </button>
   )
 }
@@ -98,20 +98,24 @@ function MonthGrid({
           return (
             <div
               key={cell.date}
-              className={`group relative min-h-[92px] border-r border-b border-line p-1 ${cell.inMonth ? 'bg-surface' : 'bg-canvas/50'}`}
+              // 터치 기기엔 hover 가 없다. 칩이나 버튼이 아닌 빈 곳을 탭하면 그 날짜를 연다.
+              onClick={e => {
+                if (!(e.target as HTMLElement).closest('button, a')) onDay(cell)
+              }}
+              className={`group relative min-h-[68px] cursor-pointer border-r border-b border-line p-0.5 sm:min-h-[92px] sm:p-1 lg:cursor-default ${cell.inMonth ? 'bg-surface' : 'bg-canvas/50'}`}
             >
               <div className="mb-0.5 flex items-center gap-1 px-0.5">
                 <span className={`flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${dayNumberClass(cell)}`}>
                   {cell.day}
                 </span>
                 {cell.holiday && cell.inMonth && (
-                  <span className="min-w-0 truncate text-[10px] text-red-500">{cell.holiday}</span>
+                  <span className="hidden min-w-0 truncate text-[10px] text-red-500 sm:inline">{cell.holiday}</span>
                 )}
                 <span className="flex-1" />
                 <button
                   onClick={() => onCreate(cell.date)}
                   aria-label={`${cell.date} 일정 추가`}
-                  className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-ink"
+                  className="hidden text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-ink lg:block"
                 >
                   <Icon name="plus" className="size-3" />
                 </button>
@@ -284,10 +288,10 @@ export default function ScheduleCalendar({
   const [year, mon] = visibleYm.split('-')
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100dvh-8.5rem)] flex-col lg:h-[calc(100dvh-3.5rem)]">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-[26px] leading-tight font-semibold tracking-tight text-ink tabular-nums">
+          <h1 className="text-[20px] leading-tight font-semibold tracking-tight text-ink tabular-nums sm:text-[26px]">
             {year}년 {Number(mon)}월
           </h1>
           <button
@@ -385,11 +389,11 @@ function Modal({ children, onClose, wide }: { children: React.ReactNode; onClose
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-3 sm:p-6"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className={`animate-fade-up max-h-[86dvh] w-full overflow-y-auto rounded-2xl border border-line bg-surface shadow-[0_24px_60px_-20px_rgba(15,15,15,0.35)] ${
+        className={`animate-fade-up max-h-[90dvh] w-full overflow-y-auto rounded-2xl border border-line bg-surface shadow-[0_24px_60px_-20px_rgba(15,15,15,0.35)] ${
           wide ? 'max-w-[720px]' : 'max-w-[440px] p-5'
         }`}
       >
@@ -421,6 +425,9 @@ function DayDetail({
       </div>
 
       <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">
+        {cell.events.length === 0 && cell.tasks.length === 0 && (
+          <p className="py-6 text-center text-sm text-ink-muted">이 날은 비어 있습니다.</p>
+        )}
         {cell.events.map(e => (
           <EventChip key={e.id} event={e} onClick={() => onEdit(e)} />
         ))}
@@ -483,7 +490,7 @@ function useCollaborativeBody(event: ScheduleEvent | null) {
 function PropertyRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3 py-1">
-      <div className="flex w-[104px] shrink-0 items-center gap-1.5 pt-1.5 text-xs text-ink-muted">
+      <div className="flex w-[74px] shrink-0 items-center gap-1.5 pt-1.5 text-xs text-ink-muted sm:w-[104px]">
         {icon}
         {label}
       </div>
@@ -542,7 +549,7 @@ function EventDialog({
           // 날짜를 옮겼다면 옛 날짜의 달도 다시 그려야 칩이 사라진다.
           onDone([String(fd.get('event_date') ?? ''), event?.event_date ?? ''])
         }}
-        className="px-12 pt-10 pb-8"
+        className="px-5 pt-6 pb-6 sm:px-12 sm:pt-10 sm:pb-8"
       >
         {event && <input type="hidden" name="id" value={event.id} />}
         <input type="hidden" name="body_html" value={html} />
@@ -560,7 +567,7 @@ function EventDialog({
           autoFocus
           defaultValue={event?.title ?? ''}
           placeholder="제목 없음"
-          className="-ml-1 mb-6 w-full rounded-md border border-transparent bg-transparent px-1 text-[32px] leading-tight font-bold tracking-tight text-ink outline-none transition placeholder:text-ink-muted/50 hover:border-line focus:border-brand"
+          className="-ml-1 mb-6 w-full rounded-md border border-transparent bg-transparent px-1 text-[24px] sm:text-[32px] leading-tight font-bold tracking-tight text-ink outline-none transition placeholder:text-ink-muted/50 hover:border-line focus:border-brand"
         />
 
         {/* 속성 */}

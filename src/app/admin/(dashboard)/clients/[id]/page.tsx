@@ -57,7 +57,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           className="-ml-1 w-full rounded-md border border-transparent bg-transparent px-1 text-[30px] leading-tight font-semibold tracking-tight text-ink outline-none transition hover:border-line focus:border-brand"
         />
 
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           <Field label="회사명">
             <Input name="company" defaultValue={client.company ?? ''} />
           </Field>
@@ -95,7 +95,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             개발 계정
           </SectionTitle>
           <InlineCreate label="계정 추가">
-            <form action={addAccount} className="flex w-[460px] flex-col gap-3">
+            <form action={addAccount} className="flex w-full flex-col gap-3 sm:w-[460px]">
               <input type="hidden" name="client_id" value={client.id} />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="종류">
@@ -189,7 +189,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             결제 수단
           </SectionTitle>
           <InlineCreate label="카드 추가">
-            <form action={addCard} className="flex w-[460px] flex-col gap-3">
+            <form action={addCard} className="flex w-full flex-col gap-3 sm:w-[460px]">
               <input type="hidden" name="client_id" value={client.id} />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="이름 *">

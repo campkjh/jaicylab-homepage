@@ -75,7 +75,7 @@ export default async function ProjectsPage() {
         <EmptyState>아직 프로젝트가 없습니다. 오른쪽 위에서 첫 프로젝트를 만들어 보세요.</EmptyState>
       ) : (
         <div className="overflow-hidden rounded-xl border border-line bg-surface">
-          <div className="grid grid-cols-[1fr_140px_150px_90px] gap-4 border-b border-line px-4 py-2.5 text-[11px] font-medium tracking-wide text-ink-muted uppercase">
+          <div className="hidden grid-cols-[1fr_140px_150px_90px] gap-4 border-b border-line px-4 py-2.5 text-[11px] font-medium tracking-wide text-ink-muted uppercase md:grid">
             <span>이름</span>
             <span>클라이언트</span>
             <span>진척도</span>
@@ -86,7 +86,7 @@ export default async function ProjectsPage() {
               <li key={p.id}>
                 <Link
                   href={`/admin/projects/${p.id}`}
-                  className="grid grid-cols-[1fr_140px_150px_90px] items-center gap-4 px-4 py-3 transition hover:bg-hover"
+                  className="flex flex-col gap-2 px-4 py-3 transition hover:bg-hover md:grid md:grid-cols-[1fr_140px_150px_90px] md:items-center md:gap-4"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-sm font-medium text-ink">{p.name}</span>
@@ -95,12 +95,12 @@ export default async function ProjectsPage() {
                       <span className="shrink-0 text-xs text-ink-muted">할 일 {Number(p.open_tasks)}</span>
                     )}
                   </div>
-                  <span className="truncate text-sm text-ink-soft">{p.client_name ?? '—'}</span>
+                  <span className="truncate text-xs text-ink-soft md:text-sm">{p.client_name ?? '—'}</span>
                   <div className="flex items-center gap-2">
                     <ProgressBar value={p.progress} />
                     <span className="w-8 shrink-0 text-right text-xs tabular-nums text-ink-muted">{p.progress}%</span>
                   </div>
-                  <span className="text-right text-xs text-ink-muted tabular-nums">{p.due_date ?? '—'}</span>
+                  <span className="text-xs text-ink-muted tabular-nums md:text-right">{p.due_date ? `마감 ${p.due_date}` : '—'}</span>
                 </Link>
               </li>
             ))}

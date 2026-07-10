@@ -34,7 +34,7 @@ export default async function ClientsPage() {
         subtitle="사업자 정보와 개발에 필요한 계정·결제 수단을 모아둡니다."
         action={
           <InlineCreate label="새 클라이언트">
-            <form action={createClient} className="flex w-[420px] flex-col gap-3">
+            <form action={createClient} className="flex w-full flex-col gap-3 sm:w-[420px]">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="이름 *">
                   <Input name="name" autoFocus placeholder="예: 펫마일" />

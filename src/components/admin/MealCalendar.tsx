@@ -46,10 +46,10 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-6"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 p-3 sm:p-6"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="animate-fade-up max-h-[88dvh] w-full max-w-[460px] overflow-y-auto rounded-2xl border border-line bg-surface p-5 shadow-[0_12px_40px_-12px_rgba(15,15,15,0.25)]">
+      <div className="animate-fade-up max-h-[90dvh] w-full max-w-[460px] overflow-y-auto rounded-2xl border border-line bg-surface p-4 shadow-[0_12px_40px_-12px_rgba(15,15,15,0.25)] sm:p-5">
         {children}
       </div>
     </div>,
@@ -65,7 +65,7 @@ function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
     >
       {meal.image_url && <img src={meal.image_url} alt="" className="size-3.5 shrink-0 rounded-sm object-cover" />}
       <span className="min-w-0 flex-1 truncate">{meal.title}</span>
-      {meal.kcal && <span className="shrink-0 tabular-nums opacity-70">{meal.kcal}</span>}
+      {meal.kcal && <span className="hidden shrink-0 tabular-nums opacity-70 sm:inline">{meal.kcal}</span>}
     </button>
   )
 }
@@ -227,7 +227,7 @@ export default function MealCalendar({
     <>
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-[26px] leading-tight font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="text-[20px] leading-tight font-semibold tracking-tight text-ink sm:text-[26px]">{title}</h1>
           <div className="flex items-center gap-0.5">
             <Link href={`/admin/meals?ym=${prevYm}`} aria-label="이전 달" className="flex size-7 items-center justify-center rounded-md text-ink-muted transition hover:bg-hover hover:text-ink">
               <Icon name="arrowLeft" className="size-4" />
@@ -270,18 +270,22 @@ export default function MealCalendar({
           {cells.map(cell => (
             <div
               key={cell.date}
-              className={`group relative min-h-[118px] border-r border-b border-line p-1.5 last:border-r-0 ${cell.inMonth ? '' : 'bg-canvas/60'}`}
+              // 터치 기기엔 hover 가 없다. 칩이 아닌 빈 곳을 탭하면 그 날짜로 추가 창을 연다.
+              onClick={e => {
+                if (!(e.target as HTMLElement).closest('button, a')) setDialog({ meal: null, date: cell.date })
+              }}
+              className={`group relative min-h-[72px] cursor-pointer border-r border-b border-line p-0.5 last:border-r-0 sm:min-h-[118px] sm:p-1.5 lg:cursor-default ${cell.inMonth ? '' : 'bg-canvas/60'}`}
             >
               <div className="mb-1 flex items-center gap-1 px-1">
                 <span className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${dayNumberClass(cell)}`}>
                   {cell.day}
                 </span>
-                {cell.holiday && cell.inMonth && <span className="min-w-0 truncate text-[10px] text-red-500">{cell.holiday}</span>}
+                {cell.holiday && cell.inMonth && <span className="hidden min-w-0 truncate text-[10px] text-red-500 sm:inline">{cell.holiday}</span>}
                 <span className="flex-1" />
                 <button
                   onClick={() => setDialog({ meal: null, date: cell.date })}
                   aria-label={`${cell.date} 식단 추가`}
-                  className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-ink"
+                  className="hidden text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-ink lg:block"
                 >
                   <Icon name="plus" className="size-3.5" />
                 </button>

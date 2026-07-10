@@ -16,7 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <PresenceProvider me={admin}>
       <div className="flex min-h-dvh bg-surface">
         <Sidebar admin={admin} myAvatar={rows[0]?.avatar_url ?? null} myPosition={rows[0]?.position ?? null} />
-        <main className="min-w-0 flex-1 px-7 py-6">
+        {/* 모바일에선 상단 바(h-14)가 fixed 로 떠 있어 그만큼 밀어준다 */}
+        <main className="min-w-0 flex-1 px-4 pt-[4.5rem] pb-6 lg:px-7 lg:py-6">
           <div className="mx-auto w-full max-w-[1200px] animate-fade-up">{children}</div>
         </main>
       </div>
