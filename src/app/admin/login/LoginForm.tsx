@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { Lock } from 'lucide-react'
+import Icon from '@/components/admin/Icon'
 import { login } from '../actions'
 
 function SubmitButton() {
@@ -28,7 +28,7 @@ export default function LoginForm({ next }: { next: string }) {
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-ink-soft">비밀번호</span>
         <div className="relative">
-          <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" />
+          <Icon name="key" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" />
           <input
             name="password"
             type="password"

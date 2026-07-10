@@ -37,6 +37,22 @@ body {
   animation: adminFadeUp 0.24s ease-out backwards;
 }
 
+/* 리치 에디터 본문 */
+.rich-body:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-ink-muted);
+  pointer-events: none;
+}
+.rich-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 6px 0;
+}
+.rich-body ul { list-style: disc; padding-left: 1.25rem; }
+.rich-body ol { list-style: decimal; padding-left: 1.25rem; }
+.rich-body a { color: #2563eb; text-decoration: underline; }
+
 /* 노션 느낌의 얇은 스크롤바 */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #dcdcd9; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }

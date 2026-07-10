@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Copy, Check } from 'lucide-react'
+import Icon from './Icon'
 import { toast } from 'sonner'
 import { revealSecret } from '@/app/admin/actions'
 
@@ -57,10 +57,10 @@ export default function SecretValue({
         {loading ? '…' : (value ?? placeholder)}
       </span>
       <button onClick={reveal} aria-label={value !== null ? '숨기기' : '보기'} className="text-ink-muted transition hover:text-ink">
-        {value !== null ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+        <Icon name={value !== null ? 'eyeOff' : 'eyeOn'} className="size-3.5" />
       </button>
       <button onClick={copy} aria-label="복사" className="text-ink-muted transition hover:text-ink">
-        {copied ? <Check className="size-3.5 text-brand" /> : <Copy className="size-3.5" />}
+        <Icon name={copied ? 'checkCircle' : 'copy'} className={`size-3.5 ${copied ? 'text-brand' : ''}`} />
       </button>
     </span>
   )

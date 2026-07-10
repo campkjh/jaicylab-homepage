@@ -1,7 +1,10 @@
 // Edge(middleware)와 Node(server action) 양쪽에서 같이 쓰이므로 Web Crypto만 사용한다.
 
 export const SESSION_COOKIE = 'jl_admin'
-const MAX_AGE_SEC = 60 * 60 * 24 * 7
+
+// 브라우저가 쿠키 max-age 를 400일로 잘라내므로(Chrome), 그 상한을 쓰고
+// 접속할 때마다 미들웨어가 쿠키를 다시 발급해 실질적으로 만료되지 않게 한다.
+export const MAX_AGE_SEC = 60 * 60 * 24 * 400
 
 const encoder = new TextEncoder()
 
@@ -27,8 +30,9 @@ async function hmacKey(): Promise<CryptoKey> {
   ])
 }
 
+/** 세션 자체에는 만료가 없다. 끊으려면 ADMIN_SESSION_SECRET 을 교체한다. */
 export async function createSession(name: string): Promise<{ value: string; maxAge: number }> {
-  const payload = toB64Url(encoder.encode(JSON.stringify({ name, exp: Date.now() + MAX_AGE_SEC * 1000 })))
+  const payload = toB64Url(encoder.encode(JSON.stringify({ name })))
   const sig = await crypto.subtle.sign('HMAC', await hmacKey(), encoder.encode(payload))
   return { value: `${payload}.${toB64Url(new Uint8Array(sig))}`, maxAge: MAX_AGE_SEC }
 }
@@ -41,8 +45,7 @@ export async function verifySession(token: string | undefined): Promise<string |
   try {
     const ok = await crypto.subtle.verify('HMAC', await hmacKey(), fromB64Url(sig), encoder.encode(payload))
     if (!ok) return null
-    const { name, exp } = JSON.parse(new TextDecoder().decode(fromB64Url(payload))) as { name?: string; exp?: number }
-    if (typeof exp !== 'number' || Date.now() >= exp) return null
+    const { name } = JSON.parse(new TextDecoder().decode(fromB64Url(payload))) as { name?: string }
     return typeof name === 'string' && name ? name : null
   } catch {
     return null

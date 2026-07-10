@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronLeft, ExternalLink, Trash2, CreditCard, KeyRound } from 'lucide-react'
+import Icon from '@/components/admin/Icon'
 import {
   sql,
   ensureSchema,
@@ -45,7 +45,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         href="/admin/clients"
         className="mb-5 inline-flex items-center gap-1 text-sm text-ink-muted transition hover:text-ink"
       >
-        <ChevronLeft className="size-4" />
+        <Icon name="arrowBack" className="size-4" />
         클라이언트
       </Link>
 
@@ -91,7 +91,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <section className="mb-10">
         <div className="mb-3 flex items-center justify-between">
           <SectionTitle count={accounts.length}>
-            <KeyRound className="size-3.5" />
+            <Icon name="key" className="size-3.5" />
             개발 계정
           </SectionTitle>
           <InlineCreate label="계정 추가">
@@ -149,7 +149,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                             rel="noreferrer noopener"
                             className="inline-flex items-center gap-1 text-xs text-ink-muted transition hover:text-ink"
                           >
-                            바로가기 <ExternalLink className="size-3" />
+                            바로가기 <Icon name="link" className="size-3" />
                           </a>
                         )}
                       </div>
@@ -170,7 +170,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       <input type="hidden" name="id" value={a.id} />
                       <input type="hidden" name="client_id" value={client.id} />
                       <button type="submit" aria-label="삭제" className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-red-600">
-                        <Trash2 className="size-4" />
+                        <Icon name="bin" className="size-4" />
                       </button>
                     </form>
                   </div>
@@ -185,7 +185,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <section className="mb-10">
         <div className="mb-3 flex items-center justify-between">
           <SectionTitle count={cards.length}>
-            <CreditCard className="size-3.5" />
+            <Icon name="tag" className="size-3.5" />
             결제 수단
           </SectionTitle>
           <InlineCreate label="카드 추가">
@@ -258,7 +258,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       <input type="hidden" name="id" value={c.id} />
                       <input type="hidden" name="client_id" value={client.id} />
                       <button type="submit" aria-label="삭제" className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-red-600">
-                        <Trash2 className="size-4" />
+                        <Icon name="bin" className="size-4" />
                       </button>
                     </form>
                   </div>
@@ -293,7 +293,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <form action={deleteClient} className="mt-14 border-t border-line pt-5">
         <input type="hidden" name="id" value={client.id} />
         <Button type="submit" variant="danger">
-          <Trash2 className="size-4" />
+          <Icon name="bin" className="size-4" />
           클라이언트 삭제
         </Button>
         <p className="mt-2 text-xs text-ink-muted">등록된 계정과 카드도 함께 삭제됩니다.</p>

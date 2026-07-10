@@ -7,6 +7,9 @@ import { sql, ensureSchema } from '@/lib/db'
 import { requireAdmin } from '@/lib/session'
 import { SESSION_COOKIE, createSession, authenticate } from '@/lib/auth'
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
+import { sanitizeHtml } from '@/lib/sanitize'
+import type { MealSlot, PresenceUser } from '@/lib/types'
+import { buildMonth, parseYm, type MonthData } from '@/lib/calendar'
 
 function str(fd: FormData, k: string): string {
   const v = fd.get(k)
@@ -153,21 +156,22 @@ export async function deleteNote(fd: FormData): Promise<void> {
 // ─────────────────────────── 스케줄
 
 export async function createEvent(fd: FormData): Promise<void> {
-  await requireAdmin()
+  const admin = await requireAdmin()
   await ensureSchema()
   const title = str(fd, 'title')
   const date = str(fd, 'event_date')
   if (!title || !date) return
   const categoryId = int(fd, 'category_id', 0)
   await sql`
-    INSERT INTO schedule_events (title, event_date, event_time, category_id, memo)
-    VALUES (${title}, ${date}, ${nullable(fd, 'event_time')}, ${categoryId || null}, ${nullable(fd, 'memo')})
+    INSERT INTO schedule_events (title, event_date, event_time, category_id, body_html, updated_by)
+    VALUES (${title}, ${date}, ${nullable(fd, 'event_time')}, ${categoryId || null},
+            ${sanitizeHtml(str(fd, 'body_html')) || null}, ${admin})
   `
   revalidatePath('/admin/schedule')
 }
 
 export async function updateEvent(fd: FormData): Promise<void> {
-  await requireAdmin()
+  const admin = await requireAdmin()
   await ensureSchema()
   const id = int(fd, 'id')
   const categoryId = int(fd, 'category_id', 0)
@@ -177,10 +181,39 @@ export async function updateEvent(fd: FormData): Promise<void> {
       event_date = ${str(fd, 'event_date')},
       event_time = ${nullable(fd, 'event_time')},
       category_id = ${categoryId || null},
-      memo = ${nullable(fd, 'memo')}
+      body_html = ${sanitizeHtml(str(fd, 'body_html')) || null},
+      updated_at = now(),
+      updated_by = ${admin}
     WHERE id = ${id}
   `
   revalidatePath('/admin/schedule')
+}
+
+/** 에디터가 2초마다 부르는 자동 저장. 저장 후 남들이 폴링으로 받아간다. */
+export async function autosaveEventBody(id: number, html: string): Promise<string> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  const clean = sanitizeHtml(html)
+  const rows = (await sql`
+    UPDATE schedule_events
+    SET body_html = ${clean || null}, updated_at = now(), updated_by = ${admin}
+    WHERE id = ${id}
+    RETURNING to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS') AS updated_at
+  `) as { updated_at: string }[]
+  return rows[0]?.updated_at ?? ''
+}
+
+/** 다른 사람이 저장한 최신 본문을 가져온다. */
+export async function fetchEventBody(id: number): Promise<{ html: string; updatedAt: string; updatedBy: string | null } | null> {
+  await requireAdmin()
+  await ensureSchema()
+  const rows = (await sql`
+    SELECT coalesce(body_html, '') AS body_html, updated_by,
+           to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS') AS updated_at
+    FROM schedule_events WHERE id = ${id}
+  `) as { body_html: string; updated_at: string; updated_by: string | null }[]
+  const r = rows[0]
+  return r ? { html: r.body_html, updatedAt: r.updated_at, updatedBy: r.updated_by } : null
 }
 
 export async function deleteEvent(fd: FormData): Promise<void> {
@@ -344,4 +377,134 @@ export async function revealSecret(
   if (kind === 'card_number') return decrypt(row.number_enc)
   if (kind === 'card_expiry') return decrypt(row.expiry_enc)
   return decrypt(row.cvc_enc)
+}
+
+// ─────────────────────────── 프로필
+
+export async function updateAvatar(url: string | null): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  await sql`
+    INSERT INTO admin_profiles (name, avatar_url) VALUES (${admin}, ${url})
+    ON CONFLICT (name) DO UPDATE SET avatar_url = EXCLUDED.avatar_url, updated_at = now()
+  `
+  revalidatePath('/admin', 'layout')
+}
+
+export async function updatePosition(fd: FormData): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  await sql`
+    INSERT INTO admin_profiles (name, position) VALUES (${admin}, ${nullable(fd, 'position')})
+    ON CONFLICT (name) DO UPDATE SET position = EXCLUDED.position, updated_at = now()
+  `
+  revalidatePath('/admin', 'layout')
+}
+
+// ─────────────────────────── 접속 상태 / 타이핑
+
+const ONLINE_WINDOW_SEC = 20
+
+/**
+ * 하트비트 겸 조회. 클라이언트가 몇 초마다 부른다.
+ * typingOn 은 지금 편집 중인 일정 id (없으면 null).
+ */
+export async function heartbeat(location: string, typingOn: number | null): Promise<PresenceUser[]> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+
+  // typingOn 이 null 이어도 아직 만료 전이면 기존 플래그를 유지한다. (다중 탭 대응)
+  await sql`
+    INSERT INTO admin_presence (name, last_seen, location, typing_on, typing_until)
+    VALUES (${admin}, now(), ${location}, ${typingOn},
+            CASE WHEN ${typingOn}::int IS NULL THEN NULL ELSE now() + interval '6 seconds' END)
+    ON CONFLICT (name) DO UPDATE SET
+      last_seen = now(),
+      location  = EXCLUDED.location,
+      typing_on = CASE
+        WHEN EXCLUDED.typing_on IS NOT NULL             THEN EXCLUDED.typing_on
+        WHEN admin_presence.typing_until > now()        THEN admin_presence.typing_on
+        ELSE NULL END,
+      typing_until = CASE
+        WHEN EXCLUDED.typing_until IS NOT NULL          THEN EXCLUDED.typing_until
+        WHEN admin_presence.typing_until > now()        THEN admin_presence.typing_until
+        ELSE NULL END
+  `
+
+  return (await sql`
+    SELECT p.name, pr.avatar_url, pr.position,
+           (p.last_seen > now() - make_interval(secs => ${ONLINE_WINDOW_SEC})) AS online,
+           (p.typing_on IS NOT NULL AND p.typing_until > now()) AS typing,
+           p.typing_on
+    FROM admin_presence p LEFT JOIN admin_profiles pr ON pr.name = p.name
+    ORDER BY p.name
+  `) as PresenceUser[]
+}
+
+export async function goOffline(): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  await sql`
+    UPDATE admin_presence
+    SET last_seen = now() - interval '1 hour', typing_on = NULL, typing_until = NULL
+    WHERE name = ${admin}
+  `
+}
+
+// ─────────────────────────── 식단
+
+const MEAL_SLOTS: MealSlot[] = ['breakfast', 'lunch', 'dinner', 'snack']
+
+function slotOf(fd: FormData): MealSlot {
+  const v = str(fd, 'slot') as MealSlot
+  return MEAL_SLOTS.includes(v) ? v : 'lunch'
+}
+
+export async function createMeal(fd: FormData): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  const title = str(fd, 'title')
+  const date = str(fd, 'meal_date')
+  if (!title || !date) return
+  const kcal = int(fd, 'kcal', 0)
+  await sql`
+    INSERT INTO meal_entries (meal_date, slot, title, memo, image_url, kcal, created_by)
+    VALUES (${date}, ${slotOf(fd)}, ${title}, ${nullable(fd, 'memo')},
+            ${nullable(fd, 'image_url')}, ${kcal || null}, ${admin})
+  `
+  revalidatePath('/admin/meals')
+}
+
+export async function updateMeal(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const kcal = int(fd, 'kcal', 0)
+  await sql`
+    UPDATE meal_entries SET
+      meal_date = ${str(fd, 'meal_date')},
+      slot = ${slotOf(fd)},
+      title = ${str(fd, 'title') || '이름 없는 식단'},
+      memo = ${nullable(fd, 'memo')},
+      image_url = ${nullable(fd, 'image_url')},
+      kcal = ${kcal || null}
+    WHERE id = ${int(fd, 'id')}
+  `
+  revalidatePath('/admin/meals')
+}
+
+export async function deleteMeal(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  await sql`DELETE FROM meal_entries WHERE id = ${int(fd, 'id')}`
+  revalidatePath('/admin/meals')
+}
+
+// ─────────────────────────── 무한 스크롤 달력
+
+/** 스크롤이 위/아래 끝에 닿을 때 한 달치를 더 불러온다. */
+export async function loadScheduleMonth(ym: string): Promise<MonthData> {
+  await requireAdmin()
+  await ensureSchema()
+  const { year, month } = parseYm(ym)
+  return buildMonth(year, month)
 }

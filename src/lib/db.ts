@@ -100,8 +100,44 @@ const DDL = [
   `INSERT INTO event_categories (name, color, position)
    SELECT * FROM (VALUES ('미팅','blue',0),('개발','green',1),('디자인','purple',2),('마감','red',3),('기타','gray',4)) AS v(name,color,position)
    WHERE NOT EXISTS (SELECT 1 FROM event_categories)`,
+  // 노션식 리치 본문 (sanitize 된 HTML)
+  `ALTER TABLE schedule_events ADD COLUMN IF NOT EXISTS body_html text`,
+  `ALTER TABLE schedule_events ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now()`,
+  `ALTER TABLE schedule_events ADD COLUMN IF NOT EXISTS updated_by text`,
+
+  `CREATE TABLE IF NOT EXISTS admin_profiles (
+    name       text PRIMARY KEY,
+    avatar_url text,
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `ALTER TABLE admin_profiles ADD COLUMN IF NOT EXISTS position text`,
+
+  // 접속 상태 + 타이핑 표시. 폴링으로 갱신한다.
+  `CREATE TABLE IF NOT EXISTS admin_presence (
+    name        text PRIMARY KEY,
+    last_seen   timestamptz NOT NULL DEFAULT now(),
+    location    text,
+    typing_on   integer
+  )`,
+  // 타이핑 만료는 서버가 관리한다. 같은 사람이 탭을 여러 개 열어두면
+  // 입력하지 않는 탭의 하트비트가 방금 세운 플래그를 지워버리기 때문이다.
+  `ALTER TABLE admin_presence ADD COLUMN IF NOT EXISTS typing_until timestamptz`,
+
+  `CREATE TABLE IF NOT EXISTS meal_entries (
+    id         serial PRIMARY KEY,
+    meal_date  date NOT NULL,
+    slot       text NOT NULL DEFAULT 'lunch',
+    title      text NOT NULL,
+    memo       text,
+    image_url  text,
+    kcal       integer,
+    created_by text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+
   `CREATE INDEX IF NOT EXISTS idx_schedule_date ON schedule_events(event_date)`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_category ON schedule_events(category_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_meals_date ON meal_entries(meal_date)`,
   `CREATE INDEX IF NOT EXISTS idx_tasks_project ON project_tasks(project_id)`,
   `CREATE INDEX IF NOT EXISTS idx_notes_project ON project_notes(project_id)`,
   `CREATE INDEX IF NOT EXISTS idx_accounts_client ON client_accounts(client_id)`,

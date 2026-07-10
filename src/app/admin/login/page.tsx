@@ -1,4 +1,5 @@
 import LoginForm from './LoginForm'
+import Wordmark from '@/components/admin/Wordmark'
 
 export default async function LoginPage({
   searchParams,
@@ -9,11 +10,9 @@ export default async function LoginPage({
   return (
     <main className="flex min-h-dvh items-center justify-center bg-canvas px-6">
       <div className="w-full max-w-[380px] animate-fade-up">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-xl bg-ink text-lg font-bold text-white">
-            J
-          </div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-ink">JAICYLAB 관리자</h1>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Wordmark className="mb-5 h-6 w-auto text-brand" />
+          <h1 className="text-[22px] font-semibold tracking-tight text-ink">관리자</h1>
           <p className="mt-1.5 text-sm text-ink-muted">프로젝트와 클라이언트 정보를 관리합니다.</p>
         </div>
 

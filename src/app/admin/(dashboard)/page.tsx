@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CheckCircle2, Circle, ArrowUpRight } from 'lucide-react'
+import Icon from '@/components/admin/Icon'
 import { sql, ensureSchema, type ProjectStatus } from '@/lib/db'
 import { Card, EmptyState, PageHeader, ProgressBar, SectionTitle, StatusBadge } from '@/components/admin/ui'
 import { toggleTask } from '../actions'
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
                       <input type="hidden" name="id" value={t.id} />
                       <input type="hidden" name="project_id" value={t.project_id} />
                       <button type="submit" aria-label="완료 처리" className="text-ink-muted transition hover:text-brand">
-                        <Circle className="size-[18px]" />
+                        <Icon name="checkCircleLine" className="size-[18px]" />
                       </button>
                     </form>
                     <div className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
                     <div className="flex items-center gap-2">
                       <span className="truncate text-sm font-medium text-ink">{p.name}</span>
                       <StatusBadge status={p.status} />
-                      <ArrowUpRight className="ml-auto size-4 shrink-0 text-ink-muted opacity-0 transition group-hover:opacity-100" />
+                      <Icon name="arrowRight" className="ml-auto size-4 shrink-0 text-ink-muted opacity-0 transition group-hover:opacity-100" />
                     </div>
                     <div className="mt-1 truncate text-xs text-ink-muted">{p.client_name ?? '클라이언트 미지정'}</div>
                     <div className="mt-3 flex items-center gap-2.5">
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
       </div>
 
       <p className="mt-10 flex items-center gap-1.5 text-xs text-ink-muted">
-        <CheckCircle2 className="size-3.5" />
+        <Icon name="checkCircle" className="size-3.5" />
         할 일 왼쪽 동그라미를 누르면 바로 완료 처리됩니다.
       </p>
     </>

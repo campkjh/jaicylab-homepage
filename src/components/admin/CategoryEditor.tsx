@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import Icon from './Icon'
 import { EVENT_COLOR, type EventCategory, type EventColor } from '@/lib/types'
 import { createCategory, deleteCategory, updateCategory } from '@/app/admin/actions'
 import { Button, Input } from './ui'
@@ -50,7 +50,7 @@ function CategoryRow({ category, usage }: { category: EventCategory; usage: numb
           aria-label={`${category.name} 삭제`}
           className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-red-600"
         >
-          <Trash2 className="size-4" />
+          <Icon name="bin" className="size-4" />
         </button>
       </form>
     </li>
@@ -67,7 +67,7 @@ function NewCategoryForm() {
       <Input name="name" required placeholder="새 카테고리 이름" className="min-w-[140px] max-w-[220px] flex-1" />
       <ColorDots value={color} onChange={setColor} />
       <Button type="submit" className="shrink-0">
-        <Plus className="size-4" />
+        <Icon name="plus" className="size-4" />
         추가
       </Button>
     </form>

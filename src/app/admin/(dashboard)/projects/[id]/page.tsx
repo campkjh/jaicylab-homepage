@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronLeft, Circle, CheckCircle2, Trash2 } from 'lucide-react'
+import Icon from '@/components/admin/Icon'
 import { sql, ensureSchema, STATUS_LABEL, type Project, type ProjectNote, type ProjectTask } from '@/lib/db'
 import { Button, Card, Field, Input, SectionTitle, Select, Textarea } from '@/components/admin/ui'
 import ProgressInput from '@/components/admin/ProgressInput'
@@ -46,7 +46,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         href="/admin/projects"
         className="mb-5 inline-flex items-center gap-1 text-sm text-ink-muted transition hover:text-ink"
       >
-        <ChevronLeft className="size-4" />
+        <Icon name="arrowBack" className="size-4" />
         프로젝트
       </Link>
 
@@ -123,9 +123,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     <input type="hidden" name="project_id" value={project.id} />
                     <button type="submit" aria-label={t.done ? '완료 취소' : '완료 처리'} className="transition">
                       {t.done ? (
-                        <CheckCircle2 className="size-[18px] text-brand" />
+                        <Icon name="checkCircle" className="size-[18px] text-brand" />
                       ) : (
-                        <Circle className="size-[18px] text-ink-muted hover:text-brand" />
+                        <Icon name="checkCircleLine" className="size-[18px] text-ink-muted hover:text-brand" />
                       )}
                     </button>
                   </form>
@@ -137,7 +137,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     <input type="hidden" name="id" value={t.id} />
                     <input type="hidden" name="project_id" value={project.id} />
                     <button type="submit" aria-label="삭제" className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-red-600">
-                      <Trash2 className="size-4" />
+                      <Icon name="bin" className="size-4" />
                     </button>
                   </form>
                 </li>
@@ -168,7 +168,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         <input type="hidden" name="id" value={n.id} />
                         <input type="hidden" name="project_id" value={project.id} />
                         <button type="submit" aria-label="삭제" className="text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-red-600">
-                          <Trash2 className="size-3.5" />
+                          <Icon name="bin" className="size-3.5" />
                         </button>
                       </form>
                     </div>
@@ -184,7 +184,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <form action={deleteProject} className="mt-14 border-t border-line pt-5">
         <input type="hidden" name="id" value={project.id} />
         <Button type="submit" variant="danger">
-          <Trash2 className="size-4" />
+          <Icon name="bin" className="size-4" />
           프로젝트 삭제
         </Button>
         <p className="mt-2 text-xs text-ink-muted">할 일과 메모도 함께 삭제됩니다.</p>

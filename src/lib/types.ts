@@ -86,9 +86,49 @@ export type ScheduleEvent = {
   event_date: string
   event_time: string | null
   memo: string | null
+  body_html: string | null
+  updated_at: string
+  updated_by: string | null
   /** 카테고리에서 내려온 색. 미지정이면 gray. */
   color: EventColor
   category_name: string | null
+}
+
+export type AdminProfile = {
+  name: string
+  avatar_url: string | null
+  /** 직급. 예: 대표, 디자인 리드 */
+  position: string | null
+}
+
+export type PresenceUser = {
+  name: string
+  avatar_url: string | null
+  position: string | null
+  online: boolean
+  typing: boolean
+  /** 지금 입력 중인 일정 id */
+  typing_on: number | null
+}
+
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+export const MEAL_SLOT: Record<MealSlot, { label: string; chip: string; dot: string }> = {
+  breakfast: { label: '아침', chip: 'bg-amber-50 text-amber-700', dot: 'bg-amber-400' },
+  lunch: { label: '점심', chip: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500' },
+  dinner: { label: '저녁', chip: 'bg-indigo-50 text-indigo-700', dot: 'bg-indigo-500' },
+  snack: { label: '간식', chip: 'bg-pink-50 text-pink-700', dot: 'bg-pink-400' },
+}
+
+export type MealEntry = {
+  id: number
+  meal_date: string
+  slot: MealSlot
+  title: string
+  memo: string | null
+  image_url: string | null
+  kcal: number | null
+  created_by: string | null
 }
 
 /** 첨부 디자인처럼 옅은 파스텔 칩. 배경/글자색을 한 쌍으로 묶어둔다. */
