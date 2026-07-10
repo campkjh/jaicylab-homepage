@@ -53,7 +53,7 @@ export type MonthData = {
 
 function gridRange(year: number, month: number) {
   const firstOfMonth = utc(year, month, 1)
-  const lead = (new Date(firstOfMonth).getUTCDay() + 6) % 7 // 월요일 시작
+  const lead = new Date(firstOfMonth).getUTCDay() // 일요일 시작 (0=일)
   const gridStart = firstOfMonth - lead * MS_DAY
   const daysInMonth = new Date(utc(year, month + 1, 0)).getUTCDate()
   const cellCount = Math.ceil((lead + daysInMonth) / 7) * 7

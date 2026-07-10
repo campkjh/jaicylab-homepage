@@ -22,7 +22,7 @@ export type MealDayCell = {
   meals: MealEntry[]
 }
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 const SLOT_ORDER: MealSlot[] = ['breakfast', 'lunch', 'dinner', 'snack']
 
 function dayNumberClass(cell: MealDayCell): string {
@@ -260,7 +260,7 @@ export default function MealCalendar({
       <div className="overflow-hidden rounded-xl border border-line bg-surface">
         <div className="grid grid-cols-7 border-b border-line">
           {WEEKDAYS.map((w, i) => (
-            <div key={w} className={`px-3 py-2 text-[11px] font-medium ${i === 6 ? 'text-red-500' : i === 5 ? 'text-blue-500' : 'text-ink-soft'}`}>
+            <div key={w} className={`px-3 py-2 text-[11px] font-medium ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-ink-soft'}`}>
               {w}
             </div>
           ))}

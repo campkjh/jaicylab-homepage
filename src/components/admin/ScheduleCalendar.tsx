@@ -20,7 +20,7 @@ import Avatar from './Avatar'
 import Icon from './Icon'
 import { Button } from './ui'
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 const MAX_CHIPS = 3
 /** 한 번에 붙이는 달 수 */
 const CHUNK = 2
@@ -155,8 +155,6 @@ export default function ScheduleCalendar({
   const [visibleYm, setVisibleYm] = useState(focusYm)
 
   const scrollRef = useRef<HTMLDivElement>(null)
-  const topRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
   const loading = useRef(false)
   /** prepend 직후 스크롤 위치를 보정하기 위한 직전 높이 */
   const pendingPrepend = useRef<number | null>(null)
@@ -227,42 +225,54 @@ export default function ScheduleCalendar({
     }
   }, [])
 
-  // 위/아래 센티널이 보이면 더 불러온다.
-  useEffect(() => {
+  /**
+   * 양 끝에 가까워지면 더 불러온다.
+   *
+   * IntersectionObserver 로 하면, 달이 적어 위/아래 센티널이 동시에 보일 때
+   * 위쪽이 loading 잠금을 먼저 잡고 아래쪽 호출이 버려진다. 그 뒤로는 교차 상태가
+   * 바뀌지 않아 콜백이 다시 오지 않으므로 아래로 영영 붙지 않는다.
+   * 스크롤 위치로 매번 판정하면 그 교착이 생기지 않는다.
+   */
+  const EDGE = 400
+  const checkEdges = useCallback(() => {
     const box = scrollRef.current
-    if (!box) return
-    const io = new IntersectionObserver(
-      entries => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue
-          if (e.target === topRef.current) void extend('up')
-          if (e.target === bottomRef.current) void extend('down')
-        }
-      },
-      { root: box, rootMargin: '300px' },
-    )
-    if (topRef.current) io.observe(topRef.current)
-    if (bottomRef.current) io.observe(bottomRef.current)
-    return () => io.disconnect()
+    if (!box || loading.current) return
+    if (box.scrollTop < EDGE) void extend('up')
+    else if (box.scrollHeight - box.scrollTop - box.clientHeight < EDGE) void extend('down')
   }, [extend])
 
-  // 헤더에 지금 보고 있는 달을 띄운다.
+  /**
+   * 헤더에 지금 보고 있는 달을 띄운다.
+   * IntersectionObserver 의 entries 에는 "교차 상태가 바뀐" 항목만 들어와서,
+   * 스크롤 도중 아무 것도 바뀌지 않으면 갱신이 누락된다. 스크롤 위치로 직접 계산한다.
+   */
+  const syncVisibleYm = useCallback(() => {
+    const box = scrollRef.current
+    if (!box) return
+    const line = box.scrollTop + 8 // 월 제목이 sticky 로 붙는 지점
+    let current: string | null = null
+    box.querySelectorAll<HTMLElement>('[data-ym]').forEach(el => {
+      if (el.offsetTop <= line) current = el.dataset.ym ?? null
+    })
+    if (current) setVisibleYm(current)
+  }, [])
+
   useEffect(() => {
     const box = scrollRef.current
     if (!box) return
-    const io = new IntersectionObserver(
-      entries => {
-        const top = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
-        const ym = top?.target.getAttribute('data-ym')
-        if (ym) setVisibleYm(ym)
-      },
-      { root: box, threshold: 0.05 },
-    )
-    box.querySelectorAll('[data-ym]').forEach(el => io.observe(el))
-    return () => io.disconnect()
-  }, [months])
+
+    // requestAnimationFrame 으로 미루면, 달이 붙어 이 이펙트가 다시 도는 순간
+    // cleanup 이 예약된 프레임을 취소해 그 스크롤의 헤더 갱신이 통째로 날아간다.
+    // 섹션이 몇 개뿐이라 바로 계산해도 싸다.
+    const onScroll = () => {
+      syncVisibleYm()
+      checkEdges()
+    }
+    box.addEventListener('scroll', onScroll, { passive: true })
+    // 달이 붙은 직후에도 한 번 더 본다. 화면보다 내용이 짧으면 스크롤이 안 나기 때문.
+    onScroll()
+    return () => box.removeEventListener('scroll', onScroll)
+  }, [syncVisibleYm, checkEdges, months])
 
   const jumpToToday = () => {
     const ym = todayIso.slice(0, 7)
@@ -310,15 +320,15 @@ export default function ScheduleCalendar({
         {WEEKDAYS.map((w, i) => (
           <div
             key={w}
-            className={`px-2 py-1.5 text-[11px] font-medium ${i === 6 ? 'text-red-500' : i === 5 ? 'text-blue-500' : 'text-ink-soft'}`}
+            className={`px-2 py-1.5 text-[11px] font-medium ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-ink-soft'}`}
           >
             {w}
           </div>
         ))}
       </div>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div ref={topRef} className="h-px" />
+      {/* offsetTop 이 이 박스 기준이 되도록 relative 를 준다 (스크롤 위치 계산에 쓰인다) */}
+      <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
         {months.map(m => (
           <MonthGrid
             key={m.ym}
@@ -328,7 +338,6 @@ export default function ScheduleCalendar({
             onDay={cell => setDialog({ mode: 'day', cell })}
           />
         ))}
-        <div ref={bottomRef} className="h-px" />
       </div>
 
       {dialog && (
