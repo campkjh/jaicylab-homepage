@@ -163,7 +163,14 @@ export default function ScheduleCalendar({
 
   const close = () => setDialog(null)
 
+  // ?ym= 으로 다른 달을 열면 서버가 새 initialMonths 를 내려준다. state 도 갈아끼운다.
+  useEffect(() => {
+    setMonths(initialMonths)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusYm])
+
   // 처음 열었을 때 가운데 달(현재 달)이 보이도록 맞춘다.
+  // months 를 넣으면 달이 붙을 때마다 스크롤이 되돌아가므로 focusYm 만 본다.
   useEffect(() => {
     const el = scrollRef.current?.querySelector<HTMLElement>(`[data-ym="${focusYm}"]`)
     if (el && scrollRef.current) scrollRef.current.scrollTop = el.offsetTop - 8
@@ -179,6 +186,24 @@ export default function ScheduleCalendar({
 
   const monthsRef = useRef(months)
   monthsRef.current = months
+
+  /**
+   * 일정을 만들거나 고친 뒤 화면에 바로 반영한다.
+   * 달을 state 로 들고 있어서 router.refresh() 만으로는 갱신되지 않는다.
+   * 한 날짜는 앞뒤 달 그리드에도 걸쳐 보이므로, 그 날짜를 품은 달을 모두 새로 받는다.
+   */
+  const reloadDates = useCallback(async (dates: string[]) => {
+    const wanted = new Set<string>()
+    for (const date of dates.filter(Boolean)) {
+      const owners = monthsRef.current.filter(m => m.cells.some(c => c.date === date))
+      if (owners.length) owners.forEach(m => wanted.add(m.ym))
+      else wanted.add(date.slice(0, 7))
+    }
+    if (!wanted.size) return
+
+    const loaded = await Promise.all([...wanted].map(ym => loadScheduleMonth(ym)))
+    setMonths(prev => prev.map(m => loaded.find(l => l.ym === m.ym) ?? m))
+  }, [])
 
   const extend = useCallback(async (direction: 'up' | 'down') => {
     if (loading.current) return
@@ -321,9 +346,9 @@ export default function ScheduleCalendar({
               event={dialog.mode === 'edit' ? dialog.event : null}
               date={dialog.mode === 'create' ? dialog.date : dialog.event.event_date}
               categories={categories}
-              onDone={() => {
+              onDone={dates => {
                 close()
-                router.refresh()
+                if (dates?.length) void reloadDates(dates)
               }}
             />
           )}
@@ -470,7 +495,8 @@ function EventDialog({
   event: ScheduleEvent | null
   date: string
   categories: EventCategory[]
-  onDone: () => void
+  /** 닫기만 할 땐 빈 배열, 저장/삭제 후엔 다시 그려야 할 날짜들 */
+  onDone: (dates?: string[]) => void
 }) {
   const [categoryId, setCategoryId] = useState<string>(event?.category_id ? String(event.category_id) : '')
   const active = categories.find(c => String(c.id) === categoryId)
@@ -495,7 +521,7 @@ function EventDialog({
           ) : (
             savedAt && <span className="text-[11px] text-ink-muted">저장됨</span>
           )}
-          <button onClick={onDone} aria-label="닫기" className="text-ink-muted transition hover:text-ink">
+          <button onClick={() => onDone()} aria-label="닫기" className="text-ink-muted transition hover:text-ink">
             <Icon name="x" className="size-4" />
           </button>
         </div>
@@ -504,7 +530,8 @@ function EventDialog({
       <form
         action={async fd => {
           await (event ? updateEvent(fd) : createEvent(fd))
-          onDone()
+          // 날짜를 옮겼다면 옛 날짜의 달도 다시 그려야 칩이 사라진다.
+          onDone([String(fd.get('event_date') ?? ''), event?.event_date ?? ''])
         }}
         className="px-12 pt-10 pb-8"
       >
@@ -569,7 +596,7 @@ function EventDialog({
               type="submit"
               formAction={async fd => {
                 await deleteEvent(fd)
-                onDone()
+                onDone([event.event_date])
               }}
               className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
             >
