@@ -19,9 +19,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     buildMonth(next.year, next.month),
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
     sql`
-      SELECT id, title, assignee, color, done, created_by
+      SELECT id, title, assignee, status, color, done, created_by
       FROM schedule_timelines
-      ORDER BY done ASC, id DESC
+      ORDER BY done ASC,
+               CASE coalesce(status, 'none')
+                 WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
+                 WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 ELSE 2 END ASC,
+               id DESC
     `,
   ])
 

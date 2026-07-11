@@ -8,7 +8,7 @@ import { requireAdmin } from '@/lib/session'
 import { SESSION_COOKIE, createSession, authenticate, adminNames } from '@/lib/auth'
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
 import { sanitizeHtml } from '@/lib/sanitize'
-import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline } from '@/lib/types'
+import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline, TimelineStatus } from '@/lib/types'
 import { buildMonth, parseYm, type MonthData } from '@/lib/calendar'
 
 function str(fd: FormData, k: string): string {
@@ -234,11 +234,18 @@ export async function deleteEvent(fd: FormData): Promise<void> {
 /** 담당자별로 색을 고정한다. 관리자 목록 순서대로 돌아간다. */
 const TIMELINE_COLORS: EventColor[] = ['purple', 'blue', 'green', 'amber', 'red']
 
+const TIMELINE_STATUSES: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold']
+
+/** 긴급 > 진행중 > (미지정) > 유지보수 > 보류 순. 완료는 맨 아래. */
 async function timelineList(): Promise<Timeline[]> {
   return (await sql`
-    SELECT id, title, assignee, color, done, created_by
+    SELECT id, title, assignee, status, color, done, created_by
     FROM schedule_timelines
-    ORDER BY done ASC, id DESC
+    ORDER BY done ASC,
+             CASE coalesce(status, 'none')
+               WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
+               WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 ELSE 2 END ASC,
+             id DESC
   `) as Timeline[]
 }
 
@@ -248,8 +255,12 @@ export async function listTimelines(): Promise<Timeline[]> {
   return timelineList()
 }
 
-/** 우측 패널 + 에서 만든다. 할 일을 적고 담당자 태그를 고른다. */
-export async function createTimeline(title: string, assignee: string | null): Promise<Timeline[]> {
+/** 우측 패널 + 에서 만든다. 할 일을 적고 담당자·상태 태그를 고른다. */
+export async function createTimeline(
+  title: string,
+  assignee: string | null,
+  status: TimelineStatus | null = null,
+): Promise<Timeline[]> {
   const admin = await requireAdmin()
   await ensureSchema()
   const clean = title.trim()
@@ -257,10 +268,21 @@ export async function createTimeline(title: string, assignee: string | null): Pr
   const names = adminNames()
   const who = assignee && names.includes(assignee) ? assignee : null
   const color = who ? TIMELINE_COLORS[names.indexOf(who) % TIMELINE_COLORS.length] : 'gray'
+  const st = status && TIMELINE_STATUSES.includes(status) ? status : null
   await sql`
-    INSERT INTO schedule_timelines (title, assignee, color, created_by)
-    VALUES (${clean}, ${who}, ${color}, ${admin})
+    INSERT INTO schedule_timelines (title, assignee, status, color, created_by)
+    VALUES (${clean}, ${who}, ${st}, ${color}, ${admin})
   `
+  revalidatePath('/admin/schedule')
+  return timelineList()
+}
+
+/** 항목의 상태 태그를 바꾼다. null 이면 태그를 뗀다. */
+export async function setTimelineStatus(id: number, status: TimelineStatus | null): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  const st = status && TIMELINE_STATUSES.includes(status) ? status : null
+  await sql`UPDATE schedule_timelines SET status = ${st} WHERE id = ${id}`
   revalidatePath('/admin/schedule')
   return timelineList()
 }

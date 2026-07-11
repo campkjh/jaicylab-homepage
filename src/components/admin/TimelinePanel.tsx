@@ -1,21 +1,31 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { EVENT_COLOR, type Timeline } from '@/lib/types'
-import { createTimeline, deleteTimeline, toggleTimeline } from '@/app/admin/actions'
+import { EVENT_COLOR, TIMELINE_STATUS, type Timeline, type TimelineStatus } from '@/lib/types'
+import { createTimeline, deleteTimeline, setTimelineStatus, toggleTimeline } from '@/app/admin/actions'
 import Icon from './Icon'
 
 /** 담당자 태그 칩 색. 서버(createTimeline)와 같은 순서로 돌아간다. */
 const TAG_COLORS = ['purple', 'blue', 'green', 'amber', 'red'] as const
+
+/** 우선순위 순서. 항목의 상태 칩을 누르면 이 순서로 돌아가며 바뀐다(마지막엔 해제). */
+const STATUS_ORDER: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold']
 
 function tagColor(admins: string[], name: string | null): (typeof TAG_COLORS)[number] | 'gray' {
   const i = name ? admins.indexOf(name) : -1
   return i === -1 ? 'gray' : TAG_COLORS[i % TAG_COLORS.length]
 }
 
+function nextStatus(current: TimelineStatus | null): TimelineStatus | null {
+  if (current === null) return STATUS_ORDER[0]
+  const i = STATUS_ORDER.indexOf(current)
+  return i === STATUS_ORDER.length - 1 ? null : STATUS_ORDER[i + 1]
+}
+
 /**
  * 스케줄 우측 패널. + 를 누르고 할 일을 적은 뒤
- * 담당자 태그(정훈·채은공듀…)를 골라 붙인다.
+ * 담당자 태그(정훈·채은공듀…)와 상태 태그(긴급·진행중·유지보수·보류)를 붙인다.
+ * 긴급이 맨 위, 보류가 맨 아래로 정렬된다.
  */
 export default function TimelinePanel({
   timelines,
@@ -29,13 +39,15 @@ export default function TimelinePanel({
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
   const [assignee, setAssignee] = useState<string | null>(null)
+  const [status, setStatus] = useState<TimelineStatus | null>(null)
   const [pending, startTransition] = useTransition()
 
   const submit = () => {
     if (!title.trim()) return
     startTransition(async () => {
-      const list = await createTimeline(title, assignee)
+      const list = await createTimeline(title, assignee, status)
       setTitle('')
+      setStatus(null)
       setAdding(false)
       onChanged(list)
     })
@@ -81,6 +93,22 @@ export default function TimelinePanel({
               )
             })}
           </div>
+          <div className="flex flex-wrap gap-1.5">
+            {STATUS_ORDER.map(s => {
+              const on = status === s
+              return (
+                <button
+                  key={s}
+                  onClick={() => setStatus(on ? null : s)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                    on ? TIMELINE_STATUS[s].chip : 'border border-line text-ink-muted hover:bg-hover'
+                  }`}
+                >
+                  {TIMELINE_STATUS[s].label}
+                </button>
+              )
+            })}
+          </div>
           <button
             onClick={submit}
             disabled={pending || !title.trim()}
@@ -95,7 +123,7 @@ export default function TimelinePanel({
         <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs leading-relaxed text-ink-muted">
           + 를 누르고 할 일을 적은 뒤
           <br />
-          담당자 태그를 골라 붙이세요.
+          담당자·상태 태그를 붙이세요.
         </p>
       )}
 
@@ -124,11 +152,25 @@ export default function TimelinePanel({
                 <Icon name="bin" className="size-3.5" />
               </button>
             </div>
-            {t.assignee && (
-              <span className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.gray.chip}`}>
-                {t.assignee}
-              </span>
-            )}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1">
+              {/* 상태 칩. 누르면 긴급→진행중→유지보수→보류→해제 순으로 바뀐다. */}
+              <button
+                onClick={() => startTransition(async () => onChanged(await setTimelineStatus(t.id, nextStatus(t.status))))}
+                title="누르면 상태가 바뀝니다"
+                className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition hover:brightness-95 ${
+                  t.status
+                    ? TIMELINE_STATUS[t.status].chip
+                    : 'border border-dashed border-line text-ink-muted opacity-0 group-hover:opacity-100'
+                }`}
+              >
+                {t.status ? TIMELINE_STATUS[t.status].label : '+ 상태'}
+              </button>
+              {t.assignee && (
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.gray.chip}`}>
+                  {t.assignee}
+                </span>
+              )}
+            </div>
           </li>
         ))}
       </ul>

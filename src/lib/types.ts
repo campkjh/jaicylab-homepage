@@ -94,11 +94,22 @@ export type ScheduleEvent = {
   category_name: string | null
 }
 
-/** 우측 패널의 할 일. 담당자 태그(관리자 이름)를 붙인다. */
+export type TimelineStatus = 'urgent' | 'in_progress' | 'maintenance' | 'hold'
+
+/** rank 가 낮을수록 위로 온다. 긴급 > 진행중 > (미지정) > 유지보수 > 보류 */
+export const TIMELINE_STATUS: Record<TimelineStatus, { label: string; chip: string; rank: number }> = {
+  urgent: { label: '긴급', chip: 'bg-red-50 text-red-600', rank: 0 },
+  in_progress: { label: '진행중', chip: 'bg-emerald-50 text-emerald-700', rank: 1 },
+  maintenance: { label: '유지보수', chip: 'bg-amber-50 text-amber-700', rank: 3 },
+  hold: { label: '보류', chip: 'bg-zinc-100 text-zinc-500', rank: 4 },
+}
+
+/** 우측 패널의 할 일. 담당자 태그(관리자 이름)와 상태 태그를 붙인다. */
 export type Timeline = {
   id: number
   title: string
   assignee: string | null
+  status: TimelineStatus | null
   color: EventColor
   done: boolean
   created_by: string | null
