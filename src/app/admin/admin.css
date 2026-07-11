@@ -173,6 +173,37 @@ body {
 }
 .heat-steam { display: inline-block; animation: steamUp 1.6s steps(5) infinite; }
 
+/* 번개 두 번 맞아 까맣게 탄 상태 (검은 실루엣 + 부르르) */
+@keyframes charShake { from { transform: translateX(-1px); } to { transform: translateX(1px); } }
+.crab-charred { filter: brightness(0) contrast(0.4); animation: charShake 0.08s steps(2) infinite alternate; }
+
+/* 리스폰: 살짝 통통 튀며 솟는 느낌 */
+@keyframes crabRise { 0% { transform: scaleY(0.7); } 60% { transform: scaleY(1.15); } 100% { transform: scaleY(1); } }
+.crab-rise { animation: crabRise 0.4s steps(4) 1; }
+
+/* 재 가루가 흩날림 */
+@keyframes ashScatter {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(var(--ax), var(--ay)); opacity: 0; }
+}
+.ash-bit { animation: ashScatter 1.1s steps(7) forwards; }
+
+/* 리스폰 흙 튀김 */
+@keyframes dirtBurst {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(var(--dx), -16px); opacity: 0; }
+}
+.dirt-bit { animation: dirtBurst 0.5s steps(4) forwards; }
+
+/* 간식 냠냠 (위에서 입으로 내려와 사라짐) */
+@keyframes treatNom {
+  0% { transform: translateY(-14px) scale(1); opacity: 0; }
+  25% { opacity: 1; }
+  70% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(2px) scale(0.4); opacity: 0; }
+}
+.treat-nom { animation: treatNom 2.5s steps(8) forwards; }
+
 /* 친화력 하트/화남 표시 */
 @keyframes heartPop { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-16px); opacity: 0; } }
 .heart-pop { animation: heartPop 0.9s steps(6) forwards; }

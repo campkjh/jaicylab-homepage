@@ -81,6 +81,7 @@ function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
       onClick={onClick}
       draggable
       data-meal={meal.meal_date}
+      data-meal-title={meal.title}
       onDragStart={e => setDragPayload(e, { kind: 'meal', id: meal.id, date: meal.meal_date })}
       className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${MEAL_SLOT[meal.slot].chip}`}
     >

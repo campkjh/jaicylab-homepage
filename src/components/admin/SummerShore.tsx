@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const SAND = '#f2dfae'
 const SAND_DOT = '#e3cb8f'
@@ -40,6 +41,10 @@ type Mode =
   | 'admire'
   | 'cooloff'
   | 'blown'
+  | 'crisp'
+  | 'gone'
+  | 'respawn'
+  | 'snack'
 
 // ─────────────────────────── 대사
 
@@ -75,7 +80,20 @@ const LINES = {
   morning: ['좋은 아침~ {n}', '모닝 바닷물 한 모금', '오늘도 화이팅이야', '아침 파도가 제일 맑아'],
   night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤바다는 낭만이지'],
   friday: ['불금이다!!!', '내일 쉬는 날이지?!', '금요일엔 게도 신난다', '주말 계획 있어 {n}?'],
+  crisp: ['으아아아 또 맞았어!!', '이번엔 진짜다...', '몸이... 타들어가...', '지지직...!!'],
+  respawn: ['쇼쇼속~ 부활!', '푸하!! 다시 태어났다', '땅 파고 올라왔지롱', '재에서 부활한 불사조 게', '나 죽지 않아~', '깜짝 놀랐지 {n}?'],
+  menu: ['오늘 메뉴는 {m}(이)래~', '{m}... 맛있겠다', '오늘 {m} 먹는대. 부럽다', '{m} 냄새가 벌써 나는 것 같아', '{m}? 나도 한 입만...'],
+  snackTime: ['아 출출하지 않아? 냉장고엔 뭐가 있더라', '{n} 슬슬 간식 타임 아니야?', '10시 반이면 출출할 때지...', '입이 심심한데... 냉장고 좀 봐줘', '커피랑 뭐 하나 먹을까?'],
+  fridge: ['냉장고엔 부족한 거 없니 {n}?', '우유 떨어지지 않았어?', '장 볼 거 있으면 메모해둬', '냉장고 정리도 가끔 해줘야 해', '유통기한 지난 거 없나 확인했어?'],
+  leo: ['레오는 잘 지내?', '레오한테 안부 전해줘~', '레오랑 산책은 다녀왔어?', '레오 밥은 챙겨줬어?', '오늘 레오 컨디션 어때?', '레오 보고 싶다'],
+  snackHappy: ['냠냠! 최고야~', '이거 내가 제일 좋아하는 거야!', '{n} 센스 있네~', '와구와구', '더 없어...?', '역시 {n}뿐이야', '행복하다 게 인생...'],
+  snackFull: ['배불러... 그만~', '더는 못 먹어...', '집게에 쥐가 날 것 같아', '소화 좀 시키고...'],
+  learn: ['오~ 새로운 단어다!', '{w}... 외웠어!', '{w}, 이거 시험에 나와?', '똑똑해지는 기분이야', '{w}... 어렵네', '집게로 받아 적었어'],
+  recall: ['어제 배운 단어 {w}!', '{w}... 이거 맞지?', '{n}가 알려준 {w} 아직 기억해', '오늘의 단어는 {w}!', '{w}... 발음이 어려워', '나 {w} 알아! 똑똑하지?'],
 }
+
+/** 클릭 메뉴에서 줄 수 있는 간식 (이모지) */
+const SNACKS = ['🍪', '🍤', '🍡', '🥨', '🦐', '🍘']
 
 // ─────────────────────────── 픽셀 파츠
 
@@ -107,7 +125,7 @@ function FoamStrip() {
   )
 }
 
-function CrabBody({ eyes, bump }: { eyes: 'open' | 'closed' | 'dizzy'; bump: boolean }) {
+function CrabBody({ eyes, bump }: { eyes: 'open' | 'closed' | 'dizzy' | 'dead'; bump: boolean }) {
   return (
     <svg viewBox="0 -12 56 42" className="pixelated h-[40px] w-[56px]" aria-hidden>
       {bump && (
@@ -138,6 +156,19 @@ function CrabBody({ eyes, bump }: { eyes: 'open' | 'closed' | 'dizzy'; bump: boo
           <rect x="14" y="2" width="2" height="2" fill="#222" />
           <rect x="40" y="0" width="2" height="2" fill="#222" />
           <rect x="42" y="2" width="2" height="2" fill="#222" />
+        </>
+      )}
+      {eyes === 'dead' && (
+        <>
+          {/* x_x */}
+          <rect x="12" y="0" width="2" height="2" fill="#222" />
+          <rect x="14" y="2" width="2" height="2" fill="#222" />
+          <rect x="14" y="0" width="2" height="2" fill="#222" />
+          <rect x="12" y="2" width="2" height="2" fill="#222" />
+          <rect x="40" y="0" width="2" height="2" fill="#222" />
+          <rect x="42" y="2" width="2" height="2" fill="#222" />
+          <rect x="42" y="0" width="2" height="2" fill="#222" />
+          <rect x="40" y="2" width="2" height="2" fill="#222" />
         </>
       )}
       <rect x="12" y="4" width="4" height="4" fill="#b23c33" />
@@ -183,16 +214,37 @@ function Helicopter({ spinning }: { spinning: boolean }) {
   )
 }
 
+/** 게가 집게로 사선으로 비껴 든 우산. 손잡이가 오른쪽 집게로 내려온다. */
 function Umbrella() {
   return (
-    <svg viewBox="0 0 36 30" className="pixelated absolute -top-[26px] left-[12px] h-[30px] w-[36px]" aria-hidden>
-      <rect x="4" y="6" width="28" height="4" fill="#3b82f6" />
-      <rect x="8" y="2" width="20" height="4" fill="#60a5fa" />
-      <rect x="12" y="0" width="12" height="2" fill="#3b82f6" />
-      <rect x="4" y="10" width="6" height="2" fill="#2563eb" />
-      <rect x="15" y="10" width="6" height="2" fill="#2563eb" />
-      <rect x="26" y="10" width="6" height="2" fill="#2563eb" />
-      <rect x="17" y="10" width="3" height="18" fill="#8f5f33" />
+    <svg
+      viewBox="0 0 48 44"
+      className="pixelated absolute -top-[30px] left-[6px] h-[44px] w-[48px]"
+      style={{ transform: 'rotate(-16deg)' }}
+      aria-hidden
+    >
+      {/* 캐노피 (돔) */}
+      <rect x="20" y="0" width="10" height="3" fill="#2563eb" />
+      <rect x="14" y="3" width="22" height="3" fill="#60a5fa" />
+      <rect x="8" y="6" width="34" height="4" fill="#3b82f6" />
+      <rect x="4" y="10" width="42" height="3" fill="#2563eb" />
+      {/* 캐노피 골 무늬 */}
+      <rect x="14" y="6" width="2" height="4" fill="#93c5fd" />
+      <rect x="24" y="3" width="2" height="7" fill="#93c5fd" />
+      <rect x="34" y="6" width="2" height="4" fill="#93c5fd" />
+      {/* 물결 가장자리 */}
+      <rect x="4" y="13" width="6" height="2" fill="#2563eb" />
+      <rect x="16" y="13" width="6" height="2" fill="#2563eb" />
+      <rect x="28" y="13" width="6" height="2" fill="#2563eb" />
+      <rect x="40" y="13" width="6" height="2" fill="#2563eb" />
+      {/* 꼭지 */}
+      <rect x="24" y="-3" width="2" height="3" fill="#8f5f33" />
+      {/* 손잡이대: 중앙에서 오른쪽 아래로 사선, 끝은 J 손잡이 */}
+      <rect x="25" y="13" width="3" height="7" fill="#a8713e" />
+      <rect x="28" y="20" width="3" height="7" fill="#a8713e" />
+      <rect x="31" y="27" width="3" height="7" fill="#a8713e" />
+      <rect x="34" y="34" width="3" height="6" fill="#8f5f33" />
+      <rect x="31" y="39" width="6" height="3" fill="#8f5f33" />
     </svg>
   )
 }
@@ -349,23 +401,47 @@ function Fish() {
   )
 }
 
+/** 차박용 카키 SUV. 지붕에 루프탑 텐트, 뒤에 짐. */
 function Car() {
   return (
-    <svg viewBox="0 0 64 30" className="pixelated h-[30px] w-[64px]" aria-hidden>
-      <rect x="12" y="2" width="30" height="10" fill="#93c5fd" />
-      <rect x="14" y="4" width="10" height="6" fill="#dbeafe" />
-      <rect x="28" y="4" width="10" height="6" fill="#dbeafe" />
-      <rect x="4" y="10" width="56" height="12" fill="#3b82f6" />
-      <rect x="4" y="10" width="56" height="3" fill="#60a5fa" />
-      <rect x="54" y="14" width="6" height="3" fill="#fde047" />
-      <rect x="4" y="14" width="4" height="3" fill="#ef4444" />
-      <rect x="12" y="20" width="10" height="10" fill="#1f2937" />
-      <rect x="42" y="20" width="10" height="10" fill="#1f2937" />
-      <rect x="15" y="23" width="4" height="4" fill="#9ca3af" />
-      <rect x="45" y="23" width="4" height="4" fill="#9ca3af" />
-      {/* 지붕에 실은 짐 */}
-      <rect x="18" y="-4" width="16" height="6" fill="#b45309" />
-      <rect x="22" y="-4" width="2" height="6" fill="#7c2d12" />
+    <svg viewBox="0 0 80 42" className="pixelated h-[42px] w-[80px]" aria-hidden>
+      {/* 루프탑 텐트 (지붕 위) */}
+      <rect x="20" y="0" width="36" height="3" fill="#d97706" />
+      <rect x="16" y="3" width="44" height="7" fill="#f59e0b" />
+      <rect x="16" y="6" width="44" height="2" fill="#b45309" />
+      <rect x="22" y="4" width="4" height="3" fill="#fde68a" />
+      <rect x="30" y="4" width="4" height="3" fill="#fde68a" />
+      {/* 텐트 사다리 */}
+      <rect x="58" y="10" width="3" height="12" fill="#78716c" />
+      <rect x="58" y="13" width="4" height="1.5" fill="#78716c" />
+      <rect x="58" y="17" width="4" height="1.5" fill="#78716c" />
+      {/* 루프랙 */}
+      <rect x="14" y="10" width="50" height="2" fill="#3f3f46" />
+      {/* 상단 캐빈 (각진 SUV 라인) */}
+      <rect x="16" y="12" width="46" height="10" fill="#4d7c4d" />
+      <rect x="19" y="14" width="12" height="7" fill="#bae6fd" />
+      <rect x="34" y="14" width="12" height="7" fill="#bae6fd" />
+      <rect x="48" y="14" width="11" height="7" fill="#bae6fd" />
+      <rect x="31" y="14" width="3" height="7" fill="#3f5f3f" />
+      <rect x="46" y="14" width="2" height="7" fill="#3f5f3f" />
+      {/* 차체 (박스형) */}
+      <rect x="6" y="22" width="68" height="12" fill="#5b8c5a" />
+      <rect x="6" y="22" width="68" height="2" fill="#6ba06a" />
+      <rect x="6" y="30" width="68" height="4" fill="#3f5f3f" />
+      {/* 사이드 스텝 & 머드가드 */}
+      <rect x="6" y="27" width="68" height="2" fill="#3f3f46" />
+      {/* 헤드/테일 라이트 */}
+      <rect x="70" y="25" width="4" height="3" fill="#fde047" />
+      <rect x="6" y="25" width="3" height="3" fill="#ef4444" />
+      {/* 스페어 타이어 (뒤) */}
+      <rect x="2" y="24" width="5" height="8" fill="#1f2937" />
+      {/* 큰 오프로드 바퀴 */}
+      <rect x="14" y="32" width="14" height="10" fill="#1f2937" />
+      <rect x="52" y="32" width="14" height="10" fill="#1f2937" />
+      <rect x="18" y="35" width="6" height="6" fill="#9ca3af" />
+      <rect x="56" y="35" width="6" height="6" fill="#9ca3af" />
+      <rect x="20" y="37" width="2" height="2" fill="#4b5563" />
+      <rect x="58" y="37" width="2" height="2" fill="#4b5563" />
     </svg>
   )
 }
@@ -499,6 +575,55 @@ function RainFX({ heavy }: { heavy: boolean }) {
   )
 }
 
+/** 번개에 타서 바사삭 흩어지는 재 가루 */
+function AshPoof() {
+  const bits = [
+    { x: -14, y: 0, d: 0 },
+    { x: 14, y: 2, d: 0.05 },
+    { x: -8, y: -8, d: 0.1 },
+    { x: 8, y: -6, d: 0.02 },
+    { x: 0, y: -12, d: 0.12 },
+    { x: -18, y: -4, d: 0.08 },
+    { x: 18, y: -2, d: 0.06 },
+    { x: -4, y: 6, d: 0.14 },
+    { x: 6, y: 4, d: 0.03 },
+  ]
+  return (
+    <div className="pointer-events-none absolute bottom-[4px] left-[10px]" aria-hidden>
+      {bits.map((b, i) => (
+        <span
+          key={i}
+          className="ash-bit absolute block"
+          style={{
+            // CSS 변수로 흩어질 방향 전달
+            ['--ax' as string]: `${b.x}px`,
+            ['--ay' as string]: `${b.y - 14}px`,
+            width: i % 2 ? 4 : 3,
+            height: i % 2 ? 4 : 3,
+            background: i % 3 === 0 ? '#4b5563' : '#1f2937',
+            animationDelay: `${b.d}s`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** 리스폰: 땅에서 솟을 때 튀는 모래 흙 */
+function DirtBurst() {
+  return (
+    <div className="pointer-events-none absolute bottom-0 left-[8px] flex gap-1.5" aria-hidden>
+      {[0, 1, 2, 3, 4].map(i => (
+        <span
+          key={i}
+          className="dirt-bit block h-[4px] w-[4px] bg-[#d9c49a]"
+          style={{ ['--dx' as string]: `${(i - 2) * 9}px`, animationDelay: `${i * 0.04}s` }}
+        />
+      ))}
+    </div>
+  )
+}
+
 // ─────────────────────────── 본체
 
 export default function SummerShore({ admin }: { admin: string }) {
@@ -521,6 +646,9 @@ export default function SummerShore({ admin }: { admin: string }) {
     lastActivity: Date.now() - 8000,
     coconutArmed: true,
     coconutBusy: false,
+    // 감전이 유효한 시각(그 전에 또 맞으면 바사삭). respawn 시 새 x.
+    zappedUntil: 0,
+    respawnX: 60,
   })
 
   // 화면에 반영해야 하는 것만 state
@@ -537,6 +665,15 @@ export default function SummerShore({ admin }: { admin: string }) {
   const [fishJump, setFishJump] = useState<{ left: number; key: number } | null>(null)
   const [zapped, setZapped] = useState(false)
   const [bolt, setBolt] = useState<{ x: number; key: number } | null>(null)
+  /** 바사삭: 재로 흩어짐(ash) / 리스폰 시 흙 튀김(dirt) */
+  const [ash, setAsh] = useState<{ x: number; key: number } | null>(null)
+  const [dirt, setDirt] = useState<{ x: number; key: number } | null>(null)
+  /** 클릭 액션 메뉴 위치(뷰포트 기준) / 단어 가르치기 입력창 / 먹는 간식 스프라이트 */
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const [wordOpen, setWordOpen] = useState(false)
+  const [wordDraft, setWordDraft] = useState('')
+  const [treat, setTreat] = useState<{ kind: number; key: number } | null>(null)
+  const snackTimes = useRef<number[]>([])
 
   const bubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pokeTimes = useRef<number[]>([])
@@ -579,6 +716,69 @@ export default function SummerShore({ admin }: { admin: string }) {
       setTimeout(() => setFlash(null), 900)
     },
     [admin],
+  )
+
+  // ── 오늘 달력 칸에 있는 식단 메뉴 이름 하나 읽기 (스케줄 페이지에서만)
+  const readTodayMenu = useCallback((): string | null => {
+    const d = new Date()
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const chips = document.querySelectorAll<HTMLElement>(`[data-meal="${iso}"][data-meal-title]`)
+    if (!chips.length) return null
+    return chips[Math.floor(Math.random() * chips.length)].getAttribute('data-meal-title')
+  }, [])
+
+  // ── 배운 단어들 (localStorage)
+  const learnWord = useCallback(
+    (word: string) => {
+      const clean = word.trim().slice(0, 24)
+      if (!clean) return
+      const key = `jl.crab.words.${admin}`
+      let list: string[] = []
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || '[]')
+        if (Array.isArray(parsed)) list = parsed.filter(w => typeof w === 'string')
+      } catch {
+        list = []
+      }
+      list = [clean, ...list.filter(w => w !== clean)].slice(0, 40)
+      localStorage.setItem(key, JSON.stringify(list))
+    },
+    [admin],
+  )
+  const recallWord = useCallback((): string | null => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(`jl.crab.words.${admin}`) || '[]')
+      const list = Array.isArray(parsed) ? parsed.filter(w => typeof w === 'string') : []
+      return list.length ? list[Math.floor(Math.random() * list.length)] : null
+    } catch {
+      return null
+    }
+  }, [admin])
+
+  // ── 상황 대사 (오늘 메뉴 / 냉장고 / 레오 / 배운 단어 복습)
+  const sayContextual = useCallback(
+    (kind: 'menu' | 'fridge' | 'leo' | 'recall') => {
+      if (kind === 'menu') {
+        const m = readTodayMenu()
+        if (!m) {
+          say(LINES.idle)
+          return
+        }
+        say(LINES.menu.map(s => s.replaceAll('{m}', m)))
+        return
+      }
+      if (kind === 'recall') {
+        const w = recallWord()
+        if (!w) {
+          say(LINES.idle)
+          return
+        }
+        say(LINES.recall.map(s => s.replaceAll('{w}', w)))
+        return
+      }
+      say(kind === 'fridge' ? LINES.fridge : LINES.leo)
+    },
+    [say, readTodayMenu, recallWord],
   )
 
   // ── 날씨 (서울, open-meteo). 비/뇌우/강풍/폭염을 모두 본다. 실패하면 맑음으로 둔다.
@@ -629,18 +829,33 @@ export default function SummerShore({ admin }: { admin: string }) {
       setBolt({ x, key: Date.now() })
       setTimeout(() => setBolt(null), 380)
 
-      if (aimCrab && (p.mode === 'walk' || p.mode === 'goto' || p.mode === 'dance')) {
+      const hittable = !['crisp', 'gone', 'respawn', 'drag', 'surf', 'heliUp', 'heliDrop'].includes(p.mode)
+      if (aimCrab && hittable) {
         setTimeout(() => {
-          setZapped(true)
-          setDizzy(true)
-          phys.current.mode = 'stun'
-          setMode('stun')
-          phys.current.modeUntil = Date.now() + 2600
-          say(LINES.zapped)
-          setTimeout(() => setZapped(false), 2600)
+          const q = phys.current
+          if (Date.now() < q.zappedUntil) {
+            // 이미 감전 상태인데 또 맞았다 → 까맣게 타서 바사삭!
+            q.mode = 'crisp'
+            setMode('crisp')
+            q.modeUntil = Date.now() + 800
+            setZapped(false)
+            setDizzy(false)
+            say(LINES.crisp, 1200)
+          } else {
+            // 첫 감전. 이후 14초 동안은 "취약" 상태 — 그 안에 또 조준되면 바사삭.
+            setZapped(true)
+            setDizzy(true)
+            q.mode = 'stun'
+            setMode('stun')
+            q.modeUntil = Date.now() + 2600
+            q.zappedUntil = Date.now() + 14_000
+            say(LINES.zapped)
+            setTimeout(() => setZapped(false), 2600)
+          }
         }, 200)
       }
-      timer = setTimeout(strike, 9000 + Math.random() * 16_000)
+      // 뇌우 중엔 번개가 촘촘히 친다 (다음 조준 낙뢰가 취약창 안에 들도록)
+      timer = setTimeout(strike, 5000 + Math.random() * 6000)
     }
     timer = setTimeout(strike, 2500)
     return () => {
@@ -657,6 +872,23 @@ export default function SummerShore({ admin }: { admin: string }) {
     const id = setInterval(check, 60_000)
     return () => clearInterval(id)
   }, [])
+
+  // ── 오전 10시 반쯤: "출출하지 않아?" (하루 한 번)
+  useEffect(() => {
+    const check = () => {
+      const d = new Date()
+      const stamp = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      if (d.getHours() === 10 && d.getMinutes() >= 25 && d.getMinutes() <= 45) {
+        if (localStorage.getItem('jl.crab.snacktime') !== stamp) {
+          localStorage.setItem('jl.crab.snacktime', stamp)
+          say(LINES.snackTime)
+        }
+      }
+    }
+    check()
+    const id = setInterval(check, 60_000)
+    return () => clearInterval(id)
+  }, [say])
 
   // ── 물고기 점프 (가끔)
   useEffect(() => {
@@ -769,6 +1001,13 @@ export default function SummerShore({ admin }: { admin: string }) {
         },
       })
 
+      // 상황 대사: 오늘 메뉴 / 냉장고 / 레오 안부
+      acts.push({ w: 1.4, run: () => sayContextual('menu') })
+      acts.push({ w: 1, run: () => sayContextual('fridge') })
+      acts.push({ w: 1, run: () => sayContextual('leo') })
+      // 배운 단어 복습
+      acts.push({ w: 1.2, run: () => sayContextual('recall') })
+
       acts.push({
         w: 2,
         run: () => {
@@ -842,11 +1081,26 @@ export default function SummerShore({ admin }: { admin: string }) {
 
     // 콘솔 장난감 겸 검증용: window.__crab.do('surf') 처럼 바로 시켜볼 수 있다.
     const forceActivity = (
-      kind: 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut' | 'dig' | 'nap' | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap',
+      kind:
+        | 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut' | 'dig' | 'nap'
+        | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap' | 'crisp' | 'menu' | 'fridge' | 'leo',
     ) => {
       const p = phys.current
       p.lastActivity = 0
       setDizzy(false)
+      if (kind === 'menu' || kind === 'fridge' || kind === 'leo') {
+        sayContextual(kind)
+        return 'ok'
+      }
+      if (kind === 'crisp') {
+        p.mode = 'crisp'
+        setMode('crisp')
+        p.modeUntil = Date.now() + 800
+        setZapped(false)
+        setDizzy(false)
+        say(LINES.crisp, 1200)
+        return 'ok'
+      }
       if (kind === 'dig' || kind === 'nap' || kind === 'dance' || kind === 'admire' || kind === 'cooloff') {
         setModeBoth(kind)
         if (kind === 'cooloff') p.y = SURF_Y - 12
@@ -864,12 +1118,23 @@ export default function SummerShore({ admin }: { admin: string }) {
         setBolt({ x: p.x + CRAB_W / 2 - 28, key: Date.now() })
         setTimeout(() => setBolt(null), 380)
         setTimeout(() => {
-          setZapped(true)
-          setDizzy(true)
-          setModeBoth('stun')
-          p.modeUntil = Date.now() + 2600
-          say(LINES.zapped)
-          setTimeout(() => setZapped(false), 2600)
+          // 이미 취약 상태면 바사삭, 아니면 첫 감전
+          if (Date.now() < p.zappedUntil) {
+            p.mode = 'crisp'
+            setMode('crisp')
+            p.modeUntil = Date.now() + 800
+            setZapped(false)
+            setDizzy(false)
+            say(LINES.crisp, 1200)
+          } else {
+            setZapped(true)
+            setDizzy(true)
+            setModeBoth('stun')
+            p.modeUntil = Date.now() + 2600
+            p.zappedUntil = Date.now() + 14_000
+            say(LINES.zapped)
+            setTimeout(() => setZapped(false), 2600)
+          }
         }, 200)
         return 'ok'
       }
@@ -912,16 +1177,16 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
       return 'ok'
     }
-    Object.assign(window as object, {
-      __crab: {
-        do: forceActivity,
-        rain: (v: boolean) => setWx(w => ({ ...w, raining: v })),
-        weather: (patch: Partial<{ raining: boolean; thunder: boolean; windy: boolean; hot: boolean }>) =>
-          setWx(w => ({ ...w, ...patch })),
-        affinity: () => affinity.current,
-        state: () => ({ ...phys.current }),
-      },
-    })
+    // 콘솔 API. 언마운트/재마운트 시 stale 인스턴스가 남지 않도록 소유권을 확인하고 정리한다.
+    const crabApi = {
+      do: forceActivity,
+      rain: (v: boolean) => setWx(w => ({ ...w, raining: v })),
+      weather: (patch: Partial<{ raining: boolean; thunder: boolean; windy: boolean; hot: boolean }>) =>
+        setWx(w => ({ ...w, ...patch })),
+      affinity: () => affinity.current,
+      state: () => ({ ...phys.current }),
+    }
+    ;(window as unknown as { __crab?: typeof crabApi }).__crab = crabApi
 
     const tick = setInterval(() => {
       const p = phys.current
@@ -1174,11 +1439,59 @@ export default function SummerShore({ admin }: { admin: string }) {
           break
         }
 
+        case 'crisp': {
+          // 까맣게 탄 채 잠깐 굳어 있다 → 재로 흩어진다
+          p.y = GROUND_Y
+          if (now > p.modeUntil) {
+            setAsh({ x: p.x, key: now })
+            setModeBoth('gone')
+            p.modeUntil = now + 1500
+          }
+          break
+        }
+
+        case 'gone': {
+          // 사라진 상태. 잠시 뒤 엉뚱한 곳 땅에서 솟아오른다.
+          if (now > p.modeUntil) {
+            p.respawnX = 40 + Math.random() * Math.max(80, W - CRAB_W - 80)
+            p.x = p.respawnX
+            p.y = -26
+            p.dir = 1
+            setDirt({ x: p.respawnX, key: now })
+            setModeBoth('respawn')
+            say(LINES.respawn)
+          }
+          break
+        }
+
+        case 'respawn': {
+          // 땅에서 쇼쇼속 솟아오른다
+          p.x = p.respawnX
+          if (p.y >= GROUND_Y) {
+            p.y = GROUND_Y
+            p.zappedUntil = 0 // 새 몸이니 취약창 리셋
+            setModeBoth('walk')
+          } else {
+            p.y += 3
+          }
+          break
+        }
+
+        case 'snack': {
+          // 간식 냠냠. 제자리에서 먹는다.
+          p.y = GROUND_Y + (Math.floor(now / 160) % 2 === 0 ? 0 : 2)
+          if (now > p.modeUntil) {
+            p.y = GROUND_Y
+            setModeBoth('walk')
+          }
+          break
+        }
+
         case 'drag':
           break
       }
 
-      // DOM 반영
+      // DOM 반영 (gone 은 렌더에서 숨긴다)
       const el = crabRef.current
       if (el) {
         el.style.left = `${p.x}px`
@@ -1191,8 +1504,11 @@ export default function SummerShore({ admin }: { admin: string }) {
     return () => {
       clearInterval(tick)
       timers.forEach(clearTimeout)
+      // 내가 마지막 소유자일 때만 콘솔 API 를 걷어낸다 (다음 인스턴스 것을 지우지 않게)
+      const w = window as unknown as { __crab?: typeof crabApi }
+      if (w.__crab === crabApi) delete w.__crab
     }
-    // 마운트에 한 번만. 날씨는 rainRef 로 읽어서 루프·타이머가 끊기지 않는다.
+    // 마운트에 한 번만. 날씨는 wxRef 로 읽어서 루프·타이머가 끊기지 않는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -1224,7 +1540,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     }
   }
 
-  const onPointerUp = () => {
+  const onPointerUp = (e?: React.PointerEvent) => {
     const d = dragInfo.current
     dragInfo.current = null
     if (!d) return
@@ -1245,7 +1561,13 @@ export default function SummerShore({ admin }: { admin: string }) {
       return
     }
 
-    // 클릭 = 찌르기/쓰다듬기
+    // 클릭 = 액션 메뉴(간식/단어/콕찌르기)
+    if (e) setMenuAt({ x: e.clientX, y: e.clientY })
+  }
+
+  // ── 콕 찌르기 (메뉴에서)
+  const pokeCrab = () => {
+    setMenuAt(null)
     const now = Date.now()
     pokeTimes.current = [...pokeTimes.current.filter(t => now - t < 4000), now]
     const rapid = pokeTimes.current.length
@@ -1254,25 +1576,64 @@ export default function SummerShore({ admin }: { admin: string }) {
       bumpAffinity(-1)
       say(LINES.pokeAnnoyed, 2600)
       if (rapid >= 6 && phys.current.mode === 'walk') {
-        // 너무 괴롭히면 잠깐 기절
         setDizzy(true)
         setModeBoth('stun')
         phys.current.modeUntil = now + 1500
       }
       return
     }
-
     if (Math.random() < 0.3) {
       bumpAffinity(+1)
       say(LINES.pet, 2800)
       return
     }
-
     const a = affinity.current
     if (a <= 25) say(LINES.pokeLow, 2800)
     else if (a >= 75) say(LINES.pokeHigh, 2800)
     else say(LINES.poke, 2800)
   }
+
+  // ── 간식 주기 (메뉴에서)
+  const feedSnack = () => {
+    setMenuAt(null)
+    const now = Date.now()
+    snackTimes.current = [...snackTimes.current.filter(t => now - t < 9000), now]
+    const p = phys.current
+    setTreat({ kind: Math.floor(Math.random() * SNACKS.length), key: now })
+    setTimeout(() => setTreat(t => (t && t.key === now ? null : t)), 2600)
+    if (['walk', 'goto', 'admire', 'dance', 'snack'].includes(p.mode)) {
+      p.mode = 'snack'
+      setMode('snack')
+      p.modeUntil = now + 2600
+    }
+    if (snackTimes.current.length >= 4) {
+      say(LINES.snackFull, 2600)
+    } else {
+      bumpAffinity(+2)
+      say(LINES.snackHappy, 2600)
+    }
+  }
+
+  // ── 단어 가르치기 제출
+  const submitWord = () => {
+    const clean = wordDraft.trim()
+    setWordOpen(false)
+    setWordDraft('')
+    if (!clean) return
+    learnWord(clean)
+    bumpAffinity(+1)
+    say(LINES.learn.map(s => s.replaceAll('{w}', clean.slice(0, 12))), 3000)
+  }
+
+  // 메뉴 바깥 클릭하면 닫는다
+  useEffect(() => {
+    if (!menuAt) return
+    const onDown = (ev: MouseEvent) => {
+      if (!(ev.target as HTMLElement).closest('[data-crab-menu], [data-crab]')) setMenuAt(null)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [menuAt])
 
   const showUmbrella = wx.raining && mode !== 'heliUp' && mode !== 'heliDrop' && mode !== 'surf' && mode !== 'cooloff' && mode !== 'dig'
   const eyes = dizzy ? 'dizzy' : mode === 'suntan' || mode === 'nap' || bump ? 'closed' : 'open'
@@ -1393,15 +1754,27 @@ export default function SummerShore({ admin }: { admin: string }) {
       {/* 강풍: 날아가는 모래 먼지 */}
       {wx.windy && <WindDust />}
 
+      {/* 바사삭: 재 흩어짐 / 리스폰 흙 튀김 */}
+      {ash && (
+        <div key={`ash${ash.key}`} className="absolute bottom-[4px]" style={{ left: ash.x }}>
+          <AshPoof />
+        </div>
+      )}
+      {dirt && (
+        <div key={`dirt${dirt.key}`} className="absolute bottom-[2px]" style={{ left: dirt.x }}>
+          <DirtBurst />
+        </div>
+      )}
+
       {/* ── 꽃게 본체 (여기만 클릭/드래그 가능) */}
       <div
         ref={crabRef}
         data-crab
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className={`pointer-events-auto absolute z-[8] touch-none ${mode === 'drag' ? 'cursor-grabbing' : 'cursor-grab'}`}
+        onPointerUp={e => onPointerUp(e)}
+        onPointerCancel={() => onPointerUp()}
+        className={`absolute z-[8] touch-none ${mode === 'drag' ? 'cursor-grabbing' : 'cursor-grab'} ${mode === 'gone' ? 'pointer-events-none opacity-0' : 'pointer-events-auto'}`}
         style={{ left: 60, bottom: GROUND_Y, width: CRAB_W }}
       >
         {/* 말풍선 */}
@@ -1436,16 +1809,92 @@ export default function SummerShore({ admin }: { admin: string }) {
             <span>✦</span>
           </div>
         )}
+        {/* 먹는 간식 */}
+        {treat && mode === 'snack' && (
+          <div key={treat.key} className="treat-nom absolute top-[16px] left-[40px] text-[14px]">
+            {SNACKS[treat.kind]}
+          </div>
+        )}
 
         <div
-          className={`${moving || mode === 'dance' ? 'crab-bob' : ''} ${zapped ? 'zap-flicker' : ''} ${mode === 'blown' && !wx.raining ? 'blown-spin' : ''}`}
+          className={`${moving || mode === 'dance' || mode === 'snack' ? 'crab-bob' : ''} ${zapped ? 'zap-flicker' : ''} ${mode === 'crisp' ? 'crab-charred' : ''} ${mode === 'blown' && !wx.raining ? 'blown-spin' : ''} ${mode === 'respawn' ? 'crab-rise' : ''}`}
           style={{ transform: facing === -1 ? 'scaleX(-1)' : undefined, ...halfClip }}
         >
-          <CrabBody eyes={zapped ? 'dizzy' : eyes} bump={bump} />
+          <CrabBody eyes={mode === 'crisp' ? 'dead' : zapped ? 'dizzy' : eyes} bump={bump} />
         </div>
 
         {mode === 'surf' && <Surfboard />}
       </div>
+
+      {/* 클릭 액션 메뉴 (포탈) */}
+      {menuAt &&
+        createPortal(
+          <div
+            data-crab-menu
+            className="animate-fade-up fixed z-[80] flex -translate-x-1/2 flex-col gap-0.5 rounded-xl border border-line bg-surface p-1 shadow-[0_8px_24px_-8px_rgba(15,15,15,0.35)]"
+            style={{
+              // 화면 밖으로 잘리지 않게 클램프. 위 공간이 부족하면 클릭점 아래로 편다.
+              left: Math.min(Math.max(menuAt.x, 80), window.innerWidth - 80),
+              top: menuAt.y - 8 > 130 ? menuAt.y - 8 : menuAt.y + 20,
+              transform: `translateX(-50%) ${menuAt.y - 8 > 130 ? 'translateY(-100%)' : ''}`,
+            }}
+          >
+            <button onClick={feedSnack} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-ink transition hover:bg-hover">
+              🍪 간식 주기
+            </button>
+            <button onClick={() => { setMenuAt(null); setWordOpen(true) }} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-ink transition hover:bg-hover">
+              📖 단어 가르치기
+            </button>
+            <button onClick={pokeCrab} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-ink transition hover:bg-hover">
+              👆 콕 찌르기
+            </button>
+          </div>,
+          document.body,
+        )}
+
+      {/* 단어 가르치기 입력 (포탈) */}
+      {wordOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/20 p-4"
+            onMouseDown={e => e.target === e.currentTarget && setWordOpen(false)}
+          >
+            <div className="animate-fade-up w-full max-w-[300px] rounded-2xl border border-line bg-surface p-4 shadow-[0_16px_40px_-12px_rgba(15,15,15,0.3)]">
+              <div className="mb-1 text-sm font-semibold text-ink">🦀 단어 가르치기</div>
+              <p className="mb-3 text-xs text-ink-muted">꽃게에게 외우게 할 단어를 알려주세요. 가끔 복습하며 말해요.</p>
+              <input
+                autoFocus
+                value={wordDraft}
+                onChange={e => setWordDraft(e.target.value)}
+                placeholder="예: 파이팅, 사랑해, 오마카세…"
+                maxLength={24}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') submitWord()
+                  if (e.key === 'Escape') {
+                    setWordOpen(false)
+                    setWordDraft('')
+                  }
+                }}
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition focus:border-brand"
+              />
+              <div className="mt-3 flex justify-end gap-2">
+                <button
+                  onClick={() => { setWordOpen(false); setWordDraft('') }}
+                  className="rounded-lg px-3 py-1.5 text-xs text-ink-muted transition hover:bg-hover"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={submitWord}
+                  className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-white transition hover:bg-black"
+                >
+                  가르치기
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
