@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { EVENT_COLOR, TIMELINE_STATUS, type Timeline, type TimelineStatus } from '@/lib/types'
 import {
   createTimeline,
@@ -99,20 +100,42 @@ export default function TimelinePanel({
   const [assignee, setAssignee] = useState<string | null>(null)
   const [status, setStatus] = useState<TimelineStatus | null>(null)
   const [tagsOpen, setTagsOpen] = useState(false)
-  /** 태그 수정 툴팁이 열려 있는 항목 id */
-  const [editingId, setEditingId] = useState<number | null>(null)
+  /** 태그 수정 툴팁: 열린 항목 id 와 붙일 위치(뷰포트 기준) */
+  const [editing, setEditing] = useState<{ id: number; top: number; left: number; width: number; flip: boolean } | null>(null)
   const [pending, startTransition] = useTransition()
   const listRef = useRef<HTMLUListElement>(null)
 
-  // 툴팁 바깥을 누르면 닫는다.
+  // 툴팁 바깥을 누르면 닫는다. 스크롤하면 위치가 어긋나므로 같이 닫는다.
   useEffect(() => {
-    if (editingId == null) return
+    if (!editing) return
     const onDown = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('[data-tag-popover], [data-tag-trigger]')) setEditingId(null)
+      if (!(e.target as HTMLElement).closest('[data-tag-popover], [data-tag-trigger]')) setEditing(null)
+    }
+    const onScroll = (e: Event) => {
+      if ((e.target as HTMLElement).closest?.('[data-tag-popover]')) return
+      setEditing(null)
     }
     document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [editingId])
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [editing])
+
+  /** 스크롤 영역에 잘리지 않도록 body 로 포털해서 li 아래(공간 없으면 위)에 띄운다. */
+  const openTagEditor = (id: number, trigger: HTMLElement) => {
+    if (editing?.id === id) {
+      setEditing(null)
+      return
+    }
+    const li = trigger.closest('li')
+    const r = (li ?? trigger).getBoundingClientRect()
+    const flip = r.bottom + 190 > window.innerHeight
+    setEditing({ id, top: flip ? r.top : r.bottom, left: r.left, width: r.width, flip })
+  }
 
   const submit = () => {
     if (!title.trim()) return
@@ -226,7 +249,7 @@ export default function TimelinePanel({
             {/* 태그 줄: 누르면 수정 툴팁이 뜬다. 이름(담당자)이 항상 왼쪽 */}
             <button
               data-tag-trigger
-              onClick={() => setEditingId(v => (v === t.id ? null : t.id))}
+              onClick={e => openTagEditor(t.id, e.currentTarget)}
               title="태그 수정"
               className="mt-1.5 flex flex-wrap items-center gap-1"
             >
@@ -247,24 +270,39 @@ export default function TimelinePanel({
               )}
             </button>
 
-            {/* 태그 수정 툴팁 */}
-            {editingId === t.id && (
-              <div
-                data-tag-popover
-                className="animate-fade-up absolute inset-x-1 top-full z-20 mt-1 rounded-xl border border-line bg-surface p-2.5 shadow-[0_8px_24px_-8px_rgba(15,15,15,0.25)]"
-              >
-                <TagPicker
-                  admins={admins}
-                  assignee={t.assignee}
-                  status={t.status}
-                  onAssignee={name => startTransition(async () => onChanged(await setTimelineAssignee(t.id, name)))}
-                  onStatus={s => startTransition(async () => onChanged(await setTimelineStatus(t.id, s)))}
-                />
-              </div>
-            )}
           </li>
         ))}
       </ul>
+
+      {/* 태그 수정 툴팁: 패널 스크롤 영역에 잘리지 않도록 body 로 포털 */}
+      {editing &&
+        (() => {
+          const t = timelines.find(x => x.id === editing.id)
+          if (!t) return null
+          return createPortal(
+            <div
+              data-tag-popover
+              style={{
+                position: 'fixed',
+                top: editing.top,
+                left: editing.left,
+                width: editing.width,
+                zIndex: 70,
+                transform: editing.flip ? 'translateY(calc(-100% - 4px))' : 'translateY(4px)',
+              }}
+              className="animate-fade-up rounded-xl border border-line bg-surface p-2.5 shadow-[0_8px_24px_-8px_rgba(15,15,15,0.35)]"
+            >
+              <TagPicker
+                admins={admins}
+                assignee={t.assignee}
+                status={t.status}
+                onAssignee={name => startTransition(async () => onChanged(await setTimelineAssignee(t.id, name)))}
+                onStatus={s => startTransition(async () => onChanged(await setTimelineStatus(t.id, s)))}
+              />
+            </div>,
+            document.body,
+          )
+        })()}
     </div>
   )
 }

@@ -179,7 +179,14 @@ export const STATUS_LABEL: Record<ProjectStatus, string> = {
   paused: '보류',
 }
 
+/** 계정 페이지의 + 에서 고르는 간단한 종류 */
+export const ACCOUNT_KINDS = ['google', 'apple', 'naver', 'etc'] as const
+
 export const CATEGORY_LABEL: Record<string, string> = {
+  google: '구글계정',
+  apple: '애플계정',
+  naver: '네이버계정',
+  // 예전 데이터가 쓰던 종류들
   google_play: 'Google Play Console',
   apple_developer: 'Apple Developer',
   firebase: 'Firebase',

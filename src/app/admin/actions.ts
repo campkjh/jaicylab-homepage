@@ -8,6 +8,7 @@ import { requireAdmin } from '@/lib/session'
 import { SESSION_COOKIE, createSession, authenticate, adminNames } from '@/lib/auth'
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
 import { sanitizeHtml } from '@/lib/sanitize'
+import { CATEGORY_LABEL } from '@/lib/types'
 import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline, TimelineStatus } from '@/lib/types'
 import { buildMonth, parseYm, type MonthData } from '@/lib/calendar'
 
@@ -436,6 +437,16 @@ export async function createClient(fd: FormData): Promise<void> {
   revalidatePath('/admin/clients')
 }
 
+/** 계정 페이지의 이름 인라인 수정. 다른 필드는 건드리지 않는다. */
+export async function renameClient(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const name = str(fd, 'name')
+  if (!name) return
+  await sql`UPDATE clients SET name = ${name}, updated_at = now() WHERE id = ${int(fd, 'id')}`
+  revalidatePath('/admin/clients')
+}
+
 export async function updateClient(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
@@ -470,8 +481,8 @@ export async function addAccount(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
   const clientId = int(fd, 'client_id')
-  const label = str(fd, 'label')
-  if (!label) return
+  // 간단 등록에선 이름을 따로 안 적는다. 종류 라벨(구글계정 등)을 그대로 쓴다.
+  const label = str(fd, 'label') || CATEGORY_LABEL[str(fd, 'category')] || '계정'
   const password = str(fd, 'password')
   await sql`
     INSERT INTO client_accounts (client_id, category, label, url, username, password_enc, memo)
