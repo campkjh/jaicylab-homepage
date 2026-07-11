@@ -12,7 +12,6 @@ import Icon, { type IconName } from './Icon'
 const NAV: { href: string; label: string; icon: IconName; exact: boolean }[] = [
   { href: '/admin', label: '대시보드', icon: 'home', exact: true },
   { href: '/admin/schedule', label: '스케줄', icon: 'calendar', exact: false },
-  { href: '/admin/meals', label: '식단', icon: 'food', exact: false },
   { href: '/admin/projects', label: '프로젝트', icon: 'folder', exact: false },
   { href: '/admin/clients', label: '클라이언트', icon: 'user', exact: false },
   { href: '/admin/settings', label: '설정', icon: 'setting', exact: false },

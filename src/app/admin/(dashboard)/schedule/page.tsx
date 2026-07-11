@@ -1,4 +1,4 @@
-import { ensureSchema, sql, type EventCategory } from '@/lib/db'
+import { ensureSchema, sql, type EventCategory, type Timeline } from '@/lib/db'
 import { buildMonth, parseYm, shiftMonth, todayIso } from '@/lib/calendar'
 import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
 
@@ -12,11 +12,18 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const prev = shiftMonth(year, month, -1)
   const next = shiftMonth(year, month, 1)
 
-  const [before, current, after, categoryRows] = await Promise.all([
+  const [before, current, after, categoryRows, timelineRows] = await Promise.all([
     buildMonth(prev.year, prev.month),
     buildMonth(year, month),
     buildMonth(next.year, next.month),
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
+    sql`
+      SELECT id, title, color, done, created_by,
+             to_char(start_date, 'YYYY-MM-DD') AS start_date,
+             to_char(end_date, 'YYYY-MM-DD')   AS end_date
+      FROM schedule_timelines
+      ORDER BY done ASC, end_date ASC, id ASC
+    `,
   ])
 
   return (
@@ -25,6 +32,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       focusYm={current.ym}
       categories={categoryRows as EventCategory[]}
       todayIso={todayIso()}
+      initialTimelines={timelineRows as Timeline[]}
     />
   )
 }

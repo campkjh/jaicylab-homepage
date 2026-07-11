@@ -8,7 +8,7 @@ import { requireAdmin } from '@/lib/session'
 import { SESSION_COOKIE, createSession, authenticate } from '@/lib/auth'
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
 import { sanitizeHtml } from '@/lib/sanitize'
-import type { MealSlot, PresenceUser } from '@/lib/types'
+import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline } from '@/lib/types'
 import { buildMonth, parseYm, type MonthData } from '@/lib/calendar'
 
 function str(fd: FormData, k: string): string {
@@ -57,15 +57,13 @@ export async function createProject(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
   const clientId = int(fd, 'client_id', 0)
-  const rows = (await sql`
+  await sql`
     INSERT INTO projects (name, client_id, status, description, start_date, due_date)
     VALUES (${str(fd, 'name') || '제목 없는 프로젝트'}, ${clientId || null}, ${str(fd, 'status') || 'planning'},
             ${nullable(fd, 'description')}, ${nullable(fd, 'start_date')}, ${nullable(fd, 'due_date')})
-    RETURNING id
-  `) as { id: number }[]
+  `
   revalidatePath('/admin')
   revalidatePath('/admin/projects')
-  redirect(`/admin/projects/${rows[0].id}`)
 }
 
 export async function updateProject(fd: FormData): Promise<void> {
@@ -88,7 +86,6 @@ export async function updateProject(fd: FormData): Promise<void> {
   `
   revalidatePath('/admin')
   revalidatePath('/admin/projects')
-  revalidatePath(`/admin/projects/${id}`)
 }
 
 export async function deleteProject(fd: FormData): Promise<void> {
@@ -97,7 +94,6 @@ export async function deleteProject(fd: FormData): Promise<void> {
   await sql`DELETE FROM projects WHERE id = ${int(fd, 'id')}`
   revalidatePath('/admin')
   revalidatePath('/admin/projects')
-  redirect('/admin/projects')
 }
 
 // ─────────────────────────── 할 일 / 메모
@@ -113,26 +109,23 @@ export async function addTask(fd: FormData): Promise<void> {
     VALUES (${projectId}, ${title}, ${nullable(fd, 'due_date')})
   `
   revalidatePath('/admin')
-  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath('/admin/projects')
 }
 
 export async function toggleTask(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
-  const id = int(fd, 'id')
-  const projectId = int(fd, 'project_id')
-  await sql`UPDATE project_tasks SET done = NOT done WHERE id = ${id}`
+  await sql`UPDATE project_tasks SET done = NOT done WHERE id = ${int(fd, 'id')}`
   revalidatePath('/admin')
-  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath('/admin/projects')
 }
 
 export async function deleteTask(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
-  const projectId = int(fd, 'project_id')
   await sql`DELETE FROM project_tasks WHERE id = ${int(fd, 'id')}`
   revalidatePath('/admin')
-  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath('/admin/projects')
 }
 
 export async function addNote(fd: FormData): Promise<void> {
@@ -142,46 +135,59 @@ export async function addNote(fd: FormData): Promise<void> {
   const body = str(fd, 'body')
   if (!body) return
   await sql`INSERT INTO project_notes (project_id, body) VALUES (${projectId}, ${body})`
-  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath('/admin/projects')
 }
 
 export async function deleteNote(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
-  const projectId = int(fd, 'project_id')
   await sql`DELETE FROM project_notes WHERE id = ${int(fd, 'id')}`
-  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath('/admin/projects')
 }
 
 // ─────────────────────────── 스케줄
 
-export async function createEvent(fd: FormData): Promise<void> {
+/** 제목을 안 써도 되도록 "채은방방구띠" 같은 제목을 알아서 붙인다. */
+const SILLY_TAILS = [
+  '방방구띠', '몽글몽글', '반짝반짝', '두근두근', '쫀득쫀득', '살랑살랑',
+  '꼬물꼬물', '폭신폭신', '우당탕탕', '아자아자', '호로록', '슝슝',
+  '팔랑팔랑', '도리도리', '냠냠타임', '총총총',
+]
+
+/**
+ * 팝업을 여는 순간 곧바로 저장되는 초안을 만든다.
+ * 이후의 모든 편집은 autosaveEventMeta / autosaveEventBody 로 이어진다.
+ */
+export async function createEventDraft(date: string): Promise<ScheduleEvent> {
   const admin = await requireAdmin()
   await ensureSchema()
-  const title = str(fd, 'title')
-  const date = str(fd, 'event_date')
-  if (!title || !date) return
-  const categoryId = int(fd, 'category_id', 0)
-  await sql`
-    INSERT INTO schedule_events (title, event_date, event_time, category_id, body_html, updated_by)
-    VALUES (${title}, ${date}, ${nullable(fd, 'event_time')}, ${categoryId || null},
-            ${sanitizeHtml(str(fd, 'body_html')) || null}, ${admin})
-  `
+  const tail = SILLY_TAILS[Math.floor(Math.random() * SILLY_TAILS.length)]
+  const rows = (await sql`
+    INSERT INTO schedule_events (title, event_date, updated_by)
+    VALUES (${`${admin}${tail}`}, ${date}, ${admin})
+    RETURNING id, category_id, title, memo, body_html, updated_by,
+              to_char(event_date, 'YYYY-MM-DD') AS event_date,
+              to_char(event_time, 'HH24:MI')    AS event_time,
+              to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS') AS updated_at
+  `) as (Omit<ScheduleEvent, 'color' | 'category_name'>)[]
   revalidatePath('/admin/schedule')
+  return { ...rows[0], color: 'gray', category_name: null }
 }
 
-export async function updateEvent(fd: FormData): Promise<void> {
+/** 제목·날짜·시간·카테고리를 입력하는 즉시 저장한다. 저장 버튼은 없다. */
+export async function autosaveEventMeta(
+  id: number,
+  meta: { title: string; event_date: string; event_time: string | null; category_id: number | null },
+): Promise<void> {
   const admin = await requireAdmin()
   await ensureSchema()
-  const id = int(fd, 'id')
-  const categoryId = int(fd, 'category_id', 0)
+  if (!meta.event_date) return
   await sql`
     UPDATE schedule_events SET
-      title = ${str(fd, 'title') || '제목 없는 일정'},
-      event_date = ${str(fd, 'event_date')},
-      event_time = ${nullable(fd, 'event_time')},
-      category_id = ${categoryId || null},
-      body_html = ${sanitizeHtml(str(fd, 'body_html')) || null},
+      title = ${meta.title.trim() || '제목 없는 일정'},
+      event_date = ${meta.event_date},
+      event_time = ${meta.event_time || null},
+      category_id = ${meta.category_id || null},
       updated_at = now(),
       updated_by = ${admin}
     WHERE id = ${id}
@@ -221,6 +227,58 @@ export async function deleteEvent(fd: FormData): Promise<void> {
   await ensureSchema()
   await sql`DELETE FROM schedule_events WHERE id = ${int(fd, 'id')}`
   revalidatePath('/admin/schedule')
+}
+
+// ─────────────────────────── 타임라인 (기간 작업 띠)
+
+const TIMELINE_COLORS: EventColor[] = ['blue', 'green', 'purple', 'amber', 'red']
+
+async function timelineList(): Promise<Timeline[]> {
+  return (await sql`
+    SELECT id, title, color, done, created_by,
+           to_char(start_date, 'YYYY-MM-DD') AS start_date,
+           to_char(end_date, 'YYYY-MM-DD')   AS end_date
+    FROM schedule_timelines
+    ORDER BY done ASC, end_date ASC, id ASC
+  `) as Timeline[]
+}
+
+export async function listTimelines(): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  return timelineList()
+}
+
+/** 우측 패널 + 에서 만든다. 오늘부터 마감일까지 달력에 띠가 그려진다. */
+export async function createTimeline(title: string, startDate: string, endDate: string): Promise<Timeline[]> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  const clean = title.trim()
+  if (!clean || !startDate || !endDate) return timelineList()
+  const [start, end] = startDate <= endDate ? [startDate, endDate] : [endDate, startDate]
+  const [{ n }] = (await sql`SELECT count(*)::int AS n FROM schedule_timelines`) as { n: number }[]
+  await sql`
+    INSERT INTO schedule_timelines (title, start_date, end_date, color, created_by)
+    VALUES (${clean}, ${start}, ${end}, ${TIMELINE_COLORS[n % TIMELINE_COLORS.length]}, ${admin})
+  `
+  revalidatePath('/admin/schedule')
+  return timelineList()
+}
+
+export async function toggleTimeline(id: number): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  await sql`UPDATE schedule_timelines SET done = NOT done WHERE id = ${id}`
+  revalidatePath('/admin/schedule')
+  return timelineList()
+}
+
+export async function deleteTimeline(id: number): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  await sql`DELETE FROM schedule_timelines WHERE id = ${id}`
+  revalidatePath('/admin/schedule')
+  return timelineList()
 }
 
 // ─────────────────────────── 일정 카테고리 (설정)
@@ -266,15 +324,13 @@ export async function deleteCategory(fd: FormData): Promise<void> {
 export async function createClient(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
-  const rows = (await sql`
+  await sql`
     INSERT INTO clients (name, company, contact_name, phone, email, business_number, ceo_name, address, memo)
     VALUES (${str(fd, 'name') || '이름 없는 클라이언트'}, ${nullable(fd, 'company')}, ${nullable(fd, 'contact_name')},
             ${nullable(fd, 'phone')}, ${nullable(fd, 'email')}, ${nullable(fd, 'business_number')},
             ${nullable(fd, 'ceo_name')}, ${nullable(fd, 'address')}, ${nullable(fd, 'memo')})
-    RETURNING id
-  `) as { id: number }[]
+  `
   revalidatePath('/admin/clients')
-  redirect(`/admin/clients/${rows[0].id}`)
 }
 
 export async function updateClient(fd: FormData): Promise<void> {
@@ -296,7 +352,6 @@ export async function updateClient(fd: FormData): Promise<void> {
     WHERE id = ${id}
   `
   revalidatePath('/admin/clients')
-  revalidatePath(`/admin/clients/${id}`)
 }
 
 export async function deleteClient(fd: FormData): Promise<void> {
@@ -304,7 +359,6 @@ export async function deleteClient(fd: FormData): Promise<void> {
   await ensureSchema()
   await sql`DELETE FROM clients WHERE id = ${int(fd, 'id')}`
   revalidatePath('/admin/clients')
-  redirect('/admin/clients')
 }
 
 // ─────────────────────────── 계정 / 카드 (민감정보)
@@ -321,7 +375,7 @@ export async function addAccount(fd: FormData): Promise<void> {
     VALUES (${clientId}, ${str(fd, 'category') || 'etc'}, ${label}, ${nullable(fd, 'url')},
             ${nullable(fd, 'username')}, ${password ? encrypt(password) : null}, ${nullable(fd, 'memo')})
   `
-  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin/clients')
 }
 
 export async function deleteAccount(fd: FormData): Promise<void> {
@@ -329,7 +383,7 @@ export async function deleteAccount(fd: FormData): Promise<void> {
   await ensureSchema()
   const clientId = int(fd, 'client_id')
   await sql`DELETE FROM client_accounts WHERE id = ${int(fd, 'id')}`
-  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin/clients')
 }
 
 export async function addCard(fd: FormData): Promise<void> {
@@ -347,7 +401,7 @@ export async function addCard(fd: FormData): Promise<void> {
             ${number ? last4(number) : null}, ${number ? encrypt(number) : null},
             ${expiry ? encrypt(expiry) : null}, ${cvc ? encrypt(cvc) : null}, ${nullable(fd, 'memo')})
   `
-  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin/clients')
 }
 
 export async function deleteCard(fd: FormData): Promise<void> {
@@ -355,7 +409,7 @@ export async function deleteCard(fd: FormData): Promise<void> {
   await ensureSchema()
   const clientId = int(fd, 'client_id')
   await sql`DELETE FROM client_cards WHERE id = ${int(fd, 'id')}`
-  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin/clients')
 }
 
 /** 마스킹된 값을 눌렀을 때만 복호화해서 내려준다. 목록 응답에는 절대 싣지 않는다. */
@@ -472,7 +526,7 @@ export async function createMeal(fd: FormData): Promise<void> {
     VALUES (${date}, ${slotOf(fd)}, ${title}, ${nullable(fd, 'memo')},
             ${nullable(fd, 'image_url')}, ${kcal || null}, ${admin})
   `
-  revalidatePath('/admin/meals')
+  revalidatePath('/admin/schedule')
 }
 
 export async function updateMeal(fd: FormData): Promise<void> {
@@ -489,14 +543,14 @@ export async function updateMeal(fd: FormData): Promise<void> {
       kcal = ${kcal || null}
     WHERE id = ${int(fd, 'id')}
   `
-  revalidatePath('/admin/meals')
+  revalidatePath('/admin/schedule')
 }
 
 export async function deleteMeal(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
   await sql`DELETE FROM meal_entries WHERE id = ${int(fd, 'id')}`
-  revalidatePath('/admin/meals')
+  revalidatePath('/admin/schedule')
 }
 
 // ─────────────────────────── 무한 스크롤 달력

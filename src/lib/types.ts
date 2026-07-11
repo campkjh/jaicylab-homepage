@@ -94,6 +94,17 @@ export type ScheduleEvent = {
   category_name: string | null
 }
 
+/** 우측 패널에서 만드는 기간 작업. 달력에 시작~마감 띠로 그려진다. */
+export type Timeline = {
+  id: number
+  title: string
+  start_date: string
+  end_date: string
+  color: EventColor
+  done: boolean
+  created_by: string | null
+}
+
 export type AdminProfile = {
   name: string
   avatar_url: string | null

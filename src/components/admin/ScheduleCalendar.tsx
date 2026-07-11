@@ -1,21 +1,25 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { EVENT_COLOR, type EventCategory, type ScheduleEvent } from '@/lib/types'
+import { EVENT_COLOR, MEAL_SLOT, type EventCategory, type MealEntry, type ScheduleEvent, type Timeline } from '@/lib/types'
 import type { DayCell, DayTask, MonthData } from '@/lib/calendar'
 import {
   autosaveEventBody,
-  createEvent,
+  autosaveEventMeta,
+  createEventDraft,
   deleteEvent,
   fetchEventBody,
   loadScheduleMonth,
-  updateEvent,
 } from '@/app/admin/actions'
 import { usePresence } from './PresenceProvider'
 import RichEditor from './RichEditor'
+import MealForm from './MealForm'
+import TimelinePanel from './TimelinePanel'
 import Avatar from './Avatar'
 import Icon from './Icon'
 import { Button } from './ui'
@@ -43,6 +47,8 @@ type Dialog =
   | { mode: 'create'; date: string }
   | { mode: 'edit'; event: ScheduleEvent }
   | { mode: 'day'; cell: DayCell }
+  | { mode: 'meal'; meal: MealEntry | null; date: string }
+  | { mode: 'timelines' }
   | null
 
 function EventChip({ event, onClick }: { event: ScheduleEvent; onClick: () => void }) {
@@ -57,10 +63,23 @@ function EventChip({ event, onClick }: { event: ScheduleEvent; onClick: () => vo
   )
 }
 
+function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 ${MEAL_SLOT[meal.slot].chip}`}
+    >
+      {meal.image_url && <img src={meal.image_url} alt="" className="size-3.5 shrink-0 rounded-sm object-cover" />}
+      <span className="min-w-0 flex-1 truncate">{meal.title}</span>
+      <span className="hidden shrink-0 opacity-70 sm:inline">{MEAL_SLOT[meal.slot].label}</span>
+    </button>
+  )
+}
+
 function TaskChip({ task }: { task: DayTask }) {
   return (
     <Link
-      href={`/admin/projects/${task.project_id}`}
+      href={`/admin/projects?open=${task.project_id}`}
       className="flex w-full items-center gap-1 rounded border border-line px-1.5 py-0.5 text-[11px] text-ink-soft transition hover:bg-hover"
     >
       <span className={`size-1.5 shrink-0 rounded-full ${task.done ? 'bg-brand' : 'bg-ink-muted'}`} />
@@ -69,17 +88,73 @@ function TaskChip({ task }: { task: DayTask }) {
   )
 }
 
+/**
+ * 겹치는 타임라인이 매 칸마다 위아래로 널뛰지 않도록 레인을 고정한다.
+ * (시작일 순으로 훑으며 비어 있는 첫 레인에 배정)
+ */
+function assignLanes(timelines: Timeline[]): Map<number, number> {
+  const laneEnds: string[] = []
+  const map = new Map<number, number>()
+  for (const t of timelines) {
+    if (t.done) continue
+    let lane = laneEnds.findIndex(end => end < t.start_date)
+    if (lane === -1) {
+      lane = laneEnds.length
+      laneEnds.push(t.end_date)
+    } else {
+      laneEnds[lane] = t.end_date
+    }
+    map.set(t.id, lane)
+  }
+  return map
+}
+
+function TimelineBands({ cell, month, laneOf }: { cell: DayCell; month: MonthData; laneOf: Map<number, number> }) {
+  const active = month.timelines.filter(t => !t.done && t.start_date <= cell.date && t.end_date >= cell.date)
+  if (active.length === 0) return null
+
+  const maxLane = Math.max(...active.map(t => laneOf.get(t.id) ?? 0))
+  const slots: (Timeline | null)[] = Array.from({ length: maxLane + 1 }, () => null)
+  for (const t of active) slots[laneOf.get(t.id) ?? 0] = t
+
+  return (
+    <div className="mb-0.5 flex flex-col gap-px">
+      {slots.map((t, i) => {
+        if (!t) return <div key={i} className="h-[14px]" />
+        const isStart = t.start_date === cell.date
+        const isEnd = t.end_date === cell.date
+        const showLabel = isStart || cell.isSunday
+        return (
+          <div
+            key={t.id}
+            title={t.title}
+            className={`h-[14px] truncate text-[9px] leading-[14px] font-medium sm:text-[10px] ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.blue.chip} ${
+              isStart ? 'ml-0 rounded-l pl-1' : '-ml-[3px] sm:-ml-[5px]'
+            } ${isEnd ? 'mr-0 rounded-r pr-1' : '-mr-[3px] sm:-mr-[5px]'}`}
+          >
+            {showLabel ? (isStart && !cell.isSunday ? t.title : t.title) : ''}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function MonthGrid({
   month,
   onCreate,
   onEdit,
   onDay,
+  onMeal,
 }: {
   month: MonthData
   onCreate: (date: string) => void
   onEdit: (e: ScheduleEvent) => void
   onDay: (cell: DayCell) => void
+  onMeal: (meal: MealEntry, date: string) => void
 }) {
+  const laneOf = assignLanes(month.timelines)
+
   return (
     <section data-ym={month.ym} className="scroll-mt-12">
       <h2 className="sticky top-0 z-10 bg-surface/95 py-2 text-[13px] font-semibold text-ink backdrop-blur">
@@ -90,6 +165,7 @@ function MonthGrid({
         {month.cells.map(cell => {
           const chips = [
             ...cell.events.map(e => ({ k: `e${e.id}`, node: <EventChip event={e} onClick={() => onEdit(e)} /> })),
+            ...cell.meals.map(m => ({ k: `m${m.id}`, node: <MealChip meal={m} onClick={() => onMeal(m, cell.date)} /> })),
             ...cell.tasks.map(t => ({ k: `t${t.id}`, node: <TaskChip task={t} /> })),
           ]
           const shown = chips.slice(0, MAX_CHIPS)
@@ -121,6 +197,8 @@ function MonthGrid({
                 </button>
               </div>
 
+              <TimelineBands cell={cell} month={month} laneOf={laneOf} />
+
               <div className="flex flex-col gap-0.5">
                 {shown.map(c => (
                   <div key={c.k}>{c.node}</div>
@@ -147,14 +225,17 @@ export default function ScheduleCalendar({
   focusYm,
   categories,
   todayIso,
+  initialTimelines,
 }: {
   initialMonths: MonthData[]
   focusYm: string
   categories: EventCategory[]
   todayIso: string
+  initialTimelines: Timeline[]
 }) {
   const router = useRouter()
   const [months, setMonths] = useState<MonthData[]>(initialMonths)
+  const [timelines, setTimelines] = useState<Timeline[]>(initialTimelines)
   const [dialog, setDialog] = useState<Dialog>(null)
   const [visibleYm, setVisibleYm] = useState(focusYm)
 
@@ -162,8 +243,13 @@ export default function ScheduleCalendar({
   const loading = useRef(false)
   /** prepend 직후 스크롤 위치를 보정하기 위한 직전 높이 */
   const pendingPrepend = useRef<number | null>(null)
+  /** 일정 다이얼로그가 닫히기 전에 남은 자동 저장을 마저 보내도록 폼이 등록해 두는 닫기 함수 */
+  const dialogCloseRef = useRef<(() => void) | null>(null)
 
-  const close = () => setDialog(null)
+  const close = () => {
+    dialogCloseRef.current = null
+    setDialog(null)
+  }
 
   // ?ym= 으로 다른 달을 열면 서버가 새 initialMonths 를 내려준다. state 도 갈아끼운다.
   useEffect(() => {
@@ -206,6 +292,20 @@ export default function ScheduleCalendar({
     const loaded = await Promise.all([...wanted].map(ym => loadScheduleMonth(ym)))
     setMonths(prev => prev.map(m => loaded.find(l => l.ym === m.ym) ?? m))
   }, [])
+
+  /** 타임라인이 바뀌면 화면에 붙어 있는 모든 달의 띠를 다시 그린다. */
+  const reloadAllMonths = useCallback(async () => {
+    const loaded = await Promise.all(monthsRef.current.map(m => loadScheduleMonth(m.ym)))
+    setMonths(loaded)
+  }, [])
+
+  const onTimelinesChanged = useCallback(
+    (list: Timeline[]) => {
+      setTimelines(list)
+      void reloadAllMonths()
+    },
+    [reloadAllMonths],
+  )
 
   const extend = useCallback(async (direction: 'up' | 'down') => {
     if (loading.current) return
@@ -287,82 +387,125 @@ export default function ScheduleCalendar({
 
   const [year, mon] = visibleYm.split('-')
 
+  const onDialogDone = (dates?: string[]) => {
+    close()
+    if (dates?.length) void reloadDates(dates)
+  }
+
   return (
-    <div className="flex h-[calc(100dvh-8.5rem)] flex-col lg:h-[calc(100dvh-3.5rem)]">
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-[20px] leading-tight font-semibold tracking-tight text-ink tabular-nums sm:text-[26px]">
-            {year}년 {Number(mon)}월
-          </h1>
-          <button
-            onClick={jumpToToday}
-            className="rounded-md border border-line px-2 py-1 text-xs text-ink-soft transition hover:bg-hover"
-          >
-            오늘
-          </button>
-          <span className="hidden text-xs text-ink-muted sm:inline">스크롤하면 이전·다음 달이 이어집니다</span>
-        </div>
+    <div className="flex h-[calc(100dvh-8.5rem)] gap-5 lg:h-[calc(100dvh-3.5rem)]">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-[20px] leading-tight font-semibold tracking-tight text-ink tabular-nums sm:text-[26px]">
+              {year}년 {Number(mon)}월
+            </h1>
+            <button
+              onClick={jumpToToday}
+              className="rounded-md border border-line px-2 py-1 text-xs text-ink-soft transition hover:bg-hover"
+            >
+              오늘
+            </button>
+            <span className="hidden text-xs text-ink-muted xl:inline">스크롤하면 이전·다음 달이 이어집니다</span>
+          </div>
 
-        <Button onClick={() => setDialog({ mode: 'create', date: todayIso })}>
-          <Icon name="plus" className="size-4" />
-          일정 추가
-        </Button>
-      </header>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDialog({ mode: 'timelines' })}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink-soft transition hover:bg-hover lg:hidden"
+            >
+              타임라인
+            </button>
+            <Button variant="ghost" onClick={() => setDialog({ mode: 'meal', meal: null, date: todayIso })}>
+              <Icon name="food" className="size-4" />
+              식단
+            </Button>
+            <Button onClick={() => setDialog({ mode: 'create', date: todayIso })}>
+              <Icon name="plus" className="size-4" />
+              일정 추가
+            </Button>
+          </div>
+        </header>
 
-      {categories.length > 0 && (
-        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-          {categories.map(c => (
-            <span key={c.id} className="flex items-center gap-1.5 text-xs text-ink-soft">
-              <span className={`size-2 rounded-full ${EVENT_COLOR[c.color].dot}`} />
-              {c.name}
+        {categories.length > 0 && (
+          <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+            {categories.map(c => (
+              <span key={c.id} className="flex items-center gap-1.5 text-xs text-ink-soft">
+                <span className={`size-2 rounded-full ${EVENT_COLOR[c.color].dot}`} />
+                {c.name}
+              </span>
+            ))}
+            <span className="flex items-center gap-1.5 text-xs text-ink-soft">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              식단
             </span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-7 border-b border-line">
+          {WEEKDAYS.map((w, i) => (
+            <div
+              key={w}
+              className={`px-2 py-1.5 text-[11px] font-medium ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-ink-soft'}`}
+            >
+              {w}
+            </div>
           ))}
         </div>
-      )}
 
-      <div className="grid grid-cols-7 border-b border-line">
-        {WEEKDAYS.map((w, i) => (
-          <div
-            key={w}
-            className={`px-2 py-1.5 text-[11px] font-medium ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-ink-soft'}`}
-          >
-            {w}
-          </div>
-        ))}
+        {/* offsetTop 이 이 박스 기준이 되도록 relative 를 준다 (스크롤 위치 계산에 쓰인다) */}
+        <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
+          {months.map(m => (
+            <MonthGrid
+              key={m.ym}
+              month={m}
+              onCreate={date => setDialog({ mode: 'create', date })}
+              onEdit={e => setDialog({ mode: 'edit', event: e })}
+              onDay={cell => setDialog({ mode: 'day', cell })}
+              onMeal={(meal, date) => setDialog({ mode: 'meal', meal, date })}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* offsetTop 이 이 박스 기준이 되도록 relative 를 준다 (스크롤 위치 계산에 쓰인다) */}
-      <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
-        {months.map(m => (
-          <MonthGrid
-            key={m.ym}
-            month={m}
-            onCreate={date => setDialog({ mode: 'create', date })}
-            onEdit={e => setDialog({ mode: 'edit', event: e })}
-            onDay={cell => setDialog({ mode: 'day', cell })}
-          />
-        ))}
-      </div>
+      <aside className="hidden w-[232px] shrink-0 lg:flex lg:flex-col">
+        <TimelinePanel timelines={timelines} todayIso={todayIso} onChanged={onTimelinesChanged} />
+      </aside>
 
       {dialog && (
-        <Modal onClose={close} wide={dialog.mode !== 'day'}>
-          {dialog.mode === 'day' ? (
+        <Modal
+          onClose={() => {
+            // 일정 편집 중이면 남은 자동 저장을 흘려보낸 뒤 닫는다.
+            if (dialogCloseRef.current) dialogCloseRef.current()
+            else close()
+          }}
+          wide={dialog.mode === 'create' || dialog.mode === 'edit'}
+        >
+          {dialog.mode === 'day' && (
             <DayDetail
               cell={dialog.cell}
               onClose={close}
               onEdit={e => setDialog({ mode: 'edit', event: e })}
               onCreate={() => setDialog({ mode: 'create', date: dialog.cell.date })}
+              onMeal={meal => setDialog({ mode: 'meal', meal, date: dialog.cell.date })}
             />
-          ) : (
+          )}
+          {dialog.mode === 'meal' && (
+            <MealForm key={dialog.meal?.id ?? dialog.date} meal={dialog.meal} date={dialog.date} onDone={onDialogDone} />
+          )}
+          {dialog.mode === 'timelines' && (
+            <div className="p-1">
+              <TimelinePanel timelines={timelines} todayIso={todayIso} onChanged={onTimelinesChanged} />
+            </div>
+          )}
+          {(dialog.mode === 'create' || dialog.mode === 'edit') && (
             <EventDialog
               key={dialog.mode === 'edit' ? dialog.event.id : dialog.date}
               event={dialog.mode === 'edit' ? dialog.event : null}
               date={dialog.mode === 'create' ? dialog.date : dialog.event.event_date}
               categories={categories}
-              onDone={dates => {
-                close()
-                if (dates?.length) void reloadDates(dates)
-              }}
+              closeRef={dialogCloseRef}
+              onDone={onDialogDone}
             />
           )}
         </Modal>
@@ -409,11 +552,13 @@ function DayDetail({
   onClose,
   onEdit,
   onCreate,
+  onMeal,
 }: {
   cell: DayCell
   onClose: () => void
   onEdit: (e: ScheduleEvent) => void
   onCreate: () => void
+  onMeal: (meal: MealEntry | null) => void
 }) {
   return (
     <>
@@ -425,40 +570,49 @@ function DayDetail({
       </div>
 
       <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">
-        {cell.events.length === 0 && cell.tasks.length === 0 && (
+        {cell.events.length === 0 && cell.tasks.length === 0 && cell.meals.length === 0 && (
           <p className="py-6 text-center text-sm text-ink-muted">이 날은 비어 있습니다.</p>
         )}
         {cell.events.map(e => (
           <EventChip key={e.id} event={e} onClick={() => onEdit(e)} />
+        ))}
+        {cell.meals.map(m => (
+          <MealChip key={m.id} meal={m} onClick={() => onMeal(m)} />
         ))}
         {cell.tasks.map(t => (
           <TaskChip key={t.id} task={t} />
         ))}
       </div>
 
-      <Button variant="ghost" onClick={onCreate} className="mt-4 w-full">
-        <Icon name="plus" className="size-4" />이 날에 일정 추가
-      </Button>
+      <div className="mt-4 flex gap-2">
+        <Button variant="ghost" onClick={onCreate} className="flex-1">
+          <Icon name="plus" className="size-4" />
+          일정
+        </Button>
+        <Button variant="ghost" onClick={() => onMeal(null)} className="flex-1">
+          <Icon name="food" className="size-4" />
+          식단
+        </Button>
+      </div>
     </>
   )
 }
 
 /** 편집 중인 일정의 본문을 자동 저장하고, 상대가 저장한 내용을 폴링으로 받아온다. */
-function useCollaborativeBody(event: ScheduleEvent | null) {
+function useCollaborativeBody(event: ScheduleEvent) {
   const { setTypingOn } = usePresence()
-  const [html, setHtml] = useState(event?.body_html ?? '')
+  const [html, setHtml] = useState(event.body_html ?? '')
   const [remoteHtml, setRemoteHtml] = useState<string | null>(null)
   const [savedAt, setSavedAt] = useState<string | null>(null)
 
   const htmlRef = useRef(html)
   htmlRef.current = html
-  const lastSyncedRef = useRef(event?.updated_at ?? '')
+  const lastSyncedRef = useRef(event.updated_at ?? '')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onChange = useCallback(
     (next: string) => {
       setHtml(next)
-      if (!event) return
       setTypingOn(event.id)
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(async () => {
@@ -467,11 +621,10 @@ function useCollaborativeBody(event: ScheduleEvent | null) {
         setSavedAt(at)
       }, 1200)
     },
-    [event, setTypingOn],
+    [event.id, setTypingOn],
   )
 
   useEffect(() => {
-    if (!event) return
     const id = setInterval(async () => {
       const remote = await fetchEventBody(event.id)
       if (!remote || remote.updatedAt <= lastSyncedRef.current) return
@@ -480,7 +633,7 @@ function useCollaborativeBody(event: ScheduleEvent | null) {
       setHtml(remote.html)
     }, 3000)
     return () => clearInterval(id)
-  }, [event])
+  }, [event.id])
 
   useEffect(() => () => setTypingOn(null), [setTypingOn])
 
@@ -502,31 +655,121 @@ function PropertyRow({ icon, label, children }: { icon: React.ReactNode; label: 
 const bareInput =
   'w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-ink outline-none transition hover:bg-hover focus:border-brand focus:bg-surface'
 
+/**
+ * 팝업을 여는 순간 초안이 저장되고(제목은 알아서 지어진다),
+ * 이후의 모든 입력은 자동 저장된다. 저장 버튼이 없다.
+ */
 function EventDialog({
   event,
   date,
   categories,
+  closeRef,
   onDone,
 }: {
   event: ScheduleEvent | null
   date: string
   categories: EventCategory[]
-  /** 닫기만 할 땐 빈 배열, 저장/삭제 후엔 다시 그려야 할 날짜들 */
+  closeRef: React.MutableRefObject<(() => void) | null>
+  /** 닫힌 뒤 다시 그려야 할 날짜들 */
   onDone: (dates?: string[]) => void
 }) {
-  const [categoryId, setCategoryId] = useState<string>(event?.category_id ? String(event.category_id) : '')
+  const [ev, setEv] = useState<ScheduleEvent | null>(event)
+  const started = useRef(false)
+
+  // 새 일정: 여는 순간 초안을 만든다. (StrictMode 의 이중 마운트에도 한 번만)
+  useEffect(() => {
+    if (ev || started.current) return
+    started.current = true
+    void createEventDraft(date).then(setEv)
+  }, [ev, date])
+
+  if (!ev) {
+    return (
+      <div className="flex h-[300px] flex-col items-center justify-center gap-3 text-sm text-ink-muted">
+        <Icon name="refresh" className="size-5 animate-spin" />
+        일정을 만드는 중…
+      </div>
+    )
+  }
+
+  return <EventForm key={ev.id} event={ev} isNew={!event} categories={categories} closeRef={closeRef} onDone={onDone} />
+}
+
+function EventForm({
+  event,
+  isNew,
+  categories,
+  closeRef,
+  onDone,
+}: {
+  event: ScheduleEvent
+  isNew: boolean
+  categories: EventCategory[]
+  closeRef: React.MutableRefObject<(() => void) | null>
+  onDone: (dates?: string[]) => void
+}) {
+  const [title, setTitle] = useState(event.title)
+  const [eventDate, setEventDate] = useState(event.event_date)
+  const [eventTime, setEventTime] = useState(event.event_time ?? '')
+  const [categoryId, setCategoryId] = useState<string>(event.category_id ? String(event.category_id) : '')
+  const [metaSaved, setMetaSaved] = useState(false)
   const active = categories.find(c => String(c.id) === categoryId)
+
+  // 디바운스 타이머가 항상 최신 값을 저장하도록 ref 로도 들고 있는다.
+  const metaRef = useRef({ title, eventDate, eventTime, categoryId })
+  metaRef.current = { title, eventDate, eventTime, categoryId }
+  const touched = useRef(new Set([event.event_date]))
+  const dirty = useRef(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flush = useCallback(async () => {
+    if (timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+    }
+    if (!dirty.current) return
+    dirty.current = false
+    const m = metaRef.current
+    if (!m.eventDate) return
+    touched.current.add(m.eventDate)
+    await autosaveEventMeta(event.id, {
+      title: m.title,
+      event_date: m.eventDate,
+      event_time: m.eventTime || null,
+      category_id: m.categoryId ? Number(m.categoryId) : null,
+    })
+    setMetaSaved(true)
+  }, [event.id])
+
+  const scheduleSave = useCallback(() => {
+    dirty.current = true
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => void flush(), 600)
+  }, [flush])
+
+  const handleClose = useCallback(async () => {
+    await flush()
+    onDone([...touched.current])
+  }, [flush, onDone])
+
+  // 딤 클릭 / ESC 로 닫아도 남은 자동 저장을 마저 보낸다.
+  useEffect(() => {
+    closeRef.current = () => void handleClose()
+    return () => {
+      closeRef.current = null
+    }
+  }, [closeRef, handleClose])
 
   const { html, remoteHtml, savedAt, onChange } = useCollaborativeBody(event)
   const { whoIsTyping } = usePresence()
-  const typist = event ? whoIsTyping(event.id) : null
+  const typist = whoIsTyping(event.id)
 
   return (
     <>
       {/* 상단 바 */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface/95 px-4 py-2.5 backdrop-blur">
         <span className="text-xs text-ink-muted">
-          {event ? `수정 · ${event.updated_by ?? ''}` : '새 일정'}
+          {isNew ? '새 일정 · 자동 저장' : `수정 · ${event.updated_by ?? ''} · 자동 저장`}
         </span>
         <div className="flex items-center gap-3">
           {typist ? (
@@ -535,25 +778,15 @@ function EventDialog({
               {typist.name}님이 입력 중…
             </span>
           ) : (
-            savedAt && <span className="text-[11px] text-ink-muted">저장됨</span>
+            (savedAt || metaSaved) && <span className="text-[11px] text-ink-muted">저장됨</span>
           )}
-          <button onClick={() => onDone()} aria-label="닫기" className="text-ink-muted transition hover:text-ink">
+          <button onClick={() => void handleClose()} aria-label="닫기" className="text-ink-muted transition hover:text-ink">
             <Icon name="x" className="size-4" />
           </button>
         </div>
       </div>
 
-      <form
-        action={async fd => {
-          await (event ? updateEvent(fd) : createEvent(fd))
-          // 날짜를 옮겼다면 옛 날짜의 달도 다시 그려야 칩이 사라진다.
-          onDone([String(fd.get('event_date') ?? ''), event?.event_date ?? ''])
-        }}
-        className="px-5 pt-6 pb-6 sm:px-12 sm:pt-10 sm:pb-8"
-      >
-        {event && <input type="hidden" name="id" value={event.id} />}
-        <input type="hidden" name="body_html" value={html} />
-
+      <div className="px-5 pt-6 pb-6 sm:px-12 sm:pt-10 sm:pb-8">
         {/* 아이콘 + 제목 */}
         <div
           className={`mb-5 flex size-12 items-center justify-center rounded-xl ${active ? EVENT_COLOR[active.color].chip : 'bg-canvas text-ink-muted'}`}
@@ -562,10 +795,13 @@ function EventDialog({
         </div>
 
         <input
-          name="title"
-          required
+          value={title}
           autoFocus
-          defaultValue={event?.title ?? ''}
+          onFocus={e => isNew && e.target.select()}
+          onChange={e => {
+            setTitle(e.target.value)
+            scheduleSave()
+          }}
           placeholder="제목 없음"
           className="-ml-1 mb-6 w-full rounded-md border border-transparent bg-transparent px-1 text-[24px] sm:text-[32px] leading-tight font-bold tracking-tight text-ink outline-none transition placeholder:text-ink-muted/50 hover:border-line focus:border-brand"
         />
@@ -573,20 +809,38 @@ function EventDialog({
         {/* 속성 */}
         <div className="mb-6 flex flex-col">
           <PropertyRow icon={<Icon name="calendar" className="size-3.5" />} label="날짜">
-            <input type="date" name="event_date" required defaultValue={date} className={bareInput} />
+            <input
+              type="date"
+              value={eventDate}
+              onChange={e => {
+                setEventDate(e.target.value)
+                scheduleSave()
+              }}
+              className={bareInput}
+            />
           </PropertyRow>
 
           <PropertyRow icon={<Icon name="clock" className="size-3.5" />} label="시간">
-            <input type="time" name="event_time" defaultValue={event?.event_time ?? ''} className={bareInput} />
+            <input
+              type="time"
+              value={eventTime}
+              onChange={e => {
+                setEventTime(e.target.value)
+                scheduleSave()
+              }}
+              className={bareInput}
+            />
           </PropertyRow>
 
           <PropertyRow icon={<Icon name="tag" className="size-3.5" />} label="카테고리">
             <div className="flex items-center gap-2">
               <span className={`size-2.5 shrink-0 rounded-full ${active ? EVENT_COLOR[active.color].dot : 'bg-zinc-300'}`} />
               <select
-                name="category_id"
                 value={categoryId}
-                onChange={e => setCategoryId(e.target.value)}
+                onChange={e => {
+                  setCategoryId(e.target.value)
+                  scheduleSave()
+                }}
                 className={bareInput}
               >
                 <option value="">미지정</option>
@@ -603,28 +857,27 @@ function EventDialog({
         <div className="mb-5 border-t border-line" />
 
         {/* 본문 */}
-        <RichEditor initialHtml={event?.body_html ?? ''} remoteHtml={remoteHtml} onChange={onChange} seamless />
+        <RichEditor initialHtml={event.body_html ?? ''} remoteHtml={remoteHtml} onChange={onChange} seamless />
 
         <div className="mt-8 flex items-center gap-2 border-t border-line pt-5">
-          <Button type="submit">{event ? '저장' : '추가'}</Button>
-          {event && (
-            <button
-              type="submit"
-              formAction={async fd => {
-                await deleteEvent(fd)
-                onDone([event.event_date])
-              }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
-            >
-              <Icon name="bin" className="size-4" />
-              삭제
-            </button>
-          )}
+          <button
+            onClick={async () => {
+              const fd = new FormData()
+              fd.set('id', String(event.id))
+              await deleteEvent(fd)
+              onDone([...touched.current])
+            }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
+          >
+            <Icon name="bin" className="size-4" />
+            삭제
+          </button>
+          <span className="text-xs text-ink-muted">닫으면 자동으로 저장됩니다</span>
           <Link href="/admin/settings" className="ml-auto text-xs text-ink-muted underline underline-offset-2 hover:text-ink">
             카테고리 설정
           </Link>
         </div>
-      </form>
+      </div>
     </>
   )
 }

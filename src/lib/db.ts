@@ -135,6 +135,19 @@ const DDL = [
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
 
+  // 우측 패널에서 만드는 기간 작업. 달력에 시작~마감 띠로 그려진다.
+  `CREATE TABLE IF NOT EXISTS schedule_timelines (
+    id         serial PRIMARY KEY,
+    title      text NOT NULL,
+    start_date date NOT NULL,
+    end_date   date NOT NULL,
+    color      text NOT NULL DEFAULT 'blue',
+    done       boolean NOT NULL DEFAULT false,
+    created_by text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_timelines_range ON schedule_timelines(start_date, end_date)`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_date ON schedule_events(event_date)`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_category ON schedule_events(category_id)`,
   `CREATE INDEX IF NOT EXISTS idx_meals_date ON meal_entries(meal_date)`,

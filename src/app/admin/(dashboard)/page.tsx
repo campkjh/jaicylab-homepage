@@ -89,7 +89,7 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm text-ink">{t.title}</div>
                       <Link
-                        href={`/admin/projects/${t.project_id}`}
+                        href={`/admin/projects?open=${t.project_id}`}
                         className="text-xs text-ink-muted transition hover:text-ink-soft"
                       >
                         {t.project_name}
@@ -117,7 +117,7 @@ export default async function DashboardPage() {
               {projects.map(p => (
                 <li key={p.id}>
                   <Link
-                    href={`/admin/projects/${p.id}`}
+                    href={`/admin/projects?open=${p.id}`}
                     className="group block rounded-xl border border-line bg-surface p-4 transition hover:border-ink-muted/40 hover:shadow-[0_1px_3px_rgba(15,15,15,0.06)]"
                   >
                     <div className="flex items-center gap-2">
