@@ -70,7 +70,20 @@ body {
 
 /* 게: 화면을 가로질러 총총 걸어간다 */
 @keyframes crabWalk { 0% { left: -72px; } 100% { left: 100%; } }
-.crab-track { animation: crabWalk 55s linear infinite; }
+.crab-track { animation: crabWalk 38s linear infinite; }
+
+/* 코코넛: 게 머리에 맞고(60%) 튕겨서 모래에 떨어진다 */
+@keyframes coconutFall {
+  0%   { transform: translateY(0); }
+  60%  { transform: translateY(30px); }
+  75%  { transform: translateY(24px) translateX(10px); }
+  100% { transform: translateY(56px) translateX(14px); }
+}
+.coconut-fall { animation: coconutFall 0.7s steps(8) forwards; }
+
+/* 혹 났을 때 머리 주위 별이 어질어질 */
+@keyframes dizzySpin { from { opacity: 1; } to { opacity: 0.15; } }
+.dizzy-star { animation: dizzySpin 0.5s steps(2) infinite alternate; }
 @keyframes crabBob { from { transform: translateY(0); } to { transform: translateY(2px); } }
 .crab-bob { animation: crabBob 0.45s steps(2) infinite alternate; }
 

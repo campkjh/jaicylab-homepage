@@ -1,4 +1,11 @@
-/* 여름 도트 해변 장식. 화면 아래에 깔리는 순수 장식이라 포인터를 막지 않는다. */
+'use client'
+
+/*
+ * 여름 도트 해변 장식. 화면 아래에 깔리는 순수 장식이라 포인터를 막지 않는다.
+ * 게가 야자수 아래를 지나가면 코코넛이 떨어져 머리에 혹이 난다.
+ */
+
+import { useEffect, useRef, useState } from 'react'
 
 const SAND = '#f2dfae'
 const SAND_DOT = '#e3cb8f'
@@ -19,14 +26,38 @@ function WaveStrip({ fill, opacity = 1 }: { fill: string; opacity?: number }) {
   )
 }
 
-function Crab() {
+/** 혹이 나면 머리 위에 벌겋게 부어오른 혹 + 어질어질 별이 붙는다. */
+function Crab({ bump }: { bump: boolean }) {
   return (
-    <svg viewBox="0 0 56 30" className="pixelated h-[30px] w-[56px]" aria-hidden>
+    <svg viewBox="0 -12 56 42" className="pixelated h-[40px] w-[56px]" aria-hidden>
+      {bump && (
+        <g>
+          {/* 혹 */}
+          <rect x="24" y="-6" width="8" height="4" fill="#f08a7d" />
+          <rect x="26" y="-9" width="4" height="3" fill="#f08a7d" />
+          <rect x="26" y="-8" width="2" height="2" fill="#ffffff" />
+          {/* 어질어질 별 */}
+          <g className="dizzy-star" fill="#ffd23e">
+            <rect x="12" y="-11" width="3" height="3" />
+            <rect x="42" y="-8" width="3" height="3" />
+          </g>
+        </g>
+      )}
       {/* 눈 */}
       <rect x="12" y="0" width="4" height="4" fill="#fff" />
       <rect x="40" y="0" width="4" height="4" fill="#fff" />
-      <rect x="14" y="1" width="2" height="2" fill="#222" />
-      <rect x="42" y="1" width="2" height="2" fill="#222" />
+      {bump ? (
+        <>
+          {/* 맞아서 감은 눈 */}
+          <rect x="12" y="2" width="4" height="2" fill="#222" />
+          <rect x="40" y="2" width="4" height="2" fill="#222" />
+        </>
+      ) : (
+        <>
+          <rect x="14" y="1" width="2" height="2" fill="#222" />
+          <rect x="42" y="1" width="2" height="2" fill="#222" />
+        </>
+      )}
       <rect x="12" y="4" width="4" height="4" fill="#b23c33" />
       <rect x="40" y="4" width="4" height="4" fill="#b23c33" />
       {/* 집게 */}
@@ -48,27 +79,60 @@ function Crab() {
   )
 }
 
+/** 휘어진 줄기에 축 늘어진 잎, 코코넛이 달린 야자수 */
 function Palm() {
   return (
-    <svg viewBox="0 0 72 64" className="pixelated h-[64px] w-[72px]" aria-hidden>
-      {/* 줄기 */}
-      <rect x="32" y="24" width="8" height="40" fill="#b07a45" />
-      <rect x="32" y="32" width="8" height="4" fill="#8f5f33" />
-      <rect x="32" y="44" width="8" height="4" fill="#8f5f33" />
-      <rect x="32" y="56" width="8" height="4" fill="#8f5f33" />
-      {/* 잎 */}
+    <svg viewBox="0 0 92 84" className="pixelated h-[84px] w-[92px]" aria-hidden>
+      {/* 줄기: 오른쪽으로 살짝 휘어 올라간다 */}
+      <rect x="36" y="72" width="12" height="12" fill="#a8713e" />
+      <rect x="38" y="60" width="11" height="12" fill="#b07a45" />
+      <rect x="41" y="48" width="10" height="12" fill="#b07a45" />
+      <rect x="45" y="37" width="10" height="11" fill="#b8834e" />
+      <rect x="49" y="27" width="9" height="10" fill="#b8834e" />
+      {/* 줄기 마디 */}
+      <rect x="38" y="66" width="11" height="3" fill="#8f5f33" />
+      <rect x="41" y="54" width="10" height="3" fill="#8f5f33" />
+      <rect x="45" y="43" width="10" height="3" fill="#8f5f33" />
+      <rect x="49" y="32" width="9" height="3" fill="#8f5f33" />
+
+      {/* 잎: 꼭대기에서 사방으로 처지는 프론드 */}
       <g className="palm-sway">
-        <rect x="8" y="16" width="24" height="8" fill="#2fae63" />
-        <rect x="40" y="16" width="24" height="8" fill="#2fae63" />
-        <rect x="16" y="8" width="16" height="8" fill="#1f8f4e" />
-        <rect x="40" y="8" width="16" height="8" fill="#1f8f4e" />
-        <rect x="28" y="2" width="16" height="8" fill="#2fae63" />
-        <rect x="4" y="20" width="8" height="4" fill="#1f8f4e" />
-        <rect x="60" y="20" width="8" height="4" fill="#1f8f4e" />
+        {/* 왼쪽으로 축 처지는 잎 */}
+        <rect x="34" y="22" width="20" height="6" fill="#2fae63" />
+        <rect x="20" y="26" width="16" height="6" fill="#2fae63" />
+        <rect x="8" y="32" width="14" height="6" fill="#1f8f4e" />
+        <rect x="2" y="38" width="8" height="5" fill="#1f8f4e" />
+        {/* 왼쪽 위 잎 */}
+        <rect x="34" y="14" width="18" height="6" fill="#1f8f4e" />
+        <rect x="22" y="10" width="14" height="6" fill="#2fae63" />
+        <rect x="14" y="14" width="8" height="5" fill="#1f8f4e" />
+        {/* 가운데 위 잎 */}
+        <rect x="48" y="6" width="12" height="7" fill="#2fae63" />
+        <rect x="44" y="2" width="8" height="6" fill="#1f8f4e" />
+        {/* 오른쪽 위 잎 */}
+        <rect x="58" y="12" width="16" height="6" fill="#2fae63" />
+        <rect x="72" y="16" width="10" height="5" fill="#1f8f4e" />
+        {/* 오른쪽으로 축 처지는 잎 */}
+        <rect x="58" y="22" width="18" height="6" fill="#1f8f4e" />
+        <rect x="74" y="28" width="12" height="6" fill="#2fae63" />
+        <rect x="84" y="34" width="7" height="5" fill="#1f8f4e" />
       </g>
-      {/* 코코넛 */}
-      <rect x="26" y="22" width="6" height="6" fill="#7a4f2a" />
-      <rect x="40" y="22" width="6" height="6" fill="#7a4f2a" />
+
+      {/* 코코넛 (하나는 게 머리 위로 떨어질 예정) */}
+      <rect x="46" y="24" width="7" height="7" fill="#6f4726" />
+      <rect x="56" y="26" width="7" height="7" fill="#7a4f2a" />
+      <rect x="47" y="25" width="2" height="2" fill="#8f6a42" />
+      <rect x="57" y="27" width="2" height="2" fill="#8f6a42" />
+    </svg>
+  )
+}
+
+function Coconut() {
+  return (
+    <svg viewBox="0 0 8 8" className="pixelated h-[8px] w-[8px]" aria-hidden>
+      <rect width="8" height="8" fill="#6f4726" />
+      <rect x="1" y="1" width="2" height="2" fill="#8f6a42" />
+      <rect x="5" y="5" width="2" height="2" fill="#583a20" />
     </svg>
   )
 }
@@ -107,10 +171,66 @@ function Sun() {
 }
 
 export default function SummerShore() {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const palmRef = useRef<HTMLDivElement>(null)
+  /** 한 번 지나갈 때 한 대만 맞도록, 멀어지면 다시 장전한다 */
+  const armed = useRef(true)
+  const busy = useRef(false)
+  const [falling, setFalling] = useState<{ left: number } | null>(null)
+  const [bump, setBump] = useState(false)
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    // 게가 코코넛 낙하 지점에 왔는지 주기적으로 본다.
+    const watcher = setInterval(() => {
+      const track = trackRef.current
+      const palm = palmRef.current
+      if (!track || !palm || busy.current) return
+      // 야자수가 숨는 좁은 화면에선 개그도 쉰다.
+      if (palm.offsetParent === null) return
+
+      const crabCenter = track.getBoundingClientRect().left + 28
+      const palmRect = palm.getBoundingClientRect()
+      const coconutX = palmRect.left + 46 // 야자수 svg 의 코코넛 위치
+
+      if (!armed.current) {
+        if (Math.abs(crabCenter - coconutX) > 160) armed.current = true
+        return
+      }
+      if (Math.abs(crabCenter - coconutX) < 9) {
+        armed.current = false
+        busy.current = true
+        setFalling({ left: coconutX - 4 })
+
+        // 코코넛이 0.35초 떨어진 뒤 명중 → 혹 + 잠깐 기절
+        timers.push(
+          setTimeout(() => {
+            setBump(true)
+            if (trackRef.current) trackRef.current.style.animationPlayState = 'paused'
+          }, 350),
+          setTimeout(() => setFalling(null), 1800),
+          setTimeout(() => {
+            if (trackRef.current) trackRef.current.style.animationPlayState = 'running'
+          }, 1700),
+          setTimeout(() => {
+            setBump(false)
+            busy.current = false
+          }, 8000),
+        )
+      }
+    }, 120)
+
+    return () => {
+      clearInterval(watcher)
+      timers.forEach(clearTimeout)
+    }
+  }, [])
+
   return (
     <div aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
       {/* 수평선 위 태양 (파도 뒤로 반쯤 잠긴다) */}
-      <div className="absolute right-[150px] bottom-[30px]">
+      <div className="absolute right-[170px] bottom-[30px]">
         <Sun />
       </div>
 
@@ -137,17 +257,24 @@ export default function SummerShore() {
       />
 
       {/* 야자수와 불가사리 */}
-      <div className="absolute right-8 bottom-[20px] hidden sm:block">
+      <div ref={palmRef} className="absolute right-8 bottom-[18px] hidden sm:block">
         <Palm />
       </div>
       <div className="absolute bottom-[6px] left-[16%]">
         <Starfish />
       </div>
 
+      {/* 떨어지는 코코넛 */}
+      {falling && (
+        <div className="coconut-fall absolute bottom-[64px]" style={{ left: falling.left }}>
+          <Coconut />
+        </div>
+      )}
+
       {/* 총총 걸어가는 게 */}
-      <div className="crab-track absolute bottom-[2px]">
+      <div ref={trackRef} className="crab-track absolute bottom-[2px]">
         <div className="crab-bob">
-          <Crab />
+          <Crab bump={bump} />
         </div>
       </div>
     </div>
