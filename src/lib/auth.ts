@@ -89,3 +89,8 @@ export async function authenticate(input: string): Promise<string | null> {
   }
   return matched
 }
+
+/** 태그로 고를 수 있는 관리자 이름 목록. */
+export function adminNames(): string[] {
+  return adminUsers().map(u => u.name)
+}

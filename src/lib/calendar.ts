@@ -1,7 +1,7 @@
 import 'server-only'
 import { sql } from './db'
 import { holidayName } from './holidays'
-import type { MealEntry, ScheduleEvent, Timeline } from './types'
+import type { MealEntry, ScheduleEvent } from './types'
 
 export const MS_DAY = 86_400_000
 
@@ -50,8 +50,6 @@ export type MonthData = {
   month: number
   title: string
   cells: DayCell[]
-  /** 이 달 그리드와 겹치는 기간 작업들. 띠로 그린다. */
-  timelines: Timeline[]
 }
 
 function gridRange(year: number, month: number) {
@@ -67,7 +65,7 @@ function gridRange(year: number, month: number) {
 export async function buildMonth(year: number, month: number): Promise<MonthData> {
   const { gridStart, gridEnd, cellCount } = gridRange(year, month)
 
-  const [eventRows, taskRows, mealRows, timelineRows] = await Promise.all([
+  const [eventRows, taskRows, mealRows] = await Promise.all([
     sql`
       SELECT e.id, e.category_id, e.title, e.memo, e.body_html, e.updated_by,
              to_char(e.event_date, 'YYYY-MM-DD') AS event_date,
@@ -93,20 +91,11 @@ export async function buildMonth(year: number, month: number): Promise<MonthData
       WHERE meal_date BETWEEN ${iso(gridStart)} AND ${iso(gridEnd)}
       ORDER BY CASE slot WHEN 'breakfast' THEN 0 WHEN 'lunch' THEN 1 WHEN 'dinner' THEN 2 ELSE 3 END, id
     `,
-    sql`
-      SELECT id, title, color, done, created_by,
-             to_char(start_date, 'YYYY-MM-DD') AS start_date,
-             to_char(end_date, 'YYYY-MM-DD')   AS end_date
-      FROM schedule_timelines
-      WHERE start_date <= ${iso(gridEnd)} AND end_date >= ${iso(gridStart)}
-      ORDER BY start_date, id
-    `,
   ])
 
   const events = eventRows as ScheduleEvent[]
   const tasks = taskRows as (DayTask & { due_date: string })[]
   const meals = mealRows as MealEntry[]
-  const timelines = timelineRows as Timeline[]
 
   const today = todayIso()
   const byDate = new Map<string, DayCell>()
@@ -135,7 +124,7 @@ export async function buildMonth(year: number, month: number): Promise<MonthData
   for (const t of tasks) byDate.get(t.due_date)?.tasks.push(t)
   for (const m of meals) byDate.get(m.meal_date)?.meals.push(m)
 
-  return { ym: ymOf(year, month), year, month, title: `${year}년 ${month + 1}월`, cells, timelines }
+  return { ym: ymOf(year, month), year, month, title: `${year}년 ${month + 1}월`, cells }
 }
 
 /** 기준 달에서 offset 만큼 떨어진 달 */

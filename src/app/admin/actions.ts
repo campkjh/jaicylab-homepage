@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { sql, ensureSchema } from '@/lib/db'
 import { requireAdmin } from '@/lib/session'
-import { SESSION_COOKIE, createSession, authenticate } from '@/lib/auth'
+import { SESSION_COOKIE, createSession, authenticate, adminNames } from '@/lib/auth'
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
 import { sanitizeHtml } from '@/lib/sanitize'
 import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline } from '@/lib/types'
@@ -229,17 +229,16 @@ export async function deleteEvent(fd: FormData): Promise<void> {
   revalidatePath('/admin/schedule')
 }
 
-// ─────────────────────────── 타임라인 (기간 작업 띠)
+// ─────────────────────────── 타임라인 (할 일 + 담당자 태그)
 
-const TIMELINE_COLORS: EventColor[] = ['blue', 'green', 'purple', 'amber', 'red']
+/** 담당자별로 색을 고정한다. 관리자 목록 순서대로 돌아간다. */
+const TIMELINE_COLORS: EventColor[] = ['purple', 'blue', 'green', 'amber', 'red']
 
 async function timelineList(): Promise<Timeline[]> {
   return (await sql`
-    SELECT id, title, color, done, created_by,
-           to_char(start_date, 'YYYY-MM-DD') AS start_date,
-           to_char(end_date, 'YYYY-MM-DD')   AS end_date
+    SELECT id, title, assignee, color, done, created_by
     FROM schedule_timelines
-    ORDER BY done ASC, end_date ASC, id ASC
+    ORDER BY done ASC, id DESC
   `) as Timeline[]
 }
 
@@ -249,17 +248,18 @@ export async function listTimelines(): Promise<Timeline[]> {
   return timelineList()
 }
 
-/** 우측 패널 + 에서 만든다. 오늘부터 마감일까지 달력에 띠가 그려진다. */
-export async function createTimeline(title: string, startDate: string, endDate: string): Promise<Timeline[]> {
+/** 우측 패널 + 에서 만든다. 할 일을 적고 담당자 태그를 고른다. */
+export async function createTimeline(title: string, assignee: string | null): Promise<Timeline[]> {
   const admin = await requireAdmin()
   await ensureSchema()
   const clean = title.trim()
-  if (!clean || !startDate || !endDate) return timelineList()
-  const [start, end] = startDate <= endDate ? [startDate, endDate] : [endDate, startDate]
-  const [{ n }] = (await sql`SELECT count(*)::int AS n FROM schedule_timelines`) as { n: number }[]
+  if (!clean) return timelineList()
+  const names = adminNames()
+  const who = assignee && names.includes(assignee) ? assignee : null
+  const color = who ? TIMELINE_COLORS[names.indexOf(who) % TIMELINE_COLORS.length] : 'gray'
   await sql`
-    INSERT INTO schedule_timelines (title, start_date, end_date, color, created_by)
-    VALUES (${clean}, ${start}, ${end}, ${TIMELINE_COLORS[n % TIMELINE_COLORS.length]}, ${admin})
+    INSERT INTO schedule_timelines (title, assignee, color, created_by)
+    VALUES (${clean}, ${who}, ${color}, ${admin})
   `
   revalidatePath('/admin/schedule')
   return timelineList()

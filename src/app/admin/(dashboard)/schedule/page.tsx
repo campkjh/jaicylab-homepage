@@ -1,4 +1,5 @@
 import { ensureSchema, sql, type EventCategory, type Timeline } from '@/lib/db'
+import { adminNames } from '@/lib/auth'
 import { buildMonth, parseYm, shiftMonth, todayIso } from '@/lib/calendar'
 import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
 
@@ -18,11 +19,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     buildMonth(next.year, next.month),
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
     sql`
-      SELECT id, title, color, done, created_by,
-             to_char(start_date, 'YYYY-MM-DD') AS start_date,
-             to_char(end_date, 'YYYY-MM-DD')   AS end_date
+      SELECT id, title, assignee, color, done, created_by
       FROM schedule_timelines
-      ORDER BY done ASC, end_date ASC, id ASC
+      ORDER BY done ASC, id DESC
     `,
   ])
 
@@ -33,6 +32,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       categories={categoryRows as EventCategory[]}
       todayIso={todayIso()}
       initialTimelines={timelineRows as Timeline[]}
+      admins={adminNames()}
     />
   )
 }

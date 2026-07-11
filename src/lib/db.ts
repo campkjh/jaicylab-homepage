@@ -135,19 +135,21 @@ const DDL = [
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
 
-  // 우측 패널에서 만드는 기간 작업. 달력에 시작~마감 띠로 그려진다.
+  // 우측 패널의 할 일 목록. 담당자 태그(관리자 이름)를 붙인다.
   `CREATE TABLE IF NOT EXISTS schedule_timelines (
     id         serial PRIMARY KEY,
     title      text NOT NULL,
-    start_date date NOT NULL,
-    end_date   date NOT NULL,
+    start_date date,
+    end_date   date,
     color      text NOT NULL DEFAULT 'blue',
     done       boolean NOT NULL DEFAULT false,
     created_by text,
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
-
-  `CREATE INDEX IF NOT EXISTS idx_timelines_range ON schedule_timelines(start_date, end_date)`,
+  // 초기 버전은 오늘~마감 띠였다. 지금은 담당자 태그 방식이라 날짜가 필요 없다.
+  `ALTER TABLE schedule_timelines ADD COLUMN IF NOT EXISTS assignee text`,
+  `ALTER TABLE schedule_timelines ALTER COLUMN start_date DROP NOT NULL`,
+  `ALTER TABLE schedule_timelines ALTER COLUMN end_date DROP NOT NULL`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_date ON schedule_events(event_date)`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_category ON schedule_events(category_id)`,
   `CREATE INDEX IF NOT EXISTS idx_meals_date ON meal_entries(meal_date)`,

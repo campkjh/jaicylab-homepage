@@ -88,58 +88,6 @@ function TaskChip({ task }: { task: DayTask }) {
   )
 }
 
-/**
- * 겹치는 타임라인이 매 칸마다 위아래로 널뛰지 않도록 레인을 고정한다.
- * (시작일 순으로 훑으며 비어 있는 첫 레인에 배정)
- */
-function assignLanes(timelines: Timeline[]): Map<number, number> {
-  const laneEnds: string[] = []
-  const map = new Map<number, number>()
-  for (const t of timelines) {
-    if (t.done) continue
-    let lane = laneEnds.findIndex(end => end < t.start_date)
-    if (lane === -1) {
-      lane = laneEnds.length
-      laneEnds.push(t.end_date)
-    } else {
-      laneEnds[lane] = t.end_date
-    }
-    map.set(t.id, lane)
-  }
-  return map
-}
-
-function TimelineBands({ cell, month, laneOf }: { cell: DayCell; month: MonthData; laneOf: Map<number, number> }) {
-  const active = month.timelines.filter(t => !t.done && t.start_date <= cell.date && t.end_date >= cell.date)
-  if (active.length === 0) return null
-
-  const maxLane = Math.max(...active.map(t => laneOf.get(t.id) ?? 0))
-  const slots: (Timeline | null)[] = Array.from({ length: maxLane + 1 }, () => null)
-  for (const t of active) slots[laneOf.get(t.id) ?? 0] = t
-
-  return (
-    <div className="mb-0.5 flex flex-col gap-px">
-      {slots.map((t, i) => {
-        if (!t) return <div key={i} className="h-[14px]" />
-        const isStart = t.start_date === cell.date
-        const isEnd = t.end_date === cell.date
-        const showLabel = isStart || cell.isSunday
-        return (
-          <div
-            key={t.id}
-            title={t.title}
-            className={`h-[14px] truncate text-[9px] leading-[14px] font-medium sm:text-[10px] ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.blue.chip} ${
-              isStart ? 'ml-0 rounded-l pl-1' : '-ml-[3px] sm:-ml-[5px]'
-            } ${isEnd ? 'mr-0 rounded-r pr-1' : '-mr-[3px] sm:-mr-[5px]'}`}
-          >
-            {showLabel ? (isStart && !cell.isSunday ? t.title : t.title) : ''}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 function MonthGrid({
   month,
   onCreate,
@@ -153,8 +101,6 @@ function MonthGrid({
   onDay: (cell: DayCell) => void
   onMeal: (meal: MealEntry, date: string) => void
 }) {
-  const laneOf = assignLanes(month.timelines)
-
   return (
     <section data-ym={month.ym} className="scroll-mt-12">
       <h2 className="sticky top-0 z-10 bg-surface/95 py-2 text-[13px] font-semibold text-ink backdrop-blur">
@@ -197,8 +143,6 @@ function MonthGrid({
                 </button>
               </div>
 
-              <TimelineBands cell={cell} month={month} laneOf={laneOf} />
-
               <div className="flex flex-col gap-0.5">
                 {shown.map(c => (
                   <div key={c.k}>{c.node}</div>
@@ -226,12 +170,14 @@ export default function ScheduleCalendar({
   categories,
   todayIso,
   initialTimelines,
+  admins,
 }: {
   initialMonths: MonthData[]
   focusYm: string
   categories: EventCategory[]
   todayIso: string
   initialTimelines: Timeline[]
+  admins: string[]
 }) {
   const router = useRouter()
   const [months, setMonths] = useState<MonthData[]>(initialMonths)
@@ -293,19 +239,7 @@ export default function ScheduleCalendar({
     setMonths(prev => prev.map(m => loaded.find(l => l.ym === m.ym) ?? m))
   }, [])
 
-  /** 타임라인이 바뀌면 화면에 붙어 있는 모든 달의 띠를 다시 그린다. */
-  const reloadAllMonths = useCallback(async () => {
-    const loaded = await Promise.all(monthsRef.current.map(m => loadScheduleMonth(m.ym)))
-    setMonths(loaded)
-  }, [])
-
-  const onTimelinesChanged = useCallback(
-    (list: Timeline[]) => {
-      setTimelines(list)
-      void reloadAllMonths()
-    },
-    [reloadAllMonths],
-  )
+  const onTimelinesChanged = useCallback((list: Timeline[]) => setTimelines(list), [])
 
   const extend = useCallback(async (direction: 'up' | 'down') => {
     if (loading.current) return
@@ -469,7 +403,7 @@ export default function ScheduleCalendar({
       </div>
 
       <aside className="hidden w-[232px] shrink-0 lg:flex lg:flex-col">
-        <TimelinePanel timelines={timelines} todayIso={todayIso} onChanged={onTimelinesChanged} />
+        <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
       </aside>
 
       {dialog && (
@@ -495,7 +429,7 @@ export default function ScheduleCalendar({
           )}
           {dialog.mode === 'timelines' && (
             <div className="p-1">
-              <TimelinePanel timelines={timelines} todayIso={todayIso} onChanged={onTimelinesChanged} />
+              <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
             </div>
           )}
           {(dialog.mode === 'create' || dialog.mode === 'edit') && (
