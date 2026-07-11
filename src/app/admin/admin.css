@@ -109,15 +109,69 @@ body {
 @keyframes seaSparkle { 0%, 70% { opacity: 0; } 85% { opacity: 0.9; } 100% { opacity: 0; } }
 .sea-sparkle { animation: seaSparkle 4s steps(3) infinite; display: inline-block; }
 
-/* 픽셀 비 */
-@keyframes rainFall { from { background-position: 0 0; } to { background-position: -8px 30px; } }
-.pixel-rain {
-  z-index: 4;
-  opacity: 0.3;
-  background-image: linear-gradient(to bottom, rgba(96, 165, 250, 0.7) 0 9px, transparent 9px 100%);
-  background-size: 4px 30px;
-  animation: rainFall 0.45s linear infinite;
+/* 비: 빗방울 하나하나가 비스듬히 떨어진다 */
+@keyframes dropFall {
+  from { transform: translate(0, -30px) skewX(-14deg); }
+  to { transform: translate(-70px, 105vh) skewX(-14deg); }
 }
+.rain-drop {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, rgba(147, 197, 253, 0.1), #7cb5f0);
+  animation: dropFall linear infinite;
+}
+
+/* 모래에 튀는 빗방울 */
+@keyframes splashPop {
+  0% { transform: scale(0); opacity: 0; }
+  40% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.5) translateY(-3px); opacity: 0; }
+}
+.rain-splash {
+  width: 6px;
+  height: 3px;
+  border-radius: 9999px;
+  background: #bfdbfe;
+  animation: splashPop 0.7s steps(4) infinite;
+}
+
+/* 번개 섬광 */
+@keyframes skyFlash { 0% { opacity: 0; } 20% { opacity: 0.55; } 45% { opacity: 0.1; } 65% { opacity: 0.4; } 100% { opacity: 0; } }
+.sky-flash { animation: skyFlash 0.4s steps(5) forwards; }
+
+/* 감전: 지지직 번쩍임 */
+@keyframes zapFlick { from { filter: brightness(1); } to { filter: brightness(2.4) sepia(1) saturate(4); } }
+.zap-flicker { animation: zapFlick 0.12s steps(2) infinite alternate; }
+
+/* 강풍에 데굴데굴 */
+@keyframes blownSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.blown-spin { animation: blownSpin 0.55s steps(4) infinite; }
+
+/* 강풍: 가로로 날아가는 모래 먼지 */
+@keyframes windDust {
+  0% { transform: translateX(-40px); opacity: 0; }
+  10% { opacity: 0.8; }
+  100% { transform: translateX(105vw); opacity: 0; }
+}
+.wind-dust { animation: windDust 1.6s linear infinite; }
+
+/* 낮잠 Zzz */
+@keyframes zzzFloat {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-16px); opacity: 0; }
+}
+.zzz-float { animation: zzzFloat 2s steps(6) infinite; }
+
+/* 폭염: 김이 모락모락 */
+@keyframes steamUp {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+.heat-steam { display: inline-block; animation: steamUp 1.6s steps(5) infinite; }
 
 /* 친화력 하트/화남 표시 */
 @keyframes heartPop { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-16px); opacity: 0; } }

@@ -34,6 +34,12 @@ type Mode =
   | 'car'
   | 'drag'
   | 'placed'
+  | 'dig'
+  | 'nap'
+  | 'dance'
+  | 'admire'
+  | 'cooloff'
+  | 'blown'
 
 // ─────────────────────────── 대사
 
@@ -50,9 +56,25 @@ const LINES = {
   heli: ['타임라인 점검하러 출동!', '날 수 있을 것 같아!', '위에서 보면 다 보인다구', '두두두두두두'],
   heliCrash: ['아야야...', '다신 안 탄다...', '착륙은 원래 어려운 거야', '헬기 면허 따야겠다...', '별이 보여...'],
   car: ['슬슬 퇴근 준비...', '차 시동 걸어놨어', '6시 되면 바로 출발이야', '{n} 퇴근 안 해?', '트렁크에 모래 좀 싣고...', '내일 또 보자~', '퇴근길 막히기 전에 가야지'],
-  rain: ['비 온다...', '우산 챙겼지 {n}?', '꿉꿉해...', '빗소리 좋다~', '등딱지에 빗방울 통통'],
+  rain: ['비 온다...', '우산 챙겼지 {n}?', '꿉꿉해...', '빗소리 좋다~', '등딱지에 빗방울 통통', '이런 날엔 파전에... 아니 아무것도 아니야'],
   drop: ['여기가 어디야?!', '함부로 옮기지 마!', '우와 순간이동?!', '어지러워...', '오? 여기 뷰 좋은데?', '납치는 신고감이야 {n}', '내려줘서 고마워...?'],
   coconut: ['아야!!', '누가 코코넛 던졌어!!', '야자수 밑은 피했어야 했는데...', '별이 보여...', '혹 났잖아!!'],
+  hot: ['나도 삶아지는 걸까..?', '어디선가 맛있는 냄새가 나...', '등딱지가 노릇노릇해지는 기분이야', '이러다 대게 아니라 찐게 된다', '바닷물이 미지근해...', '선크림이 버터처럼 녹아', '32도 넘으면 게는 위험하다구', '아지랑이가 보여...'],
+  wind: ['바람이 너무 세!!', '집게로 모래를 꽉 잡는 중', '모래가 눈에 들어가!!', '오늘은 낮게 다녀야겠어', '파도가 사나운데?'],
+  thunder: ['천둥이다!! 숨어야 해!!', '번개 무서워...', '찌릿찌릿한 예감이 들어...', '피뢰침 없나?!', '하늘이 화났나 봐'],
+  zapped: ['짜릿하다...⚡', '머리가 파마머리 됐어...', '충전 100% 완료...?', '번개 맛은 좀 맵네...', '지지직... 재부팅 중...'],
+  blownStart: ['으아아 바람이!!', '날아간다아아아~~!!', '집게로 못 버티겠어!!', '누가 좀 잡아줘~~!'],
+  blownCrash: ['쿵!! 아야...', '어디까지 날아온 거야...', '바람 반대로 걸을걸...', '착지 실패...'],
+  dig: ['여기 숨으면 아무도 몰라', '모래 속은 시원하다~', '잠수 아니고 잠사(모래)야', '나 찾아봐라~'],
+  digOut: ['푸하!! 답답했다', '모래 목욕 완료!', '아무도 못 찾았지?'],
+  nap: ['잠깐 낮잠... 쿨쿨', '5분만 잘게...', '파도 소리 들으니 졸려...', '자장자장...'],
+  napWake: ['누구야!!', '깜짝이야!! 자고 있었잖아!', '5분만 더...', '꿈에서 새우깡 먹고 있었는데!!'],
+  dance: ['게다리 춤 타임!!', '옆으로 옆으로~ 옆으로 옆으로~', '흥이 났다 흥이 났어', '{n} 너도 춰봐'],
+  admire: ['이 성, 내가 만든 거임', '웅장하다...', '성주는 나야', '파도야 오지 마라...'],
+  cooloff: ['시원하다~~', '어푸어푸', '역시 게는 물이지', '더위 탈출 성공!'],
+  morning: ['좋은 아침~ {n}', '모닝 바닷물 한 모금', '오늘도 화이팅이야', '아침 파도가 제일 맑아'],
+  night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤바다는 낭만이지'],
+  friday: ['불금이다!!!', '내일 쉬는 날이지?!', '금요일엔 게도 신난다', '주말 계획 있어 {n}?'],
 }
 
 // ─────────────────────────── 픽셀 파츠
@@ -368,12 +390,122 @@ function Sun() {
   )
 }
 
+/** 줄무늬 썬베드. 썬탠할 때 꽃게가 이 위에 눕는다. */
+function SunLounger() {
+  return (
+    <svg viewBox="0 0 72 30" className="pixelated absolute -bottom-[10px] -left-[10px] h-[30px] w-[72px]" aria-hidden>
+      {/* 등받이 (왼쪽으로 기울어짐) */}
+      <rect x="2" y="0" width="6" height="6" fill="#38bdf8" />
+      <rect x="6" y="4" width="6" height="6" fill="#e0f2fe" />
+      <rect x="10" y="8" width="8" height="6" fill="#38bdf8" />
+      {/* 시트 */}
+      <rect x="16" y="12" width="14" height="6" fill="#e0f2fe" />
+      <rect x="30" y="12" width="14" height="6" fill="#38bdf8" />
+      <rect x="44" y="12" width="14" height="6" fill="#e0f2fe" />
+      <rect x="58" y="12" width="10" height="6" fill="#38bdf8" />
+      {/* 프레임·다리 */}
+      <rect x="14" y="18" width="56" height="3" fill="#b8834e" />
+      <rect x="18" y="21" width="4" height="9" fill="#8f5f33" />
+      <rect x="60" y="21" width="4" height="9" fill="#8f5f33" />
+    </svg>
+  )
+}
+
+/** 하늘에서 떨어지는 픽셀 번개 */
+function LightningBolt() {
+  return (
+    <svg viewBox="0 0 28 130" className="pixelated h-[260px] w-[56px]" aria-hidden>
+      <g fill="#fde047">
+        <rect x="12" y="0" width="8" height="22" />
+        <rect x="8" y="22" width="8" height="22" />
+        <rect x="12" y="44" width="8" height="22" />
+        <rect x="7" y="66" width="8" height="22" />
+        <rect x="11" y="88" width="8" height="22" />
+        <rect x="8" y="110" width="8" height="20" />
+      </g>
+      <g fill="#fffbeb">
+        <rect x="14" y="4" width="3" height="16" />
+        <rect x="10" y="26" width="3" height="16" />
+        <rect x="14" y="48" width="3" height="16" />
+        <rect x="9" y="70" width="3" height="16" />
+        <rect x="13" y="92" width="3" height="16" />
+      </g>
+    </svg>
+  )
+}
+
+function ZzzFloat() {
+  return (
+    <div className="absolute -top-[20px] left-[40px] text-[11px] font-bold text-ink-soft" aria-hidden>
+      <span className="zzz-float inline-block">z</span>
+      <span className="zzz-float inline-block text-[13px]" style={{ animationDelay: '0.5s' }}>Z</span>
+      <span className="zzz-float inline-block text-[15px]" style={{ animationDelay: '1s' }}>Z</span>
+    </div>
+  )
+}
+
+/** 32도 넘는 날 꽃게 위로 피어오르는 김 */
+function HeatSteam() {
+  return (
+    <div className="absolute -top-[18px] left-[14px] flex gap-4" aria-hidden>
+      <span className="heat-steam text-[11px] text-orange-400/80">〜</span>
+      <span className="heat-steam text-[11px] text-orange-400/80" style={{ animationDelay: '0.8s' }}>〜</span>
+    </div>
+  )
+}
+
+/** 강풍: 화면을 가로질러 날아가는 모래 먼지 */
+function WindDust() {
+  return (
+    <>
+      {[18, 42, 66, 96, 130].map((b, i) => (
+        <span
+          key={b}
+          className="wind-dust absolute h-[3px] w-[7px] rounded-full bg-[#d9c49a]"
+          style={{ bottom: b, animationDelay: `${i * 0.35}s`, animationDuration: `${1.4 + i * 0.25}s` }}
+          aria-hidden
+        />
+      ))}
+    </>
+  )
+}
+
+/** 비: 비스듬히 떨어지는 빗방울 파티클 + 하늘 틴트 + 모래에 튀는 물방울 */
+function RainFX({ heavy }: { heavy: boolean }) {
+  // 위치·타이밍은 인덱스에서 결정적으로 뽑는다 (렌더마다 흔들리지 않게)
+  const drops = Array.from({ length: heavy ? 46 : 30 }, (_, i) => i)
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[4] overflow-hidden" aria-hidden>
+      {drops.map(i => (
+        <span
+          key={i}
+          className="rain-drop"
+          style={{
+            left: `${(i * 37 + 11) % 104 - 2}%`,
+            animationDelay: `${((i * 7) % 12) * 0.11}s`,
+            animationDuration: `${(heavy ? 0.55 : 0.8) + (i % 5) * 0.12}s`,
+            opacity: i % 3 === 0 ? 0.35 : 0.6,
+            height: i % 4 === 0 ? 18 : 13,
+          }}
+        />
+      ))}
+      <div className={`absolute inset-0 ${heavy ? 'bg-slate-600/[0.13]' : 'bg-slate-500/[0.06]'}`} />
+      <div className="absolute inset-x-0 bottom-[30px] flex justify-around">
+        {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
+          <span key={i} className="rain-splash" style={{ animationDelay: `${i * 0.17}s` }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─────────────────────────── 본체
 
 export default function SummerShore({ admin }: { admin: string }) {
   const shoreRef = useRef<HTMLDivElement>(null)
   const crabRef = useRef<HTMLDivElement>(null)
   const palmRef = useRef<HTMLDivElement>(null)
+  const sandcastleRef = useRef<HTMLDivElement>(null)
 
   // 물리 상태는 ref 로 들고 매 틱 DOM 에 직접 쓴다. (리렌더 최소화)
   const phys = useRef({
@@ -398,21 +530,23 @@ export default function SummerShore({ admin }: { admin: string }) {
   const [dizzy, setDizzy] = useState(false)
   const [moving, setMoving] = useState(true)
   const [facing, setFacing] = useState<1 | -1>(1)
-  const [raining, setRaining] = useState(false)
+  const [wx, setWx] = useState({ raining: false, thunder: false, windy: false, hot: false })
   const [evening, setEvening] = useState(false)
   const [coconutDrop, setCoconutDrop] = useState<{ left: number } | null>(null)
   const [flash, setFlash] = useState<'love' | 'anger' | null>(null)
   const [fishJump, setFishJump] = useState<{ left: number; key: number } | null>(null)
+  const [zapped, setZapped] = useState(false)
+  const [bolt, setBolt] = useState<{ x: number; key: number } | null>(null)
 
   const bubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pokeTimes = useRef<number[]>([])
   const affinity = useRef(50)
   const dragInfo = useRef<{ startX: number; startY: number; moved: boolean; pointerId: number } | null>(null)
   /** 물리 루프가 재생성 없이 최신 날씨를 읽도록 ref 로도 든다 (재생성되면 진행 중인 타이머가 끊긴다) */
-  const rainRef = useRef(false)
+  const wxRef = useRef(wx)
   useEffect(() => {
-    rainRef.current = raining
-  }, [raining])
+    wxRef.current = wx
+  }, [wx])
 
   const setModeBoth = useCallback((m: Mode) => {
     phys.current.mode = m
@@ -447,19 +581,28 @@ export default function SummerShore({ admin }: { admin: string }) {
     [admin],
   )
 
-  // ── 날씨 (서울, open-meteo). 실패하면 맑음으로 둔다.
+  // ── 날씨 (서울, open-meteo). 비/뇌우/강풍/폭염을 모두 본다. 실패하면 맑음으로 둔다.
   useEffect(() => {
     let alive = true
     const check = async () => {
       try {
         const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=precipitation,weather_code',
+          'https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,precipitation,weather_code,wind_speed_10m',
         )
-        const json = (await res.json()) as { current?: { precipitation?: number; weather_code?: number } }
+        const json = (await res.json()) as {
+          current?: { temperature_2m?: number; precipitation?: number; weather_code?: number; wind_speed_10m?: number }
+        }
         const c = json.current
         if (!alive || !c) return
-        const wet = (c.precipitation ?? 0) > 0 || [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(c.weather_code ?? 0)
-        setRaining(wet)
+        const code = c.weather_code ?? 0
+        const thunder = [95, 96, 99].includes(code)
+        const wet = thunder || (c.precipitation ?? 0) > 0 || [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)
+        setWx({
+          raining: wet,
+          thunder,
+          windy: (c.wind_speed_10m ?? 0) >= 25, // km/h
+          hot: (c.temperature_2m ?? 0) >= 32,
+        })
       } catch {
         /* 오프라인이면 맑음 */
       }
@@ -471,6 +614,41 @@ export default function SummerShore({ admin }: { admin: string }) {
       clearInterval(id)
     }
   }, [])
+
+  // ── 뇌우: 번개가 내려친다. 45% 확률로 꽃게를 조준하고, 걷는 중이면 감전된다.
+  useEffect(() => {
+    if (!wx.thunder) return
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+    const strike = () => {
+      if (cancelled) return
+      const W = shoreRef.current?.getBoundingClientRect().width ?? 800
+      const aimCrab = Math.random() < 0.45
+      const p = phys.current
+      const x = aimCrab ? p.x + CRAB_W / 2 - 28 : 30 + Math.random() * Math.max(60, W - 90)
+      setBolt({ x, key: Date.now() })
+      setTimeout(() => setBolt(null), 380)
+
+      if (aimCrab && (p.mode === 'walk' || p.mode === 'goto' || p.mode === 'dance')) {
+        setTimeout(() => {
+          setZapped(true)
+          setDizzy(true)
+          phys.current.mode = 'stun'
+          setMode('stun')
+          phys.current.modeUntil = Date.now() + 2600
+          say(LINES.zapped)
+          setTimeout(() => setZapped(false), 2600)
+        }, 200)
+      }
+      timer = setTimeout(strike, 9000 + Math.random() * 16_000)
+    }
+    timer = setTimeout(strike, 2500)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wx.thunder])
 
   // ── 17시 체크 (1분마다)
   useEffect(() => {
@@ -523,8 +701,73 @@ export default function SummerShore({ admin }: { admin: string }) {
       if (now - p.lastActivity < 18_000) return
       const hour = new Date().getHours()
 
+      // 날씨·시간대에 맞는 혼잣말 풀
+      const idlePool = () => {
+        const w = wxRef.current
+        const pool = [...LINES.idle]
+        if (w.hot) pool.push(...LINES.hot, ...LINES.hot) // 폭염 대사는 가중치 2배
+        if (w.thunder) pool.push(...LINES.thunder)
+        else if (w.raining) pool.push(...LINES.rain)
+        if (w.windy) pool.push(...LINES.wind)
+        if (hour >= 6 && hour < 11) pool.push(...LINES.morning)
+        if (hour >= 22 || hour < 2) pool.push(...LINES.night)
+        if (new Date().getDay() === 5) pool.push(...LINES.friday)
+        return pool
+      }
+
       type Act = { w: number; run: () => void }
-      const acts: Act[] = [{ w: 3, run: () => say(rainRef.current ? LINES.rain : LINES.idle) }]
+      const acts: Act[] = [{ w: 3, run: () => say(idlePool()) }]
+
+      // 제자리 소동작들
+      acts.push({
+        w: 1.2,
+        run: () => {
+          setModeBoth('dig')
+          p.modeUntil = now + 8000
+          say(LINES.dig)
+        },
+      })
+      acts.push({
+        w: 1.2,
+        run: () => {
+          setModeBoth('nap')
+          p.modeUntil = now + 9000
+          say(LINES.nap)
+        },
+      })
+      acts.push({
+        w: 1,
+        run: () => {
+          setModeBoth('dance')
+          p.modeUntil = now + 6000
+          say(LINES.dance)
+        },
+      })
+
+      // 모래성 감상
+      const castle = sandcastleRef.current
+      if (castle && castle.offsetParent !== null) {
+        acts.push({
+          w: 1,
+          run: () => {
+            const r = castle.getBoundingClientRect()
+            p.target = { x: r.left - shoreLeft() - CRAB_W + 6, y: GROUND_Y }
+            p.afterGoto = 'admire'
+            setModeBoth('goto')
+          },
+        })
+      }
+
+      // 더운 날엔 바다에 몸 담그기
+      acts.push({
+        w: wxRef.current.hot ? 3 : 0.4,
+        run: () => {
+          setModeBoth('cooloff')
+          p.y = SURF_Y - 12
+          p.modeUntil = now + 7000
+          say(LINES.cooloff)
+        },
+      })
 
       acts.push({
         w: 2,
@@ -597,11 +840,39 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
     }
 
-    // 콘솔 장난감 겸 검증용: window.__crab.surf() 처럼 바로 시켜볼 수 있다.
-    const forceActivity = (kind: 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut') => {
+    // 콘솔 장난감 겸 검증용: window.__crab.do('surf') 처럼 바로 시켜볼 수 있다.
+    const forceActivity = (
+      kind: 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut' | 'dig' | 'nap' | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap',
+    ) => {
       const p = phys.current
       p.lastActivity = 0
       setDizzy(false)
+      if (kind === 'dig' || kind === 'nap' || kind === 'dance' || kind === 'admire' || kind === 'cooloff') {
+        setModeBoth(kind)
+        if (kind === 'cooloff') p.y = SURF_Y - 12
+        p.modeUntil = Date.now() + (kind === 'dance' ? 6000 : 8000)
+        say(LINES[kind])
+        return 'ok'
+      }
+      if (kind === 'blown') {
+        setModeBoth('blown')
+        p.vy = 0
+        say(LINES.blownStart)
+        return 'ok'
+      }
+      if (kind === 'zap') {
+        setBolt({ x: p.x + CRAB_W / 2 - 28, key: Date.now() })
+        setTimeout(() => setBolt(null), 380)
+        setTimeout(() => {
+          setZapped(true)
+          setDizzy(true)
+          setModeBoth('stun')
+          p.modeUntil = Date.now() + 2600
+          say(LINES.zapped)
+          setTimeout(() => setZapped(false), 2600)
+        }, 200)
+        return 'ok'
+      }
       if (kind === 'surf') {
         setModeBoth('surf')
         p.y = SURF_Y
@@ -644,7 +915,9 @@ export default function SummerShore({ admin }: { admin: string }) {
     Object.assign(window as object, {
       __crab: {
         do: forceActivity,
-        rain: (v: boolean) => setRaining(v),
+        rain: (v: boolean) => setWx(w => ({ ...w, raining: v })),
+        weather: (patch: Partial<{ raining: boolean; thunder: boolean; windy: boolean; hot: boolean }>) =>
+          setWx(w => ({ ...w, ...patch })),
         affinity: () => affinity.current,
         state: () => ({ ...phys.current }),
       },
@@ -694,6 +967,14 @@ export default function SummerShore({ admin }: { admin: string }) {
             }
           }
 
+          // 강풍: 가끔 바람에 날려간다
+          if (wxRef.current.windy && Math.random() < 1 / 260) {
+            setModeBoth('blown')
+            p.vy = 0
+            say(LINES.blownStart)
+            break
+          }
+
           // 랜덤 활동
           if (Math.random() < 1 / 220) startActivity()
           break
@@ -709,6 +990,11 @@ export default function SummerShore({ admin }: { admin: string }) {
               setModeBoth('car')
               p.modeUntil = now + 14_000
               say(LINES.car)
+            } else if (p.afterGoto === 'admire') {
+              setModeBoth('admire')
+              p.dir = 1
+              p.modeUntil = now + 6000
+              say(LINES.admire)
             } else {
               setModeBoth('walk')
             }
@@ -822,6 +1108,72 @@ export default function SummerShore({ admin }: { admin: string }) {
           break
         }
 
+        case 'dig': {
+          // 모래 속에 반쯤 파묻힌다 (렌더에서 아랫부분 클리핑)
+          p.y = GROUND_Y
+          if (now > p.modeUntil) {
+            setModeBoth('walk')
+            say(LINES.digOut)
+          }
+          break
+        }
+
+        case 'nap': {
+          p.y = GROUND_Y
+          if (now > p.modeUntil) setModeBoth('walk')
+          break
+        }
+
+        case 'dance': {
+          // 게다리 춤: 좌우로 총총 + 폴짝폴짝
+          p.x += Math.floor(now / 200) % 2 === 0 ? 2 : -2
+          p.dir = Math.floor(now / 400) % 2 === 0 ? 1 : -1
+          p.y = GROUND_Y + (Math.floor(now / 160) % 2 === 0 ? 0 : 4)
+          if (now > p.modeUntil) {
+            p.y = GROUND_Y
+            setModeBoth('walk')
+          }
+          break
+        }
+
+        case 'admire': {
+          p.y = GROUND_Y
+          if (now > p.modeUntil) setModeBoth('walk')
+          break
+        }
+
+        case 'cooloff': {
+          // 파도에 몸을 반쯤 담그고 둥실둥실
+          p.y = SURF_Y - 12 + (Math.floor(now / 300) % 2 === 0 ? 0 : 2)
+          if (now > p.modeUntil) {
+            p.vy = 0
+            setModeBoth('fall')
+          }
+          break
+        }
+
+        case 'blown': {
+          // 바람에 쓸려간다. 우산을 들고 있으면 메리포핀스처럼 떠오른다.
+          p.dir = 1
+          p.x += 7
+          if (wxRef.current.raining) p.y = Math.min(150, p.y + 2.4)
+          else p.y = GROUND_Y + (Math.floor(now / 120) % 2 === 0 ? 0 : 5)
+          if (p.x >= W - CRAB_W) {
+            p.x = W - CRAB_W
+            if (p.y > GROUND_Y + 8) {
+              p.vy = 0
+              setModeBoth('fall')
+            } else {
+              p.y = GROUND_Y
+              setDizzy(true)
+              setModeBoth('stun')
+              p.modeUntil = now + 2000
+              say(LINES.blownCrash)
+            }
+          }
+          break
+        }
+
         case 'drag':
           break
       }
@@ -886,6 +1238,13 @@ export default function SummerShore({ admin }: { admin: string }) {
       return
     }
 
+    // 자는 게를 건드리면 깜짝 놀라 깬다
+    if (p.mode === 'nap') {
+      setModeBoth('walk')
+      say(LINES.napWake, 2600)
+      return
+    }
+
     // 클릭 = 찌르기/쓰다듬기
     const now = Date.now()
     pokeTimes.current = [...pokeTimes.current.filter(t => now - t < 4000), now]
@@ -915,8 +1274,10 @@ export default function SummerShore({ admin }: { admin: string }) {
     else say(LINES.poke, 2800)
   }
 
-  const showUmbrella = raining && mode !== 'heliUp' && mode !== 'heliDrop' && mode !== 'surf'
-  const eyes = dizzy ? 'dizzy' : mode === 'suntan' || bump ? 'closed' : 'open'
+  const showUmbrella = wx.raining && mode !== 'heliUp' && mode !== 'heliDrop' && mode !== 'surf' && mode !== 'cooloff' && mode !== 'dig'
+  const eyes = dizzy ? 'dizzy' : mode === 'suntan' || mode === 'nap' || bump ? 'closed' : 'open'
+  /** 모래 파기·물놀이 땐 아랫도리를 가려 파묻힌 느낌을 낸다 */
+  const halfClip = mode === 'dig' || mode === 'cooloff' ? { clipPath: 'inset(0 0 42% 0)' } : undefined
 
   return (
     <div ref={shoreRef} aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
@@ -992,7 +1353,7 @@ export default function SummerShore({ admin }: { admin: string }) {
       <div className="absolute bottom-[8px] left-[27%]">
         <Shell />
       </div>
-      <div className="absolute bottom-[10px] left-[55%] hidden md:block">
+      <div ref={sandcastleRef} className="absolute bottom-[10px] left-[55%] hidden md:block">
         <Sandcastle />
       </div>
       <div className="absolute bottom-[8px] left-[70%] hidden md:block">
@@ -1016,8 +1377,21 @@ export default function SummerShore({ admin }: { admin: string }) {
         </div>
       )}
 
-      {/* 비 */}
-      {raining && <div className="pixel-rain pointer-events-none fixed inset-0" />}
+      {/* 비 (뇌우면 더 굵고 어둡게) */}
+      {wx.raining && <RainFX heavy={wx.thunder} />}
+
+      {/* 번개: 하늘 섬광 + 내려꽂히는 볼트 */}
+      {bolt && (
+        <>
+          <div key={`f${bolt.key}`} className="sky-flash pointer-events-none fixed inset-0 z-[6] bg-white" />
+          <div key={bolt.key} className="absolute bottom-[40px] z-[7]" style={{ left: bolt.x }}>
+            <LightningBolt />
+          </div>
+        </>
+      )}
+
+      {/* 강풍: 날아가는 모래 먼지 */}
+      {wx.windy && <WindDust />}
 
       {/* ── 꽃게 본체 (여기만 클릭/드래그 가능) */}
       <div
@@ -1049,10 +1423,13 @@ export default function SummerShore({ admin }: { admin: string }) {
         )}
 
         {/* 액세서리 */}
+        {mode === 'suntan' && <SunLounger />}
         {(mode === 'heliUp' || mode === 'heliDrop') && <Helicopter spinning={mode === 'heliUp'} />}
         {showUmbrella && <Umbrella />}
         {mode === 'suntan' && <Sunglasses />}
         {mode === 'drool' && <Drool />}
+        {mode === 'nap' && <ZzzFloat />}
+        {wx.hot && !wx.raining && mode !== 'cooloff' && mode !== 'dig' && <HeatSteam />}
         {dizzy && (
           <div className="dizzy-star absolute -top-[12px] left-[6px] flex gap-6 text-[10px]">
             <span>✦</span>
@@ -1060,8 +1437,11 @@ export default function SummerShore({ admin }: { admin: string }) {
           </div>
         )}
 
-        <div className={moving ? 'crab-bob' : ''} style={{ transform: facing === -1 ? 'scaleX(-1)' : undefined }}>
-          <CrabBody eyes={eyes} bump={bump} />
+        <div
+          className={`${moving || mode === 'dance' ? 'crab-bob' : ''} ${zapped ? 'zap-flicker' : ''} ${mode === 'blown' && !wx.raining ? 'blown-spin' : ''}`}
+          style={{ transform: facing === -1 ? 'scaleX(-1)' : undefined, ...halfClip }}
+        >
+          <CrabBody eyes={zapped ? 'dizzy' : eyes} bump={bump} />
         </div>
 
         {mode === 'surf' && <Surfboard />}
