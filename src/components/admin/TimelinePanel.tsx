@@ -6,6 +6,7 @@ import { EVENT_COLOR, TIMELINE_STATUS, type Timeline, type TimelineStatus } from
 import {
   createTimeline,
   deleteTimeline,
+  listArchivedTimelines,
   setTimelineAssignee,
   setTimelineStatus,
   toggleTimeline,
@@ -15,8 +16,8 @@ import Icon from './Icon'
 /** 담당자 태그 칩 색. 서버(createTimeline)와 같은 순서로 돌아간다. */
 const TAG_COLORS = ['purple', 'blue', 'green', 'amber', 'red'] as const
 
-/** 우선순위 순서. 긴급이 맨 위, 보류가 맨 아래로 정렬된다. */
-const STATUS_ORDER: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold']
+/** 우선순위 순서. 긴급이 맨 위, 완료가 맨 아래로 정렬된다. 완료는 다음 날 지난 기록으로 넘어간다. */
+const STATUS_ORDER: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold', 'done']
 
 function tagColor(admins: string[], name: string | null): (typeof TAG_COLORS)[number] | 'gray' {
   const i = name ? admins.indexOf(name) : -1
@@ -82,9 +83,51 @@ function TagPicker({
   )
 }
 
+/** 완료된 항목을 완료 날짜별로 보여주는 지난 기록. 펼칠 때 서버에서 불러온다. */
+function ArchiveSection() {
+  const [open, setOpen] = useState(false)
+  const [items, setItems] = useState<Timeline[] | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  const toggle = () => {
+    const next = !open
+    setOpen(next)
+    // 완료/취소가 실시간으로 반영되도록 펼칠 때마다 새로 불러온다.
+    if (next) startTransition(async () => setItems(await listArchivedTimelines()))
+  }
+
+  return (
+    <div className="mt-2 border-t border-line pt-2">
+      <button
+        onClick={toggle}
+        className="flex w-full items-center gap-1 rounded-md px-1 py-1 text-[11px] text-ink-muted transition hover:bg-hover hover:text-ink"
+      >
+        <Icon name="arrowRight" className={`size-3 transition-transform ${open ? 'rotate-90' : ''}`} />
+        지난 기록
+        {items && <span className="text-ink-muted">{items.length}</span>}
+      </button>
+
+      {open && (
+        <ul className="mt-1 flex max-h-[200px] flex-col gap-0.5 overflow-y-auto">
+          {pending && items === null && <li className="px-1 py-2 text-[11px] text-ink-muted">불러오는 중…</li>}
+          {items?.length === 0 && <li className="px-1 py-2 text-[11px] text-ink-muted">아직 완료한 기록이 없습니다.</li>}
+          {items?.map(t => (
+            <li key={t.id} className="flex items-center gap-1.5 rounded px-1 py-1 text-[11px] text-ink-soft">
+              <span className="shrink-0 tabular-nums text-ink-muted">{t.done_at?.slice(5).replace('-', '/')}</span>
+              <span className="min-w-0 flex-1 truncate">{t.title}</span>
+              {t.assignee && <span className="shrink-0 text-ink-muted">{t.assignee}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 /**
  * 스케줄 우측 패널. + 를 누르고 할 일을 적은 뒤 태그를 골라 붙인다.
  * 항목의 태그를 누르면 툴팁이 떠서 담당자·상태를 바로 바꿀 수 있다.
+ * 완료 태그가 붙은 항목은 다음 날 지난 기록으로 넘어간다.
  */
 export default function TimelinePanel({
   timelines,
@@ -224,18 +267,18 @@ export default function TimelinePanel({
         {timelines.map(t => (
           <li
             key={t.id}
-            className={`group relative rounded-lg border border-line bg-surface px-2.5 py-2 transition hover:border-ink-muted/40 ${t.done ? 'opacity-50' : ''}`}
+            className={`group relative rounded-lg border border-line bg-surface px-2.5 py-2 transition hover:border-ink-muted/40 ${t.status === 'done' ? 'opacity-55' : ''}`}
           >
             <div className="flex items-start gap-1.5">
-              <span className={`min-w-0 flex-1 text-xs font-medium break-keep text-ink ${t.done ? 'line-through' : ''}`}>
+              <span className={`min-w-0 flex-1 text-xs font-medium break-keep text-ink ${t.status === 'done' ? 'line-through' : ''}`}>
                 {t.title}
               </span>
               <button
                 onClick={() => startTransition(async () => onChanged(await toggleTimeline(t.id)))}
-                aria-label={t.done ? '완료 취소' : '완료 처리'}
+                aria-label={t.status === 'done' ? '완료 취소' : '완료 처리'}
                 className="shrink-0 text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-brand"
               >
-                <Icon name={t.done ? 'checkCircle' : 'checkCircleLine'} className="size-3.5" />
+                <Icon name={t.status === 'done' ? 'checkCircle' : 'checkCircleLine'} className="size-3.5" />
               </button>
               <button
                 onClick={() => startTransition(async () => onChanged(await deleteTimeline(t.id)))}
@@ -268,11 +311,16 @@ export default function TimelinePanel({
                   + 태그
                 </span>
               )}
+              {t.status === 'done' && t.done_at && (
+                <span className="text-[10px] text-ink-muted">내일 기록으로 이동</span>
+              )}
             </button>
 
           </li>
         ))}
       </ul>
+
+      <ArchiveSection />
 
       {/* 태그 수정 툴팁: 패널 스크롤 영역에 잘리지 않도록 body 로 포털 */}
       {editing &&

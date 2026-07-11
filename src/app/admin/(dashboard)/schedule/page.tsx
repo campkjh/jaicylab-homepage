@@ -19,12 +19,16 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     buildMonth(next.year, next.month),
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
     sql`
-      SELECT id, title, assignee, status, color, done, created_by
+      SELECT id, title, assignee, status, color, done, created_by,
+             to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
       FROM schedule_timelines
-      ORDER BY done ASC,
-               CASE coalesce(status, 'none')
+      WHERE NOT (
+        status = 'done' AND done_at IS NOT NULL
+        AND (done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
+      )
+      ORDER BY CASE coalesce(status, 'none')
                  WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
-                 WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 ELSE 2 END ASC,
+                 WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 WHEN 'done' THEN 5 ELSE 2 END ASC,
                id DESC
     `,
   ])

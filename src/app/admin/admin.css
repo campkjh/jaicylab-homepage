@@ -67,10 +67,11 @@ body {
 @keyframes pixelSlide { to { transform: translateX(-96px); } }
 .wave-front { animation: pixelSlide 2.1s steps(6) infinite; }
 .wave-back  { animation: pixelSlide 3.6s steps(8) infinite reverse; }
+.wave-far   { animation: pixelSlide 5.2s steps(10) infinite; }
 
-/* 게: 화면을 가로질러 총총 걸어간다 */
-@keyframes crabWalk { 0% { left: -72px; } 100% { left: 100%; } }
-.crab-track { animation: crabWalk 38s linear infinite; }
+/* 파도 거품 (타일 24px) */
+@keyframes foamSlide { to { transform: translateX(-48px); } }
+.foam-move { animation: foamSlide 1.6s steps(8) infinite; }
 
 /* 코코넛: 게 머리에 맞고(60%) 튕겨서 모래에 떨어진다 */
 @keyframes coconutFall {
@@ -84,6 +85,47 @@ body {
 /* 혹 났을 때 머리 주위 별이 어질어질 */
 @keyframes dizzySpin { from { opacity: 1; } to { opacity: 0.15; } }
 .dizzy-star { animation: dizzySpin 0.5s steps(2) infinite alternate; }
+
+/* 헬리콥터 프로펠러 */
+@keyframes heliSpin { from { transform: scaleX(1); } to { transform: scaleX(-0.35); } }
+.heli-spin { animation: heliSpin 0.14s steps(2) infinite alternate; }
+
+/* 갈매기: 하늘을 가로질러 활공, 날개 퍼덕임 */
+@keyframes gullDrift { from { left: -30px; } to { left: 104%; } }
+.gull-drift { animation: gullDrift 40s linear infinite; }
+@keyframes gullFlap { from { transform: scaleY(1); } to { transform: scaleY(-0.6); } }
+.gull-flap { animation: gullFlap 0.5s steps(2) infinite alternate; }
+
+/* 물고기: 파도 위로 폴짝 */
+@keyframes fishArc {
+  0%   { transform: translateY(0) scaleX(1); opacity: 0; }
+  15%  { opacity: 1; }
+  50%  { transform: translateY(-52px) scaleX(1); }
+  100% { transform: translateY(6px) scaleX(1); opacity: 0; }
+}
+.fish-arc { animation: fishArc 1.5s steps(12) forwards; }
+
+/* 바다 반짝임 */
+@keyframes seaSparkle { 0%, 70% { opacity: 0; } 85% { opacity: 0.9; } 100% { opacity: 0; } }
+.sea-sparkle { animation: seaSparkle 4s steps(3) infinite; display: inline-block; }
+
+/* 픽셀 비 */
+@keyframes rainFall { from { background-position: 0 0; } to { background-position: -8px 30px; } }
+.pixel-rain {
+  z-index: 4;
+  opacity: 0.3;
+  background-image: linear-gradient(to bottom, rgba(96, 165, 250, 0.7) 0 9px, transparent 9px 100%);
+  background-size: 4px 30px;
+  animation: rainFall 0.45s linear infinite;
+}
+
+/* 친화력 하트/화남 표시 */
+@keyframes heartPop { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-16px); opacity: 0; } }
+.heart-pop { animation: heartPop 0.9s steps(6) forwards; }
+
+/* 침 흘리기 */
+@keyframes droolDrip { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(10px); opacity: 0; } }
+.drool-drip { animation: droolDrip 1.1s steps(5) infinite; }
 @keyframes crabBob { from { transform: translateY(0); } to { transform: translateY(2px); } }
 .crab-bob { animation: crabBob 0.45s steps(2) infinite alternate; }
 

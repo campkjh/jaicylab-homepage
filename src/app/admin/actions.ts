@@ -271,18 +271,38 @@ export async function deleteEvent(fd: FormData): Promise<void> {
 /** 담당자별로 색을 고정한다. 관리자 목록 순서대로 돌아간다. */
 const TIMELINE_COLORS: EventColor[] = ['purple', 'blue', 'green', 'amber', 'red']
 
-const TIMELINE_STATUSES: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold']
+const TIMELINE_STATUSES: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold', 'done']
 
-/** 긴급 > 진행중 > (미지정) > 유지보수 > 보류 순. 완료는 맨 아래. */
+/**
+ * 긴급 > 진행중 > (미지정) > 유지보수 > 보류 > 완료 순.
+ * 완료 태그가 붙은 항목은 그날까지만 보이고, 다음 날(KST)부터는 '지난 기록'으로 넘어간다.
+ */
 async function timelineList(): Promise<Timeline[]> {
   return (await sql`
-    SELECT id, title, assignee, status, color, done, created_by
+    SELECT id, title, assignee, status, color, done, created_by,
+           to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
     FROM schedule_timelines
-    ORDER BY done ASC,
-             CASE coalesce(status, 'none')
+    WHERE NOT (
+      status = 'done' AND done_at IS NOT NULL
+      AND (done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
+    )
+    ORDER BY CASE coalesce(status, 'none')
                WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
-               WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 ELSE 2 END ASC,
+               WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 WHEN 'done' THEN 5 ELSE 2 END ASC,
              id DESC
+  `) as Timeline[]
+}
+
+/** 지난 기록: 완료 태그가 붙었던 항목 전부, 최근 완료 순. */
+export async function listArchivedTimelines(): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  return (await sql`
+    SELECT id, title, assignee, status, color, done, created_by,
+           to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
+    FROM schedule_timelines
+    WHERE status = 'done' AND done_at IS NOT NULL
+    ORDER BY done_at DESC, id DESC
   `) as Timeline[]
 }
 
@@ -306,20 +326,28 @@ export async function createTimeline(
   const who = assignee && names.includes(assignee) ? assignee : null
   const color = who ? TIMELINE_COLORS[names.indexOf(who) % TIMELINE_COLORS.length] : 'gray'
   const st = status && TIMELINE_STATUSES.includes(status) ? status : null
+  // 만들자마자 완료 태그를 붙이는 경우에도 done_at 이 찍혀야 다음 날 기록으로 넘어간다.
   await sql`
-    INSERT INTO schedule_timelines (title, assignee, status, color, created_by)
-    VALUES (${clean}, ${who}, ${st}, ${color}, ${admin})
+    INSERT INTO schedule_timelines (title, assignee, status, color, created_by, done, done_at)
+    VALUES (${clean}, ${who}, ${st}, ${color}, ${admin},
+            ${st === 'done'}, CASE WHEN ${st === 'done'} THEN now() ELSE NULL END)
   `
   revalidatePath('/admin/schedule')
   return timelineList()
 }
 
-/** 항목의 상태 태그를 바꾼다. null 이면 태그를 뗀다. */
+/** 항목의 상태 태그를 바꾼다. null 이면 태그를 뗀다. 완료 태그는 붙은 시각을 기록한다. */
 export async function setTimelineStatus(id: number, status: TimelineStatus | null): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()
   const st = status && TIMELINE_STATUSES.includes(status) ? status : null
-  await sql`UPDATE schedule_timelines SET status = ${st} WHERE id = ${id}`
+  await sql`
+    UPDATE schedule_timelines
+    SET status = ${st},
+        done = ${st === 'done'},
+        done_at = CASE WHEN ${st === 'done'} THEN coalesce(done_at, now()) ELSE NULL END
+    WHERE id = ${id}
+  `
   revalidatePath('/admin/schedule')
   return timelineList()
 }
@@ -336,10 +364,17 @@ export async function setTimelineAssignee(id: number, assignee: string | null): 
   return timelineList()
 }
 
+/** 체크 버튼 = 완료 태그 토글. 완료하면 다음 날 목록에서 빠지고 지난 기록으로 간다. */
 export async function toggleTimeline(id: number): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()
-  await sql`UPDATE schedule_timelines SET done = NOT done WHERE id = ${id}`
+  await sql`
+    UPDATE schedule_timelines
+    SET status  = CASE WHEN status = 'done' THEN NULL ELSE 'done' END,
+        done    = (status IS DISTINCT FROM 'done'),
+        done_at = CASE WHEN status = 'done' THEN NULL ELSE coalesce(done_at, now()) END
+    WHERE id = ${id}
+  `
   revalidatePath('/admin/schedule')
   return timelineList()
 }

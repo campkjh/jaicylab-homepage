@@ -148,8 +148,13 @@ const DDL = [
   )`,
   // 초기 버전은 오늘~마감 띠였다. 지금은 담당자 태그 방식이라 날짜가 필요 없다.
   `ALTER TABLE schedule_timelines ADD COLUMN IF NOT EXISTS assignee text`,
-  // 상태 태그: urgent | in_progress | maintenance | hold (긴급>진행중>유지보수>보류 순으로 정렬)
+  // 상태 태그: urgent | in_progress | maintenance | hold | done (긴급>진행중>유지보수>보류>완료 순으로 정렬)
   `ALTER TABLE schedule_timelines ADD COLUMN IF NOT EXISTS status text`,
+  // 완료 태그가 붙은 시각. 완료한 다음 날부터 목록에서 빠지고 '지난 기록'에서만 보인다.
+  `ALTER TABLE schedule_timelines ADD COLUMN IF NOT EXISTS done_at timestamptz`,
+  // 예전 체크(done boolean)로 완료했던 항목을 완료 태그 체계로 옮긴다.
+  `UPDATE schedule_timelines SET status = 'done', done_at = coalesce(done_at, now())
+   WHERE done = true AND (status IS DISTINCT FROM 'done')`,
   `ALTER TABLE schedule_timelines ALTER COLUMN start_date DROP NOT NULL`,
   `ALTER TABLE schedule_timelines ALTER COLUMN end_date DROP NOT NULL`,
 

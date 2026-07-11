@@ -80,6 +80,7 @@ function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
     <button
       onClick={onClick}
       draggable
+      data-meal={meal.meal_date}
       onDragStart={e => setDragPayload(e, { kind: 'meal', id: meal.id, date: meal.meal_date })}
       className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${MEAL_SLOT[meal.slot].chip}`}
     >
@@ -139,6 +140,8 @@ function MonthGrid({
           return (
             <div
               key={cell.date}
+              data-date={cell.date}
+              data-today={cell.isToday && cell.inMonth ? '1' : undefined}
               // 터치 기기엔 hover 가 없다. 칩이나 버튼이 아닌 빈 곳을 탭하면 그 날짜를 연다.
               onClick={e => {
                 if (!(e.target as HTMLElement).closest('button, a')) onDay(cell)
@@ -495,7 +498,7 @@ export default function ScheduleCalendar({
         className="hidden w-1.5 shrink-0 cursor-col-resize touch-none rounded-full transition hover:bg-line active:bg-brand lg:block"
       />
 
-      <aside style={{ width: panelW }} className="hidden shrink-0 lg:flex lg:flex-col">
+      <aside data-timeline-panel style={{ width: panelW }} className="hidden shrink-0 lg:flex lg:flex-col">
         <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
       </aside>
 
