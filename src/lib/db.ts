@@ -152,6 +152,16 @@ const DDL = [
   `ALTER TABLE schedule_timelines ADD COLUMN IF NOT EXISTS status text`,
   `ALTER TABLE schedule_timelines ALTER COLUMN start_date DROP NOT NULL`,
   `ALTER TABLE schedule_timelines ALTER COLUMN end_date DROP NOT NULL`,
+
+  // 자주 쓰는 말. 카드에서 바로 복사한다.
+  `CREATE TABLE IF NOT EXISTS quick_phrases (
+    id         serial PRIMARY KEY,
+    label      text,
+    body       text NOT NULL,
+    created_by text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+
   `CREATE INDEX IF NOT EXISTS idx_schedule_date ON schedule_events(event_date)`,
   `CREATE INDEX IF NOT EXISTS idx_schedule_category ON schedule_events(category_id)`,
   `CREATE INDEX IF NOT EXISTS idx_meals_date ON meal_entries(meal_date)`,

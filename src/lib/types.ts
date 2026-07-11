@@ -115,6 +115,15 @@ export type Timeline = {
   created_by: string | null
 }
 
+/** 자주 쓰는 말 카드. 복사해서 쓴다. */
+export type QuickPhrase = {
+  id: number
+  label: string | null
+  body: string
+  created_by: string | null
+  created_at: string
+}
+
 export type AdminProfile = {
   name: string
   avatar_url: string | null

@@ -351,6 +351,39 @@ export async function deleteTimeline(id: number): Promise<Timeline[]> {
   return timelineList()
 }
 
+// ─────────────────────────── 자주 쓰는 말
+
+export async function createPhrase(fd: FormData): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  const body = str(fd, 'body')
+  if (!body) return
+  await sql`
+    INSERT INTO quick_phrases (label, body, created_by)
+    VALUES (${nullable(fd, 'label')}, ${body}, ${admin})
+  `
+  revalidatePath('/admin/phrases')
+}
+
+export async function updatePhrase(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const body = str(fd, 'body')
+  if (!body) return
+  await sql`
+    UPDATE quick_phrases SET label = ${nullable(fd, 'label')}, body = ${body}
+    WHERE id = ${int(fd, 'id')}
+  `
+  revalidatePath('/admin/phrases')
+}
+
+export async function deletePhrase(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  await sql`DELETE FROM quick_phrases WHERE id = ${int(fd, 'id')}`
+  revalidatePath('/admin/phrases')
+}
+
 // ─────────────────────────── 일정 카테고리 (설정)
 
 export async function createCategory(fd: FormData): Promise<void> {
