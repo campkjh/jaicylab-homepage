@@ -1,5 +1,6 @@
 import { sql, ensureSchema, type Project, type ProjectNote, type ProjectTask } from '@/lib/db'
 import ProjectsBoard, { type ProjectWithRelations } from '@/components/admin/ProjectsBoard'
+import { PageContainer } from '@/components/admin/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,5 +37,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   const open = Number.parseInt((await searchParams).open ?? '', 10)
 
-  return <ProjectsBoard projects={rows} clients={clients} defaultOpenId={Number.isFinite(open) ? open : null} />
+  return (
+    <PageContainer>
+      <ProjectsBoard projects={rows} clients={clients} defaultOpenId={Number.isFinite(open) ? open : null} />
+    </PageContainer>
+  )
 }

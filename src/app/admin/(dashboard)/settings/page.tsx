@@ -1,6 +1,6 @@
 import { ensureSchema, sql, type EventCategory } from '@/lib/db'
 import { requireAdmin } from '@/lib/session'
-import { PageHeader, SectionTitle } from '@/components/admin/ui'
+import { PageContainer, PageHeader, SectionTitle } from '@/components/admin/ui'
 import CategoryEditor from '@/components/admin/CategoryEditor'
 import AvatarUploader from '@/components/admin/AvatarUploader'
 
@@ -23,7 +23,7 @@ export default async function SettingsPage() {
   const profile = (profileRows as { avatar_url: string | null; position: string | null }[])[0]
 
   return (
-    <>
+    <PageContainer>
       <PageHeader title="설정" subtitle="내 프로필·직급과 스케줄 카테고리를 관리합니다." />
 
       <section className="mb-10">
@@ -38,6 +38,6 @@ export default async function SettingsPage() {
           카테고리를 삭제해도 등록된 일정은 지워지지 않습니다. 카테고리만 <b>미지정</b>으로 바뀌고 회색으로 표시됩니다.
         </p>
       </section>
-    </>
+    </PageContainer>
   )
 }

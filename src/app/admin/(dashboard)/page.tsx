@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Icon from '@/components/admin/Icon'
 import { sql, ensureSchema, type ProjectStatus } from '@/lib/db'
-import { Card, EmptyState, PageHeader, ProgressBar, SectionTitle, StatusBadge } from '@/components/admin/ui'
+import { Card, EmptyState, PageContainer, PageHeader, ProgressBar, SectionTitle, StatusBadge } from '@/components/admin/ui'
 import { toggleTask } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <>
+    <PageContainer>
       <PageHeader title="대시보드" subtitle="오늘 챙겨야 할 것들을 한눈에 봅니다." />
 
       <div className="mb-9 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -142,6 +142,6 @@ export default async function DashboardPage() {
         <Icon name="checkCircle" className="size-3.5" />
         할 일 왼쪽 동그라미를 누르면 바로 완료 처리됩니다.
       </p>
-    </>
+    </PageContainer>
   )
 }

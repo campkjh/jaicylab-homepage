@@ -46,6 +46,11 @@ export function PageHeader({
   )
 }
 
+/** 일반 페이지의 본문 폭. 스케줄처럼 풀사이즈가 필요한 페이지는 이걸 쓰지 않는다. */
+export function PageContainer({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto w-full max-w-[1200px]">{children}</div>
+}
+
 export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`rounded-xl border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(15,15,15,0.04)] ${className}`}>

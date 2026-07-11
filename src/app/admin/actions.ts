@@ -323,6 +323,18 @@ export async function setTimelineStatus(id: number, status: TimelineStatus | nul
   return timelineList()
 }
 
+/** 항목의 담당자 태그를 바꾼다. null 이면 태그를 뗀다. 색도 담당자를 따라간다. */
+export async function setTimelineAssignee(id: number, assignee: string | null): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  const names = adminNames()
+  const who = assignee && names.includes(assignee) ? assignee : null
+  const color = who ? TIMELINE_COLORS[names.indexOf(who) % TIMELINE_COLORS.length] : 'gray'
+  await sql`UPDATE schedule_timelines SET assignee = ${who}, color = ${color} WHERE id = ${id}`
+  revalidatePath('/admin/schedule')
+  return timelineList()
+}
+
 export async function toggleTimeline(id: number): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()

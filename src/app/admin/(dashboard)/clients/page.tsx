@@ -1,5 +1,6 @@
 import { sql, ensureSchema, type Client, type ClientAccount, type ClientCard, type ProjectStatus } from '@/lib/db'
 import ClientsBoard, { type ClientWithRelations } from '@/components/admin/ClientsBoard'
+import { PageContainer } from '@/components/admin/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,5 +35,9 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
 
   const open = Number.parseInt((await searchParams).open ?? '', 10)
 
-  return <ClientsBoard clients={rows} defaultOpenId={Number.isFinite(open) ? open : null} />
+  return (
+    <PageContainer>
+      <ClientsBoard clients={rows} defaultOpenId={Number.isFinite(open) ? open : null} />
+    </PageContainer>
+  )
 }
