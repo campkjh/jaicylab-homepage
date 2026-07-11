@@ -40,6 +40,7 @@ export default function TimelinePanel({
   const [title, setTitle] = useState('')
   const [assignee, setAssignee] = useState<string | null>(null)
   const [status, setStatus] = useState<TimelineStatus | null>(null)
+  const [tagsOpen, setTagsOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
   const submit = () => {
@@ -48,6 +49,7 @@ export default function TimelinePanel({
       const list = await createTimeline(title, assignee, status)
       setTitle('')
       setStatus(null)
+      setTagsOpen(false)
       setAdding(false)
       onChanged(list)
     })
@@ -76,39 +78,73 @@ export default function TimelinePanel({
             placeholder="어떤 일을 하나요?"
             className="w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-sm text-ink outline-none transition placeholder:text-ink-muted focus:border-brand"
           />
-          <div className="flex flex-wrap gap-1.5">
-            {admins.map(name => {
-              const on = assignee === name
-              const color = tagColor(admins, name)
-              return (
-                <button
-                  key={name}
-                  onClick={() => setAssignee(on ? null : name)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                    on ? EVENT_COLOR[color].chip : 'border border-line text-ink-muted hover:bg-hover'
-                  }`}
-                >
-                  {name}
-                </button>
-              )
-            })}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {STATUS_ORDER.map(s => {
-              const on = status === s
-              return (
-                <button
-                  key={s}
-                  onClick={() => setStatus(on ? null : s)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                    on ? TIMELINE_STATUS[s].chip : 'border border-line text-ink-muted hover:bg-hover'
-                  }`}
-                >
-                  {TIMELINE_STATUS[s].label}
-                </button>
-              )
-            })}
-          </div>
+          {/* 태그 선택: 누르면 리스트가 펼쳐지고, 고른 태그가 버튼에 표시된다 */}
+          <button
+            onClick={() => setTagsOpen(v => !v)}
+            className={`flex flex-wrap items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs transition hover:bg-hover ${tagsOpen ? 'border-brand' : 'border-line'}`}
+          >
+            {assignee || status ? (
+              <>
+                {assignee && (
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[tagColor(admins, assignee)].chip}`}>
+                    {assignee}
+                  </span>
+                )}
+                {status && (
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${TIMELINE_STATUS[status].chip}`}>
+                    {TIMELINE_STATUS[status].label}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-ink-muted">태그 선택</span>
+            )}
+            <Icon name="arrowRight" className={`ml-auto size-3 shrink-0 text-ink-muted transition-transform ${tagsOpen ? 'rotate-90' : ''}`} />
+          </button>
+
+          {tagsOpen && (
+            <div className="animate-fade-up flex flex-col gap-2 rounded-lg border border-line bg-canvas/50 p-2.5">
+              <div>
+                <div className="mb-1 text-[10px] font-medium text-ink-muted">담당자</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {admins.map(name => {
+                    const on = assignee === name
+                    const color = tagColor(admins, name)
+                    return (
+                      <button
+                        key={name}
+                        onClick={() => setAssignee(on ? null : name)}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                          on ? EVENT_COLOR[color].chip : 'border border-line bg-surface text-ink-muted hover:bg-hover'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 text-[10px] font-medium text-ink-muted">상태</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {STATUS_ORDER.map(s => {
+                    const on = status === s
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => setStatus(on ? null : s)}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                          on ? TIMELINE_STATUS[s].chip : 'border border-line bg-surface text-ink-muted hover:bg-hover'
+                        }`}
+                      >
+                        {TIMELINE_STATUS[s].label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
           <button
             onClick={submit}
             disabled={pending || !title.trim()}
@@ -153,6 +189,12 @@ export default function TimelinePanel({
               </button>
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-1">
+              {/* 이름(담당자) 태그가 항상 왼쪽 */}
+              {t.assignee && (
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.gray.chip}`}>
+                  {t.assignee}
+                </span>
+              )}
               {/* 상태 칩. 누르면 긴급→진행중→유지보수→보류→해제 순으로 바뀐다. */}
               <button
                 onClick={() => startTransition(async () => onChanged(await setTimelineStatus(t.id, nextStatus(t.status))))}
@@ -165,11 +207,6 @@ export default function TimelinePanel({
               >
                 {t.status ? TIMELINE_STATUS[t.status].label : '+ 상태'}
               </button>
-              {t.assignee && (
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[t.color]?.chip ?? EVENT_COLOR.gray.chip}`}>
-                  {t.assignee}
-                </span>
-              )}
             </div>
           </li>
         ))}
