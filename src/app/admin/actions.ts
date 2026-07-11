@@ -222,6 +222,42 @@ export async function fetchEventBody(id: number): Promise<{ html: string; update
   return r ? { html: r.body_html, updatedAt: r.updated_at, updatedBy: r.updated_by } : null
 }
 
+/** 달력에서 일정 칩을 다른 날짜로 드래그해 옮긴다. */
+export async function moveEvent(id: number, date: string): Promise<void> {
+  const admin = await requireAdmin()
+  await ensureSchema()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+  await sql`
+    UPDATE schedule_events SET event_date = ${date}, updated_at = now(), updated_by = ${admin}
+    WHERE id = ${id}
+  `
+  revalidatePath('/admin/schedule')
+}
+
+/**
+ * 식단 칩을 다른 날짜로 드래그해 옮긴다.
+ * 옮겨간 날에 같은 때(점심 등) 식단이 이미 있으면 서로 날짜를 맞바꾼다(트레이드).
+ */
+export async function moveMeal(id: number, date: string): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+  const [meal] = (await sql`
+    SELECT id, slot, to_char(meal_date, 'YYYY-MM-DD') AS meal_date FROM meal_entries WHERE id = ${id}
+  `) as { id: number; slot: string; meal_date: string }[]
+  if (!meal || meal.meal_date === date) return
+
+  const [partner] = (await sql`
+    SELECT id FROM meal_entries
+    WHERE meal_date = ${date} AND slot = ${meal.slot} AND id <> ${id}
+    ORDER BY id LIMIT 1
+  `) as { id: number }[]
+
+  if (partner) await sql`UPDATE meal_entries SET meal_date = ${meal.meal_date} WHERE id = ${partner.id}`
+  await sql`UPDATE meal_entries SET meal_date = ${date} WHERE id = ${id}`
+  revalidatePath('/admin/schedule')
+}
+
 export async function deleteEvent(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()

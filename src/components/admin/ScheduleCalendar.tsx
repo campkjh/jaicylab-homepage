@@ -15,6 +15,8 @@ import {
   deleteEvent,
   fetchEventBody,
   loadScheduleMonth,
+  moveEvent,
+  moveMeal,
 } from '@/app/admin/actions'
 import { usePresence } from './PresenceProvider'
 import RichEditor from './RichEditor'
@@ -43,6 +45,14 @@ function dayNumberClass(cell: DayCell): string {
   return cell.inMonth ? tone : `${tone} opacity-40`
 }
 
+/** 칩을 드래그할 때 dataTransfer 에 싣는 내용 */
+type DragPayload = { kind: 'event' | 'meal'; id: number; date: string }
+
+function setDragPayload(e: React.DragEvent, payload: DragPayload) {
+  e.dataTransfer.setData('text/plain', JSON.stringify(payload))
+  e.dataTransfer.effectAllowed = 'move'
+}
+
 type Dialog =
   | { mode: 'create'; date: string }
   | { mode: 'edit'; event: ScheduleEvent }
@@ -55,7 +65,9 @@ function EventChip({ event, onClick }: { event: ScheduleEvent; onClick: () => vo
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 ${EVENT_COLOR[event.color]?.chip ?? EVENT_COLOR.blue.chip}`}
+      draggable
+      onDragStart={e => setDragPayload(e, { kind: 'event', id: event.id, date: event.event_date })}
+      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${EVENT_COLOR[event.color]?.chip ?? EVENT_COLOR.blue.chip}`}
     >
       <span className="min-w-0 flex-1 truncate">{event.title}</span>
       {event.event_time && <span className="hidden shrink-0 tabular-nums opacity-70 sm:inline">{event.event_time}</span>}
@@ -67,7 +79,9 @@ function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 ${MEAL_SLOT[meal.slot].chip}`}
+      draggable
+      onDragStart={e => setDragPayload(e, { kind: 'meal', id: meal.id, date: meal.meal_date })}
+      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${MEAL_SLOT[meal.slot].chip}`}
     >
       {meal.image_url && <img src={meal.image_url} alt="" className="size-3.5 shrink-0 rounded-sm object-cover" />}
       <span className="min-w-0 flex-1 truncate">{meal.title}</span>
@@ -94,13 +108,18 @@ function MonthGrid({
   onEdit,
   onDay,
   onMeal,
+  onDropChip,
 }: {
   month: MonthData
   onCreate: (date: string) => void
   onEdit: (e: ScheduleEvent) => void
   onDay: (cell: DayCell) => void
   onMeal: (meal: MealEntry, date: string) => void
+  onDropChip: (payload: DragPayload, date: string) => void
 }) {
+  /** 지금 드롭 대상으로 겨누고 있는 날짜 (하이라이트용) */
+  const [over, setOver] = useState<string | null>(null)
+
   return (
     <section data-ym={month.ym} className="scroll-mt-12">
       <h2 className="sticky top-0 z-10 bg-surface/95 py-2 text-[13px] font-semibold text-ink backdrop-blur">
@@ -124,7 +143,26 @@ function MonthGrid({
               onClick={e => {
                 if (!(e.target as HTMLElement).closest('button, a')) onDay(cell)
               }}
-              className={`group relative min-h-[68px] cursor-pointer border-r border-b border-line p-0.5 sm:min-h-[92px] sm:p-1 lg:cursor-default ${cell.inMonth ? 'bg-surface' : 'bg-canvas/50'}`}
+              onDragOver={e => {
+                e.preventDefault()
+                e.dataTransfer.dropEffect = 'move'
+                setOver(cell.date)
+              }}
+              onDragLeave={() => setOver(v => (v === cell.date ? null : v))}
+              onDrop={e => {
+                e.preventDefault()
+                setOver(null)
+                try {
+                  const payload = JSON.parse(e.dataTransfer.getData('text/plain')) as DragPayload
+                  if ((payload.kind === 'event' || payload.kind === 'meal') && typeof payload.id === 'number')
+                    onDropChip(payload, cell.date)
+                } catch {
+                  /* 칩이 아닌 것을 떨어뜨리면 무시 */
+                }
+              }}
+              className={`group relative min-h-[68px] cursor-pointer border-r border-b border-line p-0.5 sm:min-h-[92px] sm:p-1 lg:cursor-default ${cell.inMonth ? 'bg-surface' : 'bg-canvas/50'} ${
+                over === cell.date ? 'ring-2 ring-brand ring-inset' : ''
+              }`}
             >
               <div className="mb-0.5 flex items-center gap-1 px-0.5">
                 <span className={`flex size-[18px] shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${dayNumberClass(cell)}`}>
@@ -241,6 +279,49 @@ export default function ScheduleCalendar({
 
   const onTimelinesChanged = useCallback((list: Timeline[]) => setTimelines(list), [])
 
+  /** 칩을 다른 날짜에 떨어뜨리면 옮긴다. 식단은 같은 때가 이미 있으면 서로 맞바꾼다. */
+  const handleDropChip = useCallback(
+    async (payload: DragPayload, date: string) => {
+      if (payload.date === date) return
+      if (payload.kind === 'event') await moveEvent(payload.id, date)
+      else await moveMeal(payload.id, date)
+      void reloadDates([payload.date, date])
+    },
+    [reloadDates],
+  )
+
+  // ── 타임라인 패널 폭. 경계 바를 끌어 조절하고 localStorage 에 저장한다.
+  const PANEL_MIN = 180
+  const PANEL_MAX = 560
+  const [panelW, setPanelW] = useState(232)
+  const panelWRef = useRef(panelW)
+  panelWRef.current = panelW
+  const barDrag = useRef<{ startX: number; startW: number } | null>(null)
+
+  useEffect(() => {
+    const saved = Number(localStorage.getItem('jl.timeline.width'))
+    if (saved >= PANEL_MIN && saved <= PANEL_MAX) setPanelW(saved)
+  }, [])
+
+  const onBarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    barDrag.current = { startX: e.clientX, startW: panelWRef.current }
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {
+      /* 포인터 캡처가 안 되는 환경에서도 드래그는 동작한다 */
+    }
+  }
+  const onBarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!barDrag.current) return
+    const w = Math.min(PANEL_MAX, Math.max(PANEL_MIN, barDrag.current.startW + (barDrag.current.startX - e.clientX)))
+    setPanelW(w)
+  }
+  const onBarPointerUp = () => {
+    if (!barDrag.current) return
+    barDrag.current = null
+    localStorage.setItem('jl.timeline.width', String(panelWRef.current))
+  }
+
   const extend = useCallback(async (direction: 'up' | 'down') => {
     if (loading.current) return
     loading.current = true
@@ -327,7 +408,7 @@ export default function ScheduleCalendar({
   }
 
   return (
-    <div className="flex h-[calc(100dvh-8.5rem)] gap-5 lg:h-[calc(100dvh-3.5rem)]">
+    <div className="flex h-[calc(100dvh-8.5rem)] gap-2 lg:h-[calc(100dvh-3.5rem)]">
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -397,12 +478,23 @@ export default function ScheduleCalendar({
               onEdit={e => setDialog({ mode: 'edit', event: e })}
               onDay={cell => setDialog({ mode: 'day', cell })}
               onMeal={(meal, date) => setDialog({ mode: 'meal', meal, date })}
+              onDropChip={handleDropChip}
             />
           ))}
         </div>
       </div>
 
-      <aside className="hidden w-[232px] shrink-0 lg:flex lg:flex-col">
+      {/* 경계 바: 끌면 달력·타임라인 폭이 같이 조절된다 */}
+      <div
+        role="separator"
+        aria-label="타임라인 폭 조절"
+        onPointerDown={onBarPointerDown}
+        onPointerMove={onBarPointerMove}
+        onPointerUp={onBarPointerUp}
+        className="hidden w-1.5 shrink-0 cursor-col-resize touch-none rounded-full transition hover:bg-line active:bg-brand lg:block"
+      />
+
+      <aside style={{ width: panelW }} className="hidden shrink-0 lg:flex lg:flex-col">
         <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
       </aside>
 
