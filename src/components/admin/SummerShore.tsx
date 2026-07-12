@@ -20,7 +20,7 @@ const SEA_BACK = '#8fe0ef'
 const GROUND_Y = 2
 const SURF_Y = 30
 const CRAB_W = 56
-const MAX_CASTLE = 12
+const MAX_CASTLE = 60
 
 type Mode =
   | 'walk'
@@ -347,43 +347,44 @@ function Shell() {
 }
 
 /**
- * 게가 쌓는 모래성. level(0~12)이 올라갈수록 넓어지고 층·탑·깃발이 붙는다.
- * 클릭하면 부술 수 있다(onSmash). smashing 중엔 무너지는 애니메이션.
+ * 게가 쌓는 모래성. level(1~60)이 올라갈수록 층이 계속 위로 쌓여 무한정 높아진다.
+ * 층마다 조금씩 좁아지는 계단식 탑. 클릭하면 부술 수 있다(onSmash).
  */
 function Sandcastle({ level, smashing, onSmash }: { level: number; smashing: boolean; onSmash: () => void }) {
   if (level <= 0 && !smashing) return null
   const L = Math.max(1, level)
-  const baseW = Math.min(52, 20 + L * 3) // 넓어짐
-  const tiers = Math.min(4, Math.ceil(L / 3)) // 1~4층
-  const H = 12 + tiers * 9 + (L >= 4 ? 6 : 0)
+  const TIER_H = 4 // 층 높이(픽셀)
+  const BASE_H = 12 // 바닥 성벽
+  const baseW = 34 + Math.min(L, 12) * 3 // 초반엔 넓어지고 이후 폭 고정(가로 화면 보호), 높이만 계속
+  const topW = 10
+  const H = BASE_H + L * TIER_H + 12 // 맨 위 깃발 공간 포함
   const cx = baseW / 2
 
   const rects: React.ReactNode[] = []
-  // 바닥 성벽
-  rects.push(<rect key="base" x={0} y={H - 12} width={baseW} height={12} fill="#e6cf9a" />)
-  rects.push(<rect key="base2" x={0} y={H - 12} width={baseW} height={2} fill="#f2dfae" />)
-  // 좌우 망루
-  rects.push(<rect key="lt" x={0} y={H - 16} width={5} height={5} fill="#e6cf9a" />)
-  rects.push(<rect key="rt" x={baseW - 5} y={H - 16} width={5} height={5} fill="#e6cf9a" />)
-  // 층 쌓기
-  for (let i = 1; i < tiers; i++) {
-    const w = baseW - i * 8
-    const y = H - 12 - i * 9
-    if (w <= 6) break
-    rects.push(<rect key={`t${i}`} x={cx - w / 2} y={y} width={w} height={10} fill="#edd8a8" />)
-    rects.push(<rect key={`t${i}b`} x={cx - w / 2} y={y} width={w} height={2} fill="#f4e6bd" />)
-  }
-  // 꼭대기 성문
+  // 바닥 성벽 + 좌우 망루
+  rects.push(<rect key="base" x={0} y={H - BASE_H} width={baseW} height={BASE_H} fill="#e6cf9a" />)
+  rects.push(<rect key="base-hl" x={0} y={H - BASE_H} width={baseW} height={2} fill="#f2dfae" />)
+  rects.push(<rect key="lt" x={0} y={H - BASE_H - 4} width={5} height={4} fill="#e6cf9a" />)
+  rects.push(<rect key="rt" x={baseW - 5} y={H - BASE_H - 4} width={5} height={4} fill="#e6cf9a" />)
   rects.push(<rect key="door" x={cx - 2} y={H - 8} width={4} height={6} fill="#b8985f" />)
-  // 톱니 흉벽 (level 높을수록)
-  if (L >= 6) {
-    rects.push(<rect key="c1" x={cx - 8} y={H - 12 - (tiers - 1) * 9 - 3} width={2} height={3} fill="#edd8a8" />)
-    rects.push(<rect key="c2" x={cx + 6} y={H - 12 - (tiers - 1) * 9 - 3} width={2} height={3} fill="#edd8a8" />)
+
+  // 층을 위로 계속 쌓는다 (위로 갈수록 완만히 좁아지는 사다리꼴)
+  for (let i = 0; i < L; i++) {
+    const t = i / L
+    const w = Math.max(topW, baseW - (baseW - topW) * t)
+    const y = H - BASE_H - (i + 1) * TIER_H
+    rects.push(<rect key={`t${i}`} x={cx - w / 2} y={y} width={w} height={TIER_H} fill={i % 2 ? '#edd8a8' : '#e0c88c'} />)
+    // 몇 층마다 톱니 흉벽으로 디테일
+    if (i % 6 === 5 && w > 14) {
+      rects.push(<rect key={`c${i}l`} x={cx - w / 2} y={y - 2} width={2} height={2} fill="#edd8a8" />)
+      rects.push(<rect key={`c${i}r`} x={cx + w / 2 - 2} y={y - 2} width={2} height={2} fill="#edd8a8" />)
+    }
   }
-  // 깃발
-  const flagY = H - 12 - (tiers - 1) * 9 - (L >= 4 ? 12 : 8)
-  rects.push(<rect key="pole" x={cx - 1} y={flagY} width={2} height={L >= 4 ? 12 : 8} fill="#8f5f33" />)
-  rects.push(<rect key="flag" x={cx + 1} y={flagY} width={5} height={3} fill={L >= 9 ? '#f59e0b' : '#ef4444'} />)
+
+  // 꼭대기 깃발 (레벨이 높을수록 금빛)
+  const topY = H - BASE_H - L * TIER_H
+  rects.push(<rect key="pole" x={cx - 1} y={topY - 10} width={2} height={12} fill="#8f5f33" />)
+  rects.push(<rect key="flag" x={cx + 1} y={topY - 10} width={6} height={4} fill={L >= 40 ? '#a855f7' : L >= 20 ? '#f59e0b' : '#ef4444'} />)
 
   return (
     <svg
@@ -788,16 +789,18 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
       setCastleSmashing(false)
     }, 650)
-    // 게가 부서진 성 쪽을 보며 상실감 (쌓은 만큼 슬픔이 크다)
+    // 게가 부서진 성 쪽을 보며 상실감 (쌓은 만큼 슬픔이 크다, 1~60 스케일)
+    const high = lv >= 20
+    const mid = lv >= 6
     const p = phys.current
     p.lastActivity = Date.now()
     if (['walk', 'goto', 'admire', 'dance', 'snack', 'build'].includes(p.mode)) {
       p.mode = 'mourn'
       setMode('mourn')
-      p.modeUntil = Date.now() + (lv >= 8 ? 6000 : 3500)
+      p.modeUntil = Date.now() + (high ? 8000 : mid ? 5000 : 3500)
     }
-    say(lv >= 8 ? LINES.smashHigh : lv >= 3 ? LINES.smashMid : LINES.smashLow, lv >= 8 ? 5000 : 3200)
-    bumpAffinity(lv >= 8 ? -3 : -1)
+    say(high ? LINES.smashHigh : mid ? LINES.smashMid : LINES.smashLow, high ? 5500 : 3200)
+    bumpAffinity(high ? -5 : mid ? -2 : -1)
   }, [castleSmashing, say, bumpAffinity])
 
   // ── 오늘 달력 칸에 있는 식단 메뉴 이름 하나 읽기 (스케줄 페이지에서만)
