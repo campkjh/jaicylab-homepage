@@ -195,6 +195,22 @@ body {
 }
 .dirt-bit { animation: dirtBurst 0.5s steps(4) forwards; }
 
+/* 모래성 무너짐: 아래로 주저앉으며 흩어진다 */
+@keyframes castleSmash {
+  0% { transform: translateY(0) scaleY(1) scaleX(1); opacity: 1; }
+  30% { transform: translateY(2px) scaleY(0.8) scaleX(1.1); }
+  100% { transform: translateY(10px) scaleY(0.1) scaleX(1.4); opacity: 0; }
+}
+.castle-smash { animation: castleSmash 0.65s steps(6) forwards; transform-origin: bottom center; }
+
+/* 슬플 때 눈물이 뚝뚝 */
+@keyframes tearDrop {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+.tear-drop { animation: tearDrop 1.1s steps(5) infinite; }
+
 /* 간식 냠냠 (위에서 입으로 내려와 사라짐) */
 @keyframes treatNom {
   0% { transform: translateY(-14px) scale(1); opacity: 0; }

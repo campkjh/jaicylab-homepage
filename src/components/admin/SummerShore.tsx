@@ -20,6 +20,7 @@ const SEA_BACK = '#8fe0ef'
 const GROUND_Y = 2
 const SURF_Y = 30
 const CRAB_W = 56
+const MAX_CASTLE = 12
 
 type Mode =
   | 'walk'
@@ -45,6 +46,8 @@ type Mode =
   | 'gone'
   | 'respawn'
   | 'snack'
+  | 'build'
+  | 'mourn'
 
 // ─────────────────────────── 대사
 
@@ -75,7 +78,11 @@ const LINES = {
   nap: ['잠깐 낮잠... 쿨쿨', '5분만 잘게...', '파도 소리 들으니 졸려...', '자장자장...'],
   napWake: ['누구야!!', '깜짝이야!! 자고 있었잖아!', '5분만 더...', '꿈에서 새우깡 먹고 있었는데!!'],
   dance: ['게다리 춤 타임!!', '옆으로 옆으로~ 옆으로 옆으로~', '흥이 났다 흥이 났어', '{n} 너도 춰봐'],
-  admire: ['이 성, 내가 만든 거임', '웅장하다...', '성주는 나야', '파도야 오지 마라...'],
+  admire: ['이 성, 내가 만든 거임', '웅장하다...', '성주는 나야', '파도야 오지 마라...', '점점 커지고 있어', '이 정도면 궁전이지'],
+  build: ['영차... 영차...', '한 층만 더 올리자', '집게로 다지고~', '모래성 장인이 나야', '조금만 더 높이!', '이번엔 탑을 세워볼까', '완벽한 성을 만들 거야', '무너지지 마라 제발...'],
+  smashLow: ['앗! 내 성...', '이제 막 시작했는데', '뭐야~ 다시 쌓지 뭐', '한 층밖에 안 됐는데...'],
+  smashMid: ['내 성이... 왜...', '{n} 너무해...', '몇 층이나 쌓았는데!!', '아니 왜 부수는 거야ㅠㅠ', '반나절 걸린 건데...'],
+  smashHigh: ['안돼애애애ㅠㅠㅠ', '내 인생의 역작이...', '몇 시간을 쌓았는데...!!', '{n}... 우리 이제 끝이야', '다신 안 만들 거야 흑흑', '집게가 부들부들 떨려...', '이건 만행이야...'],
   cooloff: ['시원하다~~', '어푸어푸', '역시 게는 물이지', '더위 탈출 성공!'],
   morning: ['좋은 아침~ {n}', '모닝 바닷물 한 모금', '오늘도 화이팅이야', '아침 파도가 제일 맑아'],
   night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤바다는 낭만이지'],
@@ -339,19 +346,55 @@ function Shell() {
   )
 }
 
-function Sandcastle() {
+/**
+ * 게가 쌓는 모래성. level(0~12)이 올라갈수록 넓어지고 층·탑·깃발이 붙는다.
+ * 클릭하면 부술 수 있다(onSmash). smashing 중엔 무너지는 애니메이션.
+ */
+function Sandcastle({ level, smashing, onSmash }: { level: number; smashing: boolean; onSmash: () => void }) {
+  if (level <= 0 && !smashing) return null
+  const L = Math.max(1, level)
+  const baseW = Math.min(52, 20 + L * 3) // 넓어짐
+  const tiers = Math.min(4, Math.ceil(L / 3)) // 1~4층
+  const H = 12 + tiers * 9 + (L >= 4 ? 6 : 0)
+  const cx = baseW / 2
+
+  const rects: React.ReactNode[] = []
+  // 바닥 성벽
+  rects.push(<rect key="base" x={0} y={H - 12} width={baseW} height={12} fill="#e6cf9a" />)
+  rects.push(<rect key="base2" x={0} y={H - 12} width={baseW} height={2} fill="#f2dfae" />)
+  // 좌우 망루
+  rects.push(<rect key="lt" x={0} y={H - 16} width={5} height={5} fill="#e6cf9a" />)
+  rects.push(<rect key="rt" x={baseW - 5} y={H - 16} width={5} height={5} fill="#e6cf9a" />)
+  // 층 쌓기
+  for (let i = 1; i < tiers; i++) {
+    const w = baseW - i * 8
+    const y = H - 12 - i * 9
+    if (w <= 6) break
+    rects.push(<rect key={`t${i}`} x={cx - w / 2} y={y} width={w} height={10} fill="#edd8a8" />)
+    rects.push(<rect key={`t${i}b`} x={cx - w / 2} y={y} width={w} height={2} fill="#f4e6bd" />)
+  }
+  // 꼭대기 성문
+  rects.push(<rect key="door" x={cx - 2} y={H - 8} width={4} height={6} fill="#b8985f" />)
+  // 톱니 흉벽 (level 높을수록)
+  if (L >= 6) {
+    rects.push(<rect key="c1" x={cx - 8} y={H - 12 - (tiers - 1) * 9 - 3} width={2} height={3} fill="#edd8a8" />)
+    rects.push(<rect key="c2" x={cx + 6} y={H - 12 - (tiers - 1) * 9 - 3} width={2} height={3} fill="#edd8a8" />)
+  }
+  // 깃발
+  const flagY = H - 12 - (tiers - 1) * 9 - (L >= 4 ? 12 : 8)
+  rects.push(<rect key="pole" x={cx - 1} y={flagY} width={2} height={L >= 4 ? 12 : 8} fill="#8f5f33" />)
+  rects.push(<rect key="flag" x={cx + 1} y={flagY} width={5} height={3} fill={L >= 9 ? '#f59e0b' : '#ef4444'} />)
+
   return (
-    <svg viewBox="0 0 36 26" className="pixelated h-[26px] w-[36px]" aria-hidden>
-      <rect x="4" y="12" width="28" height="14" fill="#e6cf9a" />
-      <rect x="10" y="4" width="16" height="10" fill="#edd8a8" />
-      <rect x="10" y="2" width="3" height="3" fill="#edd8a8" />
-      <rect x="16" y="2" width="3" height="3" fill="#edd8a8" />
-      <rect x="22" y="2" width="3" height="3" fill="#edd8a8" />
-      <rect x="16" y="8" width="4" height="6" fill="#b8985f" />
-      <rect x="4" y="10" width="4" height="3" fill="#e6cf9a" />
-      <rect x="28" y="10" width="4" height="3" fill="#e6cf9a" />
-      <rect x="17" y="-2" width="2" height="5" fill="#8f5f33" />
-      <rect x="19" y="-2" width="4" height="3" fill="#ef4444" />
+    <svg
+      viewBox={`0 0 ${baseW} ${H}`}
+      style={{ width: baseW, height: H }}
+      className={`pixelated pointer-events-auto cursor-pointer ${smashing ? 'castle-smash' : ''}`}
+      onClick={onSmash}
+      role="button"
+      aria-label="모래성 부수기"
+    >
+      {rects}
     </svg>
   )
 }
@@ -630,7 +673,7 @@ export default function SummerShore({ admin }: { admin: string }) {
   const shoreRef = useRef<HTMLDivElement>(null)
   const crabRef = useRef<HTMLDivElement>(null)
   const palmRef = useRef<HTMLDivElement>(null)
-  const sandcastleRef = useRef<HTMLDivElement>(null)
+  const sandcastleAnchorRef = useRef<HTMLDivElement>(null)
 
   // 물리 상태는 ref 로 들고 매 틱 DOM 에 직접 쓴다. (리렌더 최소화)
   const phys = useRef({
@@ -674,6 +717,13 @@ export default function SummerShore({ admin }: { admin: string }) {
   const [wordDraft, setWordDraft] = useState('')
   const [treat, setTreat] = useState<{ kind: number; key: number } | null>(null)
   const snackTimes = useRef<number[]>([])
+  /** 게가 쌓는 모래성 레벨(0~12, localStorage 유지) + 부서지는 중 플래그 */
+  const [castleLevel, setCastleLevel] = useState(0)
+  const [castleSmashing, setCastleSmashing] = useState(false)
+  const castleRef = useRef(0)
+  castleRef.current = castleLevel
+  const castleSmashRef = useRef(false)
+  castleSmashRef.current = castleSmashing
 
   const bubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pokeTimes = useRef<number[]>([])
@@ -717,6 +767,38 @@ export default function SummerShore({ admin }: { admin: string }) {
     },
     [admin],
   )
+
+  // ── 모래성 레벨 (localStorage 유지)
+  useEffect(() => {
+    const saved = Number(localStorage.getItem('jl.crab.castle'))
+    if (Number.isFinite(saved) && saved > 0) setCastleLevel(Math.min(MAX_CASTLE, saved))
+  }, [])
+
+  // ── 모래성 부수기 (내가 클릭)
+  const smashCastle = useCallback(() => {
+    const lv = castleRef.current
+    if (lv <= 0 || castleSmashing) return
+    setCastleSmashing(true)
+    setTimeout(() => {
+      setCastleLevel(0)
+      try {
+        localStorage.setItem('jl.crab.castle', '0')
+      } catch {
+        /* 저장 실패해도 계속 (setCastleSmashing(false) 는 반드시 실행) */
+      }
+      setCastleSmashing(false)
+    }, 650)
+    // 게가 부서진 성 쪽을 보며 상실감 (쌓은 만큼 슬픔이 크다)
+    const p = phys.current
+    p.lastActivity = Date.now()
+    if (['walk', 'goto', 'admire', 'dance', 'snack', 'build'].includes(p.mode)) {
+      p.mode = 'mourn'
+      setMode('mourn')
+      p.modeUntil = Date.now() + (lv >= 8 ? 6000 : 3500)
+    }
+    say(lv >= 8 ? LINES.smashHigh : lv >= 3 ? LINES.smashMid : LINES.smashLow, lv >= 8 ? 5000 : 3200)
+    bumpAffinity(lv >= 8 ? -3 : -1)
+  }, [castleSmashing, say, bumpAffinity])
 
   // ── 오늘 달력 칸에 있는 식단 메뉴 이름 하나 읽기 (스케줄 페이지에서만)
   const readTodayMenu = useCallback((): string | null => {
@@ -930,7 +1012,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     const startActivity = () => {
       const p = phys.current
       const now = Date.now()
-      if (now - p.lastActivity < 18_000) return
+      if (now - p.lastActivity < 8_000) return
       const hour = new Date().getHours()
 
       // 날씨·시간대에 맞는 혼잣말 풀
@@ -948,7 +1030,8 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
 
       type Act = { w: number; run: () => void }
-      const acts: Act[] = [{ w: 3, run: () => say(idlePool()) }]
+      // 혼잣말을 좀 더 자주 (가중치 6)
+      const acts: Act[] = [{ w: 6, run: () => say(idlePool()) }]
 
       // 제자리 소동작들
       acts.push({
@@ -976,15 +1059,16 @@ export default function SummerShore({ admin }: { admin: string }) {
         },
       })
 
-      // 모래성 감상
-      const castle = sandcastleRef.current
+      // 모래성 짓기(계속 쌓기) / 다 지었으면 감상. 모래성 앵커로 이동.
+      const castle = sandcastleAnchorRef.current
       if (castle && castle.offsetParent !== null) {
+        const full = castleRef.current >= MAX_CASTLE
         acts.push({
-          w: 1,
+          w: full ? 1.2 : 4, // 아직 안 찼으면 자주 쌓으러 간다
           run: () => {
             const r = castle.getBoundingClientRect()
-            p.target = { x: r.left - shoreLeft() - CRAB_W + 6, y: GROUND_Y }
-            p.afterGoto = 'admire'
+            p.target = { x: r.left - shoreLeft() - CRAB_W + 14, y: GROUND_Y }
+            p.afterGoto = full ? 'admire' : 'build'
             setModeBoth('goto')
           },
         })
@@ -1083,13 +1167,19 @@ export default function SummerShore({ admin }: { admin: string }) {
     const forceActivity = (
       kind:
         | 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut' | 'dig' | 'nap'
-        | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap' | 'crisp' | 'menu' | 'fridge' | 'leo',
+        | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap' | 'crisp' | 'menu' | 'fridge' | 'leo' | 'build',
     ) => {
       const p = phys.current
       p.lastActivity = 0
       setDizzy(false)
       if (kind === 'menu' || kind === 'fridge' || kind === 'leo') {
         sayContextual(kind)
+        return 'ok'
+      }
+      if (kind === 'build') {
+        setModeBoth('build')
+        p.modeUntil = Date.now() + 1500
+        say(LINES.build)
         return 'ok'
       }
       if (kind === 'crisp') {
@@ -1260,6 +1350,11 @@ export default function SummerShore({ admin }: { admin: string }) {
               p.dir = 1
               p.modeUntil = now + 6000
               say(LINES.admire)
+            } else if (p.afterGoto === 'build') {
+              setModeBoth('build')
+              p.dir = 1
+              p.modeUntil = now + 4500
+              say(LINES.build)
             } else {
               setModeBoth('walk')
             }
@@ -1402,6 +1497,34 @@ export default function SummerShore({ admin }: { admin: string }) {
         }
 
         case 'admire': {
+          p.y = GROUND_Y
+          if (now > p.modeUntil) setModeBoth('walk')
+          break
+        }
+
+        case 'build': {
+          // 집게로 모래를 다지듯 위아래로 통통
+          p.y = GROUND_Y + (Math.floor(now / 200) % 2 === 0 ? 0 : 3)
+          if (now > p.modeUntil) {
+            p.y = GROUND_Y
+            // 한 층 더! (부수는 중이 아닐 때만)
+            if (!castleSmashRef.current) {
+              const next = Math.min(MAX_CASTLE, castleRef.current + 1)
+              castleRef.current = next
+              setCastleLevel(next)
+              try {
+                localStorage.setItem('jl.crab.castle', String(next))
+              } catch {
+                /* 저장 실패는 무시 */
+              }
+            }
+            setModeBoth('walk')
+          }
+          break
+        }
+
+        case 'mourn': {
+          // 부서진 성 앞에서 축 처져 흐느낀다
           p.y = GROUND_Y
           if (now > p.modeUntil) setModeBoth('walk')
           break
@@ -1636,7 +1759,7 @@ export default function SummerShore({ admin }: { admin: string }) {
   }, [menuAt])
 
   const showUmbrella = wx.raining && mode !== 'heliUp' && mode !== 'heliDrop' && mode !== 'surf' && mode !== 'cooloff' && mode !== 'dig'
-  const eyes = dizzy ? 'dizzy' : mode === 'suntan' || mode === 'nap' || bump ? 'closed' : 'open'
+  const eyes = dizzy ? 'dizzy' : mode === 'suntan' || mode === 'nap' || mode === 'mourn' || bump ? 'closed' : 'open'
   /** 모래 파기·물놀이 땐 아랫도리를 가려 파묻힌 느낌을 낸다 */
   const halfClip = mode === 'dig' || mode === 'cooloff' ? { clipPath: 'inset(0 0 42% 0)' } : undefined
 
@@ -1714,8 +1837,9 @@ export default function SummerShore({ admin }: { admin: string }) {
       <div className="absolute bottom-[8px] left-[27%]">
         <Shell />
       </div>
-      <div ref={sandcastleRef} className="absolute bottom-[10px] left-[55%] hidden md:block">
-        <Sandcastle />
+      {/* 모래성: 게가 점점 쌓고, 클릭하면 부술 수 있다. 앵커 div 는 항상 존재(게 목표점) */}
+      <div ref={sandcastleAnchorRef} className="absolute bottom-[8px] left-[55%] hidden md:block">
+        <Sandcastle level={castleLevel} smashing={castleSmashing} onSmash={smashCastle} />
       </div>
       <div className="absolute bottom-[8px] left-[70%] hidden md:block">
         <Parasol />
@@ -1814,6 +1938,17 @@ export default function SummerShore({ admin }: { admin: string }) {
           <div key={treat.key} className="treat-nom absolute top-[16px] left-[40px] text-[14px]">
             {SNACKS[treat.kind]}
           </div>
+        )}
+        {/* 모래성 짓는 중 땀 */}
+        {mode === 'build' && (
+          <div className="heat-steam absolute -top-[6px] left-[38px] text-[11px]">💦</div>
+        )}
+        {/* 성 부서져 슬픔: 눈물 뚝뚝 */}
+        {mode === 'mourn' && (
+          <>
+            <span className="tear-drop absolute top-[12px] left-[13px] block h-[5px] w-[3px] rounded-full bg-sky-300" />
+            <span className="tear-drop absolute top-[12px] left-[40px] block h-[5px] w-[3px] rounded-full bg-sky-300" style={{ animationDelay: '0.4s' }} />
+          </>
         )}
 
         <div
