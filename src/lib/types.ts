@@ -94,15 +94,17 @@ export type ScheduleEvent = {
   category_name: string | null
 }
 
-export type TimelineStatus = 'urgent' | 'in_progress' | 'maintenance' | 'hold' | 'done'
-
-/** rank 가 낮을수록 위로 온다. 긴급 > 진행중 > (미지정) > 유지보수 > 보류 > 완료 */
-export const TIMELINE_STATUS: Record<TimelineStatus, { label: string; chip: string; rank: number }> = {
-  urgent: { label: '긴급', chip: 'bg-red-50 text-red-600', rank: 0 },
-  in_progress: { label: '진행중', chip: 'bg-emerald-50 text-emerald-700', rank: 1 },
-  maintenance: { label: '유지보수', chip: 'bg-amber-50 text-amber-700', rank: 3 },
-  hold: { label: '보류', chip: 'bg-zinc-100 text-zinc-500', rank: 4 },
-  done: { label: '완료', chip: 'bg-sky-50 text-sky-700', rank: 5 },
+/**
+ * 설정에서 관리하는 타임라인 상태 태그. position 이 작을수록 위로 온다.
+ * is_done 을 켜면 완료 태그처럼 동작한다(체크 버튼·다음 날 지난 기록으로 이동).
+ */
+export type TimelineStatusDef = {
+  id: number
+  key: string
+  label: string
+  color: EventColor
+  is_done: boolean
+  position: number
 }
 
 /** 우측 패널의 할 일. 담당자 태그(관리자 이름)와 상태 태그를 붙인다. */
@@ -110,7 +112,13 @@ export type Timeline = {
   id: number
   title: string
   assignee: string | null
-  status: TimelineStatus | null
+  /** timeline_statuses.key. 상태 태그를 떼면 null. */
+  status: string | null
+  /** 상태 태그의 표시값(조인). 태그가 없거나 지워졌으면 null. */
+  status_label: string | null
+  status_color: EventColor | null
+  status_is_done: boolean
+  /** 담당자 색 */
   color: EventColor
   done: boolean
   /** 완료 태그가 붙은 시각. 다음 날부터 목록에서 빠진다. */

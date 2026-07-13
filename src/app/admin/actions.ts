@@ -9,7 +9,7 @@ import { SESSION_COOKIE, createSession, authenticate, adminNames } from '@/lib/a
 import { encrypt, decrypt, last4 } from '@/lib/crypto'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { CATEGORY_LABEL } from '@/lib/types'
-import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline, TimelineStatus } from '@/lib/types'
+import type { EventColor, MealSlot, PresenceUser, ScheduleEvent, Timeline } from '@/lib/types'
 import { buildMonth, parseYm, type MonthData } from '@/lib/calendar'
 
 function str(fd: FormData, k: string): string {
@@ -266,30 +266,35 @@ export async function deleteEvent(fd: FormData): Promise<void> {
   revalidatePath('/admin/schedule')
 }
 
-// ─────────────────────────── 타임라인 (할 일 + 담당자 태그)
+// ─────────────────────────── 타임라인 (할 일 + 담당자/상태 태그)
 
 /** 담당자별로 색을 고정한다. 관리자 목록 순서대로 돌아간다. */
 const TIMELINE_COLORS: EventColor[] = ['purple', 'blue', 'green', 'amber', 'red']
 
-const TIMELINE_STATUSES: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold', 'done']
+/** status 컬럼에 넣기 전에 실제 존재하는 태그 key 인지 검사한다. 없으면 null(태그 없음). */
+async function validStatusKey(key: string | null): Promise<string | null> {
+  if (!key) return null
+  const rows = (await sql`SELECT 1 FROM timeline_statuses WHERE key = ${key}`) as unknown[]
+  return rows.length ? key : null
+}
 
 /**
- * 긴급 > 진행중 > (미지정) > 유지보수 > 보류 > 완료 순.
- * 완료 태그가 붙은 항목은 그날까지만 보이고, 다음 날(KST)부터는 '지난 기록'으로 넘어간다.
+ * 태그 position 순으로 정렬(미지정은 맨 아래). 완료(is_done) 태그가 붙은 항목은 그날까지만 보이고,
+ * 다음 날(KST)부터는 '지난 기록'으로 넘어간다. 상태 라벨·색은 timeline_statuses 에서 조인해 내려준다.
  */
 async function timelineList(): Promise<Timeline[]> {
   return (await sql`
-    SELECT id, title, assignee, status, color, done, created_by,
-           to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
-    FROM schedule_timelines
+    SELECT t.id, t.title, t.assignee, t.status, t.color, t.done, t.created_by,
+           to_char(t.done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at,
+           s.label AS status_label, s.color AS status_color,
+           coalesce(s.is_done, false) AS status_is_done
+    FROM schedule_timelines t
+    LEFT JOIN timeline_statuses s ON s.key = t.status
     WHERE NOT (
-      status = 'done' AND done_at IS NOT NULL
-      AND (done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
+      coalesce(s.is_done, false) AND t.done_at IS NOT NULL
+      AND (t.done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
     )
-    ORDER BY CASE coalesce(status, 'none')
-               WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
-               WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 WHEN 'done' THEN 5 ELSE 2 END ASC,
-             id DESC
+    ORDER BY coalesce(s.position, 999999) ASC, t.id DESC
   `) as Timeline[]
 }
 
@@ -298,11 +303,14 @@ export async function listArchivedTimelines(): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()
   return (await sql`
-    SELECT id, title, assignee, status, color, done, created_by,
-           to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
-    FROM schedule_timelines
-    WHERE status = 'done' AND done_at IS NOT NULL
-    ORDER BY done_at DESC, id DESC
+    SELECT t.id, t.title, t.assignee, t.status, t.color, t.done, t.created_by,
+           to_char(t.done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at,
+           s.label AS status_label, s.color AS status_color,
+           coalesce(s.is_done, false) AS status_is_done
+    FROM schedule_timelines t
+    LEFT JOIN timeline_statuses s ON s.key = t.status
+    WHERE coalesce(s.is_done, false) AND t.done_at IS NOT NULL
+    ORDER BY t.done_at DESC, t.id DESC
   `) as Timeline[]
 }
 
@@ -316,7 +324,7 @@ export async function listTimelines(): Promise<Timeline[]> {
 export async function createTimeline(
   title: string,
   assignee: string | null,
-  status: TimelineStatus | null = null,
+  status: string | null = null,
 ): Promise<Timeline[]> {
   const admin = await requireAdmin()
   await ensureSchema()
@@ -325,27 +333,40 @@ export async function createTimeline(
   const names = adminNames()
   const who = assignee && names.includes(assignee) ? assignee : null
   const color = who ? TIMELINE_COLORS[names.indexOf(who) % TIMELINE_COLORS.length] : 'gray'
-  const st = status && TIMELINE_STATUSES.includes(status) ? status : null
+  const st = await validStatusKey(status)
   // 만들자마자 완료 태그를 붙이는 경우에도 done_at 이 찍혀야 다음 날 기록으로 넘어간다.
   await sql`
     INSERT INTO schedule_timelines (title, assignee, status, color, created_by, done, done_at)
     VALUES (${clean}, ${who}, ${st}, ${color}, ${admin},
-            ${st === 'done'}, CASE WHEN ${st === 'done'} THEN now() ELSE NULL END)
+            coalesce((SELECT is_done FROM timeline_statuses WHERE key = ${st}), false),
+            CASE WHEN (SELECT is_done FROM timeline_statuses WHERE key = ${st}) THEN now() ELSE NULL END)
   `
   revalidatePath('/admin/schedule')
   return timelineList()
 }
 
-/** 항목의 상태 태그를 바꾼다. null 이면 태그를 뗀다. 완료 태그는 붙은 시각을 기록한다. */
-export async function setTimelineStatus(id: number, status: TimelineStatus | null): Promise<Timeline[]> {
+/** 항목의 제목을 고친다. */
+export async function renameTimeline(id: number, title: string): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()
-  const st = status && TIMELINE_STATUSES.includes(status) ? status : null
+  const clean = title.trim()
+  if (!clean) return timelineList()
+  await sql`UPDATE schedule_timelines SET title = ${clean} WHERE id = ${id}`
+  revalidatePath('/admin/schedule')
+  return timelineList()
+}
+
+/** 항목의 상태 태그를 바꾼다. null 이면 태그를 뗀다. 완료(is_done) 태그는 붙은 시각을 기록한다. */
+export async function setTimelineStatus(id: number, status: string | null): Promise<Timeline[]> {
+  await requireAdmin()
+  await ensureSchema()
+  const st = await validStatusKey(status)
   await sql`
     UPDATE schedule_timelines
-    SET status = ${st},
-        done = ${st === 'done'},
-        done_at = CASE WHEN ${st === 'done'} THEN coalesce(done_at, now()) ELSE NULL END
+    SET status  = ${st},
+        done    = coalesce((SELECT is_done FROM timeline_statuses WHERE key = ${st}), false),
+        done_at = CASE WHEN (SELECT is_done FROM timeline_statuses WHERE key = ${st})
+                       THEN coalesce(done_at, now()) ELSE NULL END
     WHERE id = ${id}
   `
   revalidatePath('/admin/schedule')
@@ -364,16 +385,26 @@ export async function setTimelineAssignee(id: number, assignee: string | null): 
   return timelineList()
 }
 
-/** 체크 버튼 = 완료 태그 토글. 완료하면 다음 날 목록에서 빠지고 지난 기록으로 간다. */
+/**
+ * 체크 버튼 = 완료 토글. 완료 태그(is_done)가 붙어 있으면 떼고, 아니면 첫 완료 태그를 붙인다.
+ * 완료하면 다음 날 목록에서 빠지고 지난 기록으로 간다. 완료 태그가 하나도 없으면 아무 일도 없다.
+ */
 export async function toggleTimeline(id: number): Promise<Timeline[]> {
   await requireAdmin()
   await ensureSchema()
   await sql`
-    UPDATE schedule_timelines
-    SET status  = CASE WHEN status = 'done' THEN NULL ELSE 'done' END,
-        done    = (status IS DISTINCT FROM 'done'),
-        done_at = CASE WHEN status = 'done' THEN NULL ELSE coalesce(done_at, now()) END
-    WHERE id = ${id}
+    UPDATE schedule_timelines t
+    SET status  = CASE
+          WHEN (SELECT coalesce(is_done, false) FROM timeline_statuses WHERE key = t.status) THEN NULL
+          ELSE (SELECT key FROM timeline_statuses WHERE is_done ORDER BY position, id LIMIT 1) END,
+        done    = CASE
+          WHEN (SELECT coalesce(is_done, false) FROM timeline_statuses WHERE key = t.status) THEN false
+          ELSE EXISTS (SELECT 1 FROM timeline_statuses WHERE is_done) END,
+        done_at = CASE
+          WHEN (SELECT coalesce(is_done, false) FROM timeline_statuses WHERE key = t.status) THEN NULL
+          WHEN EXISTS (SELECT 1 FROM timeline_statuses WHERE is_done) THEN coalesce(t.done_at, now())
+          ELSE t.done_at END
+    WHERE t.id = ${id}
   `
   revalidatePath('/admin/schedule')
   return timelineList()
@@ -385,6 +416,70 @@ export async function deleteTimeline(id: number): Promise<Timeline[]> {
   await sql`DELETE FROM schedule_timelines WHERE id = ${id}`
   revalidatePath('/admin/schedule')
   return timelineList()
+}
+
+// ─────────────────────────── 타임라인 상태 태그 (설정)
+
+export async function createTimelineStatus(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const label = str(fd, 'label')
+  if (!label) return
+  const rows = (await sql`SELECT coalesce(max(position), -1) + 1 AS next FROM timeline_statuses`) as { next: number }[]
+  await sql`
+    INSERT INTO timeline_statuses (key, label, color, is_done, position)
+    VALUES (gen_random_uuid()::text, ${label}, ${str(fd, 'color') || 'gray'},
+            ${fd.get('is_done') != null}, ${rows[0].next})
+  `
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/schedule')
+}
+
+export async function updateTimelineStatus(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const label = str(fd, 'label')
+  if (!label) return
+  await sql`
+    UPDATE timeline_statuses
+    SET label = ${label}, color = ${str(fd, 'color') || 'gray'}, is_done = ${fd.get('is_done') != null}
+    WHERE id = ${int(fd, 'id')}
+  `
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/schedule')
+}
+
+/** 태그를 지워도 할 일은 남는다. 그 태그를 쓰던 항목은 미지정으로 바뀐다. */
+export async function deleteTimelineStatus(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const id = int(fd, 'id')
+  await sql`
+    UPDATE schedule_timelines
+    SET status = NULL, done = false, done_at = NULL
+    WHERE status = (SELECT key FROM timeline_statuses WHERE id = ${id})
+  `
+  await sql`DELETE FROM timeline_statuses WHERE id = ${id}`
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/schedule')
+}
+
+/** 설정에서 태그 순서를 위/아래로 옮긴다. 이웃과 position 을 맞바꾼다. */
+export async function moveTimelineStatus(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const id = int(fd, 'id')
+  const up = str(fd, 'dir') === 'up'
+  const [cur] = (await sql`SELECT id, position FROM timeline_statuses WHERE id = ${id}`) as { id: number; position: number }[]
+  if (!cur) return
+  const [neighbor] = (up
+    ? await sql`SELECT id, position FROM timeline_statuses WHERE position < ${cur.position} ORDER BY position DESC LIMIT 1`
+    : await sql`SELECT id, position FROM timeline_statuses WHERE position > ${cur.position} ORDER BY position ASC LIMIT 1`) as { id: number; position: number }[]
+  if (!neighbor) return
+  await sql`UPDATE timeline_statuses SET position = ${neighbor.position} WHERE id = ${cur.id}`
+  await sql`UPDATE timeline_statuses SET position = ${cur.position} WHERE id = ${neighbor.id}`
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/schedule')
 }
 
 // ─────────────────────────── 자주 쓰는 말

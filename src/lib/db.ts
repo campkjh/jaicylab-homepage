@@ -158,6 +158,29 @@ const DDL = [
   `ALTER TABLE schedule_timelines ALTER COLUMN start_date DROP NOT NULL`,
   `ALTER TABLE schedule_timelines ALTER COLUMN end_date DROP NOT NULL`,
 
+  // 타임라인 상태 태그. 설정에서 추가·수정·삭제한다.
+  // schedule_timelines.status 는 여기 key 를 가리킨다. is_done 태그를 붙이면 완료로 처리되어
+  // 다음 날(KST)부터 목록에서 빠지고 '지난 기록'으로 넘어간다.
+  `CREATE TABLE IF NOT EXISTS timeline_statuses (
+    id         serial PRIMARY KEY,
+    key        text NOT NULL UNIQUE,
+    label      text NOT NULL,
+    color      text NOT NULL DEFAULT 'gray',
+    is_done    boolean NOT NULL DEFAULT false,
+    position   integer NOT NULL DEFAULT 0,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  // 기존 하드코딩 상태(긴급>진행중>유지보수>보류>완료)를 그대로 옮긴다. key 는 기존 데이터와 맞춘다.
+  `INSERT INTO timeline_statuses (key, label, color, is_done, position)
+   SELECT * FROM (VALUES
+     ('urgent','긴급','red',false,0),
+     ('in_progress','진행중','green',false,1),
+     ('maintenance','유지보수','amber',false,2),
+     ('hold','보류','gray',false,3),
+     ('done','완료','blue',true,4)
+   ) AS v(key,label,color,is_done,position)
+   WHERE NOT EXISTS (SELECT 1 FROM timeline_statuses)`,
+
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (
     id         serial PRIMARY KEY,

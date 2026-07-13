@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { createPortal } from 'react-dom'
-import { EVENT_COLOR, TIMELINE_STATUS, type Timeline, type TimelineStatus } from '@/lib/types'
+import { EVENT_COLOR, type Timeline, type TimelineStatusDef } from '@/lib/types'
 import {
   createTimeline,
   deleteTimeline,
   listArchivedTimelines,
+  renameTimeline,
   setTimelineAssignee,
   setTimelineStatus,
   toggleTimeline,
@@ -16,9 +17,6 @@ import Icon from './Icon'
 /** 담당자 태그 칩 색. 서버(createTimeline)와 같은 순서로 돌아간다. */
 const TAG_COLORS = ['purple', 'blue', 'green', 'amber', 'red'] as const
 
-/** 우선순위 순서. 긴급이 맨 위, 완료가 맨 아래로 정렬된다. 완료는 다음 날 지난 기록으로 넘어간다. */
-const STATUS_ORDER: TimelineStatus[] = ['urgent', 'in_progress', 'maintenance', 'hold', 'done']
-
 function tagColor(admins: string[], name: string | null): (typeof TAG_COLORS)[number] | 'gray' {
   const i = name ? admins.indexOf(name) : -1
   return i === -1 ? 'gray' : TAG_COLORS[i % TAG_COLORS.length]
@@ -27,16 +25,18 @@ function tagColor(admins: string[], name: string | null): (typeof TAG_COLORS)[nu
 /** 담당자·상태 칩을 고르는 리스트. 추가 폼과 항목 수정 툴팁이 같이 쓴다. */
 function TagPicker({
   admins,
+  statuses,
   assignee,
   status,
   onAssignee,
   onStatus,
 }: {
   admins: string[]
+  statuses: TimelineStatusDef[]
   assignee: string | null
-  status: TimelineStatus | null
+  status: string | null
   onAssignee: (name: string | null) => void
-  onStatus: (s: TimelineStatus | null) => void
+  onStatus: (key: string | null) => void
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -62,22 +62,26 @@ function TagPicker({
       </div>
       <div>
         <div className="mb-1 text-[10px] font-medium text-ink-muted">상태</div>
-        <div className="flex flex-wrap gap-1.5">
-          {STATUS_ORDER.map(s => {
-            const on = status === s
-            return (
-              <button
-                key={s}
-                onClick={() => onStatus(on ? null : s)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-                  on ? TIMELINE_STATUS[s].chip : 'border border-line bg-surface text-ink-muted hover:bg-hover'
-                }`}
-              >
-                {TIMELINE_STATUS[s].label}
-              </button>
-            )
-          })}
-        </div>
+        {statuses.length === 0 ? (
+          <p className="text-[11px] text-ink-muted">설정에서 상태 태그를 추가하세요.</p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {statuses.map(s => {
+              const on = status === s.key
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => onStatus(on ? null : s.key)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                    on ? EVENT_COLOR[s.color].chip : 'border border-line bg-surface text-ink-muted hover:bg-hover'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -126,23 +130,27 @@ function ArchiveSection() {
 
 /**
  * 스케줄 우측 패널. + 를 누르고 할 일을 적은 뒤 태그를 골라 붙인다.
- * 항목의 태그를 누르면 툴팁이 떠서 담당자·상태를 바로 바꿀 수 있다.
+ * 제목을 누르면 바로 고쳐 쓸 수 있고, 항목의 태그를 누르면 툴팁이 떠서 담당자·상태를 바꿀 수 있다.
  * 완료 태그가 붙은 항목은 다음 날 지난 기록으로 넘어간다.
  */
 export default function TimelinePanel({
   timelines,
   admins,
+  statuses,
   onChanged,
 }: {
   timelines: Timeline[]
   admins: string[]
+  statuses: TimelineStatusDef[]
   onChanged: (list: Timeline[]) => void
 }) {
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
   const [assignee, setAssignee] = useState<string | null>(null)
-  const [status, setStatus] = useState<TimelineStatus | null>(null)
+  const [status, setStatus] = useState<string | null>(null)
   const [tagsOpen, setTagsOpen] = useState(false)
+  /** 제목 인라인 수정 중인 항목 id 와 입력값 */
+  const [editingTitle, setEditingTitle] = useState<{ id: number; value: string } | null>(null)
   /** 태그 수정 툴팁: 열린 항목 id 와 붙일 위치(뷰포트 기준) */
   const [editing, setEditing] = useState<{ id: number; top: number; left: number; width: number; flip: boolean } | null>(null)
   const [pending, startTransition] = useTransition()
@@ -192,6 +200,15 @@ export default function TimelinePanel({
     })
   }
 
+  const saveTitle = () => {
+    const e = editingTitle
+    setEditingTitle(null)
+    if (!e) return
+    const t = timelines.find(x => x.id === e.id)
+    if (!t || !e.value.trim() || e.value.trim() === t.title) return
+    startTransition(async () => onChanged(await renameTimeline(e.id, e.value)))
+  }
+
   return (
     <div className="flex min-h-0 flex-col">
       <div className="mb-2 flex items-center justify-between">
@@ -227,11 +244,14 @@ export default function TimelinePanel({
                     {assignee}
                   </span>
                 )}
-                {status && (
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${TIMELINE_STATUS[status].chip}`}>
-                    {TIMELINE_STATUS[status].label}
-                  </span>
-                )}
+                {status && (() => {
+                  const s = statuses.find(x => x.key === status)
+                  return s ? (
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[s.color].chip}`}>
+                      {s.label}
+                    </span>
+                  ) : null
+                })()}
               </>
             ) : (
               <span className="text-ink-muted">태그 선택</span>
@@ -241,7 +261,7 @@ export default function TimelinePanel({
 
           {tagsOpen && (
             <div className="animate-fade-up rounded-lg border border-line bg-canvas/50 p-2.5">
-              <TagPicker admins={admins} assignee={assignee} status={status} onAssignee={setAssignee} onStatus={setStatus} />
+              <TagPicker admins={admins} statuses={statuses} assignee={assignee} status={status} onAssignee={setAssignee} onStatus={setStatus} />
             </div>
           )}
 
@@ -267,18 +287,36 @@ export default function TimelinePanel({
         {timelines.map(t => (
           <li
             key={t.id}
-            className={`group relative rounded-lg border border-line bg-surface px-2.5 py-2 transition hover:border-ink-muted/40 ${t.status === 'done' ? 'opacity-55' : ''}`}
+            className={`group relative rounded-lg border border-line bg-surface px-2.5 py-2 transition hover:border-ink-muted/40 ${t.status_is_done ? 'opacity-55' : ''}`}
           >
             <div className="flex items-start gap-1.5">
-              <span className={`min-w-0 flex-1 text-xs font-medium break-keep text-ink ${t.status === 'done' ? 'line-through' : ''}`}>
-                {t.title}
-              </span>
+              {editingTitle?.id === t.id ? (
+                <input
+                  autoFocus
+                  value={editingTitle.value}
+                  onChange={e => setEditingTitle({ id: t.id, value: e.target.value })}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveTitle()
+                    if (e.key === 'Escape') setEditingTitle(null)
+                  }}
+                  onBlur={saveTitle}
+                  className="min-w-0 flex-1 rounded border border-brand bg-surface px-1.5 py-0.5 text-xs font-medium text-ink outline-none"
+                />
+              ) : (
+                <button
+                  onClick={() => setEditingTitle({ id: t.id, value: t.title })}
+                  title="제목 수정"
+                  className={`min-w-0 flex-1 text-left text-xs font-medium break-keep text-ink transition hover:text-brand ${t.status_is_done ? 'line-through' : ''}`}
+                >
+                  {t.title}
+                </button>
+              )}
               <button
                 onClick={() => startTransition(async () => onChanged(await toggleTimeline(t.id)))}
-                aria-label={t.status === 'done' ? '완료 취소' : '완료 처리'}
+                aria-label={t.status_is_done ? '완료 취소' : '완료 처리'}
                 className="shrink-0 text-ink-muted opacity-0 transition group-hover:opacity-100 hover:text-brand"
               >
-                <Icon name={t.status === 'done' ? 'checkCircle' : 'checkCircleLine'} className="size-3.5" />
+                <Icon name={t.status_is_done ? 'checkCircle' : 'checkCircleLine'} className="size-3.5" />
               </button>
               <button
                 onClick={() => startTransition(async () => onChanged(await deleteTimeline(t.id)))}
@@ -301,17 +339,17 @@ export default function TimelinePanel({
                   {t.assignee}
                 </span>
               )}
-              {t.status && (
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${TIMELINE_STATUS[t.status].chip}`}>
-                  {TIMELINE_STATUS[t.status].label}
+              {t.status_label && (
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${EVENT_COLOR[t.status_color ?? 'gray'].chip}`}>
+                  {t.status_label}
                 </span>
               )}
-              {!t.assignee && !t.status && (
+              {!t.assignee && !t.status_label && (
                 <span className="rounded-full border border-dashed border-line px-2 py-0.5 text-[11px] text-ink-muted opacity-0 transition group-hover:opacity-100">
                   + 태그
                 </span>
               )}
-              {t.status === 'done' && t.done_at && (
+              {t.status_is_done && t.done_at && (
                 <span className="text-[10px] text-ink-muted">내일 기록으로 이동</span>
               )}
             </button>
@@ -342,10 +380,11 @@ export default function TimelinePanel({
             >
               <TagPicker
                 admins={admins}
+                statuses={statuses}
                 assignee={t.assignee}
                 status={t.status}
                 onAssignee={name => startTransition(async () => onChanged(await setTimelineAssignee(t.id, name)))}
-                onStatus={s => startTransition(async () => onChanged(await setTimelineStatus(t.id, s)))}
+                onStatus={key => startTransition(async () => onChanged(await setTimelineStatus(t.id, key)))}
               />
             </div>,
             document.body,

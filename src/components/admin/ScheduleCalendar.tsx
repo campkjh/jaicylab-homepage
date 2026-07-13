@@ -6,7 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { EVENT_COLOR, MEAL_SLOT, type EventCategory, type MealEntry, type ScheduleEvent, type Timeline } from '@/lib/types'
+import { EVENT_COLOR, MEAL_SLOT, type EventCategory, type MealEntry, type ScheduleEvent, type Timeline, type TimelineStatusDef } from '@/lib/types'
 import type { DayCell, DayTask, MonthData } from '@/lib/calendar'
 import {
   autosaveEventBody,
@@ -213,6 +213,7 @@ export default function ScheduleCalendar({
   todayIso,
   initialTimelines,
   admins,
+  timelineStatuses,
 }: {
   initialMonths: MonthData[]
   focusYm: string
@@ -220,6 +221,7 @@ export default function ScheduleCalendar({
   todayIso: string
   initialTimelines: Timeline[]
   admins: string[]
+  timelineStatuses: TimelineStatusDef[]
 }) {
   const router = useRouter()
   const [months, setMonths] = useState<MonthData[]>(initialMonths)
@@ -500,7 +502,7 @@ export default function ScheduleCalendar({
       />
 
       <aside data-timeline-panel style={{ width: panelW }} className="hidden shrink-0 lg:flex lg:flex-col">
-        <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
+        <TimelinePanel timelines={timelines} admins={admins} statuses={timelineStatuses} onChanged={onTimelinesChanged} />
       </aside>
 
       {dialog && (
@@ -526,7 +528,7 @@ export default function ScheduleCalendar({
           )}
           {dialog.mode === 'timelines' && (
             <div className="p-1">
-              <TimelinePanel timelines={timelines} admins={admins} onChanged={onTimelinesChanged} />
+              <TimelinePanel timelines={timelines} admins={admins} statuses={timelineStatuses} onChanged={onTimelinesChanged} />
             </div>
           )}
           {(dialog.mode === 'create' || dialog.mode === 'edit') && (

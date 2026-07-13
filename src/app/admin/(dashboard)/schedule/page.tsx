@@ -1,4 +1,4 @@
-import { ensureSchema, sql, type EventCategory, type Timeline } from '@/lib/db'
+import { ensureSchema, sql, type EventCategory, type Timeline, type TimelineStatusDef } from '@/lib/db'
 import { adminNames } from '@/lib/auth'
 import { buildMonth, parseYm, shiftMonth, todayIso } from '@/lib/calendar'
 import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
@@ -13,24 +13,25 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const prev = shiftMonth(year, month, -1)
   const next = shiftMonth(year, month, 1)
 
-  const [before, current, after, categoryRows, timelineRows] = await Promise.all([
+  const [before, current, after, categoryRows, timelineRows, statusRows] = await Promise.all([
     buildMonth(prev.year, prev.month),
     buildMonth(year, month),
     buildMonth(next.year, next.month),
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
     sql`
-      SELECT id, title, assignee, status, color, done, created_by,
-             to_char(done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at
-      FROM schedule_timelines
+      SELECT t.id, t.title, t.assignee, t.status, t.color, t.done, t.created_by,
+             to_char(t.done_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS done_at,
+             s.label AS status_label, s.color AS status_color,
+             coalesce(s.is_done, false) AS status_is_done
+      FROM schedule_timelines t
+      LEFT JOIN timeline_statuses s ON s.key = t.status
       WHERE NOT (
-        status = 'done' AND done_at IS NOT NULL
-        AND (done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
+        coalesce(s.is_done, false) AND t.done_at IS NOT NULL
+        AND (t.done_at AT TIME ZONE 'Asia/Seoul')::date < (now() AT TIME ZONE 'Asia/Seoul')::date
       )
-      ORDER BY CASE coalesce(status, 'none')
-                 WHEN 'urgent' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'none' THEN 2
-                 WHEN 'maintenance' THEN 3 WHEN 'hold' THEN 4 WHEN 'done' THEN 5 ELSE 2 END ASC,
-               id DESC
+      ORDER BY coalesce(s.position, 999999) ASC, t.id DESC
     `,
+    sql`SELECT id, key, label, color, is_done, position FROM timeline_statuses ORDER BY position, id`,
   ])
 
   return (
@@ -41,6 +42,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       todayIso={todayIso()}
       initialTimelines={timelineRows as Timeline[]}
       admins={adminNames()}
+      timelineStatuses={statusRows as TimelineStatusDef[]}
     />
   )
 }
