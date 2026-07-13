@@ -622,6 +622,23 @@ export async function addAccount(fd: FormData): Promise<void> {
   revalidatePath('/admin/clients')
 }
 
+/** 계정 한 줄 인라인 수정. 종류·아이디·비밀번호를 바꾼다. 비밀번호를 비우면 지워진다. */
+export async function updateAccount(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const category = str(fd, 'category') || 'etc'
+  const password = str(fd, 'password')
+  await sql`
+    UPDATE client_accounts SET
+      category = ${category},
+      label = ${CATEGORY_LABEL[category] || '계정'},
+      username = ${nullable(fd, 'username')},
+      password_enc = ${password ? encrypt(password) : null}
+    WHERE id = ${int(fd, 'id')}
+  `
+  revalidatePath('/admin/clients')
+}
+
 export async function deleteAccount(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()

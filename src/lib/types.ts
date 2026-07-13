@@ -191,12 +191,14 @@ export const STATUS_LABEL: Record<ProjectStatus, string> = {
 }
 
 /** 계정 페이지의 + 에서 고르는 간단한 종류 */
-export const ACCOUNT_KINDS = ['google', 'apple', 'naver', 'etc'] as const
+export const ACCOUNT_KINDS = ['google', 'apple', 'naver', 'biznum', 'card', 'etc'] as const
 
 export const CATEGORY_LABEL: Record<string, string> = {
   google: '구글계정',
   apple: '애플계정',
   naver: '네이버계정',
+  biznum: '사업자 등록번호',
+  card: '신용카드',
   // 예전 데이터가 쓰던 종류들
   google_play: 'Google Play Console',
   apple_developer: 'Apple Developer',
@@ -207,4 +209,17 @@ export const CATEGORY_LABEL: Record<string, string> = {
   domain: '도메인 / 호스팅',
   business: '사업자 / 세무',
   etc: '기타',
+}
+
+/**
+ * 계정 목록 표시·수정용. 비밀번호는 복호화한 원문을 함께 내려준다.
+ * (관리자 인증으로 가려진 내부 화면에서만 쓴다)
+ */
+export type AccountView = {
+  id: number
+  client_id: number
+  category: string
+  label: string
+  username: string | null
+  password: string | null
 }
