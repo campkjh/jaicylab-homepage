@@ -14,6 +14,7 @@ import { PrintableQuote } from './PrintableQuote'
 import { GoogleIcon } from './GoogleIcon'
 import { MedinityNav, type MedinityTab } from './MedinityNav'
 import { MedinityNavIcon } from './MedinityNavIcon'
+import { MedinityLoading } from './MedinityLoading'
 import { MedinityHome, type RequestEntry, type ReqStatus } from './MedinityHome'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
@@ -255,9 +256,20 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         </div>
       </header>
 
-      {tab === 'home' && <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} />}
-
-      <div className={`mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 lg:pr-20 ${tab === 'home' ? 'hidden' : ''}`}>
+      <AnimatePresence mode="wait" initial={false}>
+      {tab === 'home' ? (
+        <motion.div key="home" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
+          <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="quote"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 lg:pr-20"
+        >
         {/* 옵션 섹션 */}
         <div className="flex flex-col gap-5">
           <div className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
@@ -483,16 +495,17 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
               <button
                 onClick={submit}
                 disabled={sending}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#3180F7] py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#3180F7] text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-70"
               >
-                {sending && <Loader2 className="size-4 animate-spin" />}
-                {sending ? '전송 중…' : '보내기'}
+                {sending ? <MedinityLoading className="h-6 w-14" /> : '보내기'}
               </button>
               <p className="text-center text-[11px] text-slate-400">레퍼런스와 요청사항을 보내주시면 담당자가 확인합니다.</p>
             </div>
           </div>
         </aside>
-      </div>
+        </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* 모바일 하단 바: 네비(홈/견적서) + 합계(chevron 상세) + 견적요청 */}
       <div className="fixed inset-x-0 bottom-0 z-30 lg:hidden">
@@ -545,10 +558,10 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                     <button
                       key={id}
                       onClick={() => setTab(id)}
-                      className={`flex items-center gap-1 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold transition ${on ? 'bg-white text-[#3180F7] shadow-sm' : 'text-slate-400'}`}
+                      className={`relative flex items-center gap-1 whitespace-nowrap rounded-[10px] px-2.5 py-2 text-[12px] font-semibold transition-colors ${on ? 'text-[#3180F7]' : 'text-slate-400'}`}
                     >
-                      <MedinityNavIcon name={icon} className="size-4" />
-                      {label}
+                      {on && <motion.span layoutId="mobileNavPill" className="absolute inset-0 rounded-[10px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 460, damping: 36 }} />}
+                      <span className="relative flex items-center gap-1"><MedinityNavIcon name={icon} className="size-4" />{label}</span>
                     </button>
                   )
                 })}
@@ -557,10 +570,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                 <button
                   onClick={submit}
                   disabled={sending}
-                  className="flex items-center gap-2 rounded-xl bg-[#3180F7] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
+                  className="flex h-11 min-w-[76px] items-center justify-center rounded-xl bg-[#3180F7] px-3 text-[13px] font-semibold whitespace-nowrap text-white transition hover:bg-[#2470E6] disabled:opacity-70"
                 >
-                  {sending && <Loader2 className="size-4 animate-spin" />}
-                  견적 요청
+                  {sending ? <MedinityLoading className="h-6 w-11" /> : '견적 요청'}
                 </button>
               )}
             </div>
