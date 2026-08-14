@@ -8,6 +8,7 @@ import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, 
 import { MedinityLogo } from './MedinityLogo'
 import { MedinitySectionIcon } from './MedinitySectionIcon'
 import { AnimatedWon } from './AnimatedWon'
+import { InteractionPreview } from './InteractionPreview'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -230,6 +231,11 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                             </span>
                           </div>
                           {c.desc && <span className="mt-1 text-[12px] leading-snug text-slate-500">{c.desc}</span>}
+                          {section.id === 'interaction' && (
+                            <span className="mt-2.5 block">
+                              <InteractionPreview level={c.id === 'inter-high' ? 'high' : c.id === 'inter-mid' ? 'mid' : 'low'} />
+                            </span>
+                          )}
                           <span className="mt-2 text-sm font-bold text-slate-900">{includedIds.has(c.id) ? '포함' : formatWon(priceOfChoice(c, totalPages))}</span>
                         </button>
                       )
