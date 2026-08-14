@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
@@ -28,12 +28,10 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   })
 
   const [memo, setMemo] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const [referenceUrl, setReferenceUrl] = useState('')
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState<number | null>(null)
   const [quoteDate, setQuoteDate] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
 
   // 견적서 인쇄(→ PDF 저장). 인쇄 직전에 견적일을 찍고 브라우저 인쇄창을 연다.
   const printQuote = () => {
@@ -55,6 +53,8 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
 
   // 무료로 기본 포함되는 옵션 — 합계에서 0원 처리
   const includedIds = useMemo(() => includedChoiceIds([...Object.values(singles), ...multi]), [singles, multi])
+  // 기본 패키지에 포함된 페이지 수
+  const basePages = MEDINITY_CHOICE_INDEX[singles.base]?.pages ?? 0
   // 총 페이지 수 (기본 패키지 포함 + 추가 페이지) — 커스텀 모션 등 페이지당 단가 계산에 쓴다
   const totalPages = useMemo(
     () => totalPageCount(Object.values(singles), steppers['extra-page'] ?? 0),
@@ -127,24 +127,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const submit = async () => {
     setSending(true)
     try {
-      let referenceUrl: string | undefined
-      if (file) {
-        setUploading(true)
-        const fd = new FormData()
-        fd.append('file', file)
-        const up = await fetch('/api/medinity/upload', { method: 'POST', body: fd })
-        setUploading(false)
-        if (!up.ok) {
-          const j = await up.json().catch(() => ({}))
-          toast.error(j.error || 'PDF 업로드에 실패했어요.')
-          setSending(false)
-          return
-        }
-        referenceUrl = (await up.json()).url
-      }
       const payload: MedinityQuoteInput = {
         memo,
-        referenceUrl,
+        referenceUrl: referenceUrl.trim() || undefined,
         choiceIds: [...Object.values(singles), ...multi],
         steppers,
       }
@@ -155,7 +140,6 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       toast.error('전송에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setSending(false)
-      setUploading(false)
     }
   }
 
@@ -172,7 +156,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
             <br />담당자가 확인 후 빠르게 연락드릴게요.
           </p>
           <button
-            onClick={() => { setDone(null); setMemo(''); setFile(null) }}
+            onClick={() => { setDone(null); setMemo(''); setReferenceUrl('') }}
             className="mt-8 rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
           >
             새 견적 만들기
@@ -309,6 +293,15 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                   const st = section.stepper
                   const q = steppers[st.id] ?? 0
                   return (
+                    <>
+                    {section.id === 'pages' && (
+                      <div className="mb-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-slate-50 px-3 py-2.5 text-[12px] text-slate-500">
+                        <span>기본 패키지 <b className="text-slate-800">{basePages}페이지</b></span>
+                        <span className="text-slate-300">+</span>
+                        <span>추가 <b className="text-slate-800">{q}페이지</b></span>
+                        <span className="ml-auto rounded-md bg-white px-2 py-0.5 font-semibold text-[#3180F7]">총 {basePages + q}페이지</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                       <div>
                         <div className="text-sm font-semibold">{st.name}</div>
@@ -327,6 +320,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                         </button>
                       </div>
                     </div>
+                    </>
                   )
                 })()}
               </section>
@@ -379,20 +373,17 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                 <MedinitySectionIcon name="request" className="size-4" /> 견적 요청 정보
               </div>
 
-              <input ref={fileRef} type="file" accept="application/pdf" hidden onChange={e => setFile(e.target.files?.[0] ?? null)} />
-              {file ? (
-                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                  <MedinitySectionIcon name="file" className="size-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
-                  <button onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = '' }} aria-label="첨부 제거" className="shrink-0 text-slate-400 transition hover:text-red-500">
-                    <X className="size-4" />
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => fileRef.current?.click()} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-sm text-slate-500 transition hover:border-[#3180F7] hover:text-[#3180F7]">
-                  <MedinitySectionIcon name="file" className="size-4" /> 레퍼런스 PDF 첨부
-                </button>
-              )}
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition focus-within:border-[#3180F7]">
+                <MedinitySectionIcon name="link" className="size-4 shrink-0" />
+                <input
+                  value={referenceUrl}
+                  onChange={e => setReferenceUrl(e.target.value)}
+                  placeholder="레퍼런스 URL 첨부 (선택)"
+                  inputMode="url"
+                  autoComplete="off"
+                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+                />
+              </div>
 
               <textarea
                 value={memo}
@@ -413,7 +404,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#3180F7] py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
               >
                 {sending && <Loader2 className="size-4 animate-spin" />}
-                {uploading ? 'PDF 올리는 중…' : sending ? '전송 중…' : '보내기'}
+                {sending ? '전송 중…' : '보내기'}
               </button>
               <p className="text-center text-[11px] text-slate-400">레퍼런스와 요청사항을 보내주시면 담당자가 확인합니다.</p>
             </div>

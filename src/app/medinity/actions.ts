@@ -15,7 +15,7 @@ import {
 
 export type MedinityQuoteInput = {
   memo?: string
-  /** 업로드된 레퍼런스 PDF 링크 */
+  /** 레퍼런스 URL (참고용 링크) */
   referenceUrl?: string
   choiceIds: string[]
   steppers: Record<string, number>
@@ -106,7 +106,7 @@ export async function submitMedinityQuote(
       <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#f8fafc;color:#0f172a">
         <div style="font-size:11px;font-weight:700;color:#0ea5e9;letter-spacing:.15em">MEDINITY · 홈페이지 제작 견적 요청</div>
         <h1 style="margin:8px 0 20px;font-size:22px;font-weight:800">새 견적 요청 #${id}</h1>
-        ${referenceUrl ? `<div style="margin-bottom:16px"><a href="${escapeHtml(referenceUrl)}" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">📎 레퍼런스 PDF 열기</a></div>` : ''}
+        ${referenceUrl ? `<div style="margin-bottom:16px"><a href="${escapeHtml(referenceUrl)}" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">🔗 레퍼런스 링크 열기</a></div>` : ''}
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
           <div style="font-size:11px;color:#0ea5e9;font-weight:700;margin-bottom:8px">선택 항목 (${lines.length})</div>
           <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -124,7 +124,7 @@ export async function submitMedinityQuote(
 
       const text = [
         `[메디니티 견적 요청] #${id}`,
-        referenceUrl ? `레퍼런스 PDF: ${referenceUrl}` : '',
+        referenceUrl ? `레퍼런스 링크: ${referenceUrl}` : '',
         '',
         '— 선택 항목 —',
         ...lines.map(l => `• ${l.label} — ${formatWon(l.price)}`),

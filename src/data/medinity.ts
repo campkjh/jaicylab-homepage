@@ -55,7 +55,7 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     required: true,
     choices: [
       { id: 'base-onepage', name: '원페이지형', desc: '핵심 정보를 한 페이지에 스크롤로 담는 구성', price: 400_000, pages: 1 },
-      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지 · 도메인 무료', price: 1_000_000, pages: 5, includes: ['op-domain'] },
+      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지 · 도메인 무료', price: 1_000_000, pages: 5, includes: ['op-domain', 'op-domain-etc'] },
       {
         id: 'base-premium',
         name: '프리미엄형',
@@ -148,8 +148,9 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     mode: 'multi',
     choices: [
       { id: 'op-seo', name: 'SEO 기본 세팅', desc: '메타 태그·검색엔진 등록', price: 250_000 },
-      { id: 'op-searchadvisor', name: '네이버 서치어드바이저 작업', desc: '네이버 웹마스터도구 등록·최적화', price: 100_000 },
-      { id: 'op-domain', name: '도메인 · 호스팅 1년', desc: '도메인 연결 + SSL 포함', price: 200_000 },
+      { id: 'op-searchadvisor', name: '네이버 서치어드바이저 작업', desc: '네이버 웹마스터도구 등록·최적화 · 색인 작업 포함', price: 100_000 },
+      { id: 'op-domain', name: '도메인 · 호스팅 1년 (카페24·가비아·후이즈)', desc: '해당 업체 기준 · 도메인 연결 + SSL', price: 100_000 },
+      { id: 'op-domain-etc', name: '도메인 · 호스팅 1년 (기타 업체)', desc: '그 외 업체 기준 · 도메인 연결 + SSL', price: 200_000 },
       { id: 'op-review', name: '의료광고 사전심의 대응', desc: '심의 필요 문구 정리·대응', price: 300_000 },
       { id: 'op-maintain', name: '6개월 유지보수', desc: '출시 후 수정·장애 대응', price: 600_000 },
     ],
