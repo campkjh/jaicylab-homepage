@@ -28,6 +28,8 @@ export type DevInfo = {
 
 export type RequestEntry = {
   id: string
+  /** 요청 제목 (예: 미소치과 홈페이지) — 목록·모달에서 표시·편집 */
+  title?: string
   createdAt: string
   total: number
   itemsCount: number
@@ -101,16 +103,15 @@ export function MedinityHome({
           {list.map(r => (
             <motion.button
               key={r.id}
-              layoutId={`req-${r.id}`}
               onClick={() => setOpenId(r.id)}
               className="flex items-center gap-3 rounded-[18px] bg-white p-4 text-left shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <motion.span layoutId={`req-title-${r.id}`} className="text-[15px] font-bold text-slate-900">{formatWon(r.total)}</motion.span>
+                  <span className="min-w-0 truncate text-[15px] font-bold text-slate-900">{r.title?.trim() || formatWon(r.total)}</span>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${CHIP[r.status]}`}>{LABEL[r.status]}</span>
                 </div>
-                <div className="mt-0.5 text-[12px] text-slate-400">{r.createdAt} · 항목 {r.itemsCount}개</div>
+                <div className="mt-0.5 text-[12px] text-slate-400">{r.title?.trim() ? `${formatWon(r.total)} · ` : ''}{r.createdAt} · 항목 {r.itemsCount}개</div>
               </div>
               <span className="shrink-0 text-slate-300">›</span>
             </motion.button>
@@ -123,14 +124,27 @@ export function MedinityHome({
         {open && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-slate-900/40" onClick={() => setOpenId(null)} />
-            <motion.div layoutId={`req-${open.id}`} className="relative max-h-[86vh] w-full max-w-md overflow-y-auto rounded-[24px] bg-white p-5 shadow-[0_24px_70px_-12px_rgba(15,23,42,0.4)]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              className="relative max-h-[86vh] w-full max-w-md overflow-y-auto rounded-[24px] bg-white p-5 shadow-[0_24px_70px_-12px_rgba(15,23,42,0.4)]"
+            >
               <div className="flex items-start justify-between gap-2">
-                <motion.span layoutId={`req-title-${open.id}`} className="text-lg font-bold text-slate-900">{formatWon(open.total)}</motion.span>
+                <span className="text-lg font-bold text-slate-900">{formatWon(open.total)}</span>
                 <button onClick={() => setOpenId(null)} aria-label="닫기" className="shrink-0 text-slate-400 transition hover:text-slate-700">
                   <X className="size-5" />
                 </button>
               </div>
               <div className="mt-0.5 text-[12px] text-slate-400">{open.createdAt} · 항목 {open.itemsCount}개</div>
+
+              <input
+                value={open.title ?? ''}
+                onChange={e => onUpdate(open.id, { title: e.target.value })}
+                placeholder="제목 입력 (예: 미소치과 홈페이지)"
+                className="mt-3 w-full rounded-lg bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:bg-slate-100"
+              />
 
               <div className="mt-4">
                 <div className="mb-1.5 text-[12px] font-semibold text-slate-600">상태</div>
@@ -166,7 +180,8 @@ export function MedinityHome({
               )}
               {open.memo && <div className="mt-3 rounded-lg bg-slate-50 p-3 text-[12.5px] leading-relaxed whitespace-pre-wrap text-slate-600">{open.memo}</div>}
 
-              {/* 개발 의뢰 정보 — 견적 문의 상태에선 숨기고, 개발 의뢰부터 노출 */}
+              {/* 개발 의뢰 정보 — 견적 문의 상태에선 숨기고, 개발 의뢰부터 촤라락 펼침 */}
+              <AnimatePresence initial={false}>
               {open.status !== 'inquiry' && (() => {
                 const dev = open.dev ?? {}
                 const setDev = (patch: Partial<DevInfo>) => onUpdate(open.id, { dev: { ...dev, ...patch } })
@@ -175,6 +190,14 @@ export function MedinityHome({
                 const rowCls = 'flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition focus-within:border-[#3180F7]'
                 const groupCls = 'flex items-center gap-1.5 pt-1 text-[11px] font-medium text-slate-400'
                 return (
+                  <motion.div
+                    key="devform"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 32, opacity: { duration: 0.18 } }}
+                    className="overflow-hidden"
+                  >
                   <div className="mt-4 space-y-2 border-t border-slate-200 pt-4">
                     <div className="text-[12px] font-semibold text-slate-600">개발 의뢰 정보</div>
 
@@ -184,7 +207,7 @@ export function MedinityHome({
 
                     {hasNaver && (
                       <>
-                        <div className={groupCls}><MedinityColorIcon name="naver" className="size-3.5" /> 네이버 계정 (예약 연동용)</div>
+                        <div className={groupCls}><MedinityColorIcon name="naver" className="size-3.5" /> 네이버 계정</div>
                         <div className={rowCls}><input value={dev.naverId ?? ''} onChange={e => setDev({ naverId: e.target.value })} placeholder="네이버 아이디" autoComplete="off" className={fieldCls} /></div>
                         <div className={rowCls}><input value={dev.naverPw ?? ''} onChange={e => setDev({ naverPw: e.target.value })} placeholder="네이버 비밀번호" autoComplete="off" className={fieldCls} /></div>
                       </>
@@ -217,8 +240,10 @@ export function MedinityHome({
                       <input value={dev.ceo ?? ''} onChange={e => setDev({ ceo: e.target.value })} placeholder="대표자 이름" autoComplete="off" className={fieldCls} />
                     </div>
                   </div>
+                  </motion.div>
                 )
               })()}
+              </AnimatePresence>
 
               <div className="mt-4 flex gap-2">
                 <button
