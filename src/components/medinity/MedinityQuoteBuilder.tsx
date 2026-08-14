@@ -10,6 +10,7 @@ import { MedinitySectionIcon } from './MedinitySectionIcon'
 import { AnimatedWon } from './AnimatedWon'
 import { InteractionPreview } from './InteractionPreview'
 import { PrintableQuote } from './PrintableQuote'
+import { GoogleIcon } from './GoogleIcon'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -124,6 +125,10 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
               if (multi.has(ch.id)) out.push({ key: ch.id, label: ch.name, sub: c.name, price: ch.price, removable: true, onRemove: () => toggleChild(c.id, ch.id) })
             }
           }
+        }
+        // 네이버 지도를 선택하지 않으면 기본 구글 지도 무료 연동
+        if (s.id === 'integration' && !multi.has('int-navermap')) {
+          out.push({ key: 'gmap-default', label: '구글 지도 연동', sub: '연동 · 기본 무료', price: 0, removable: false })
         }
       } else if (s.mode === 'stepper' && s.stepper) {
         const st = s.stepper
@@ -297,6 +302,14 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                                   )
                                 })}
                               </div>
+                            </div>
+                          )}
+
+                          {/* 네이버 지도 미선택 시 기본 구글 지도 무료 연동 안내 */}
+                          {c.id === 'int-navermap' && !on && (
+                            <div className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/60 px-3 py-2 text-[12px] text-slate-500">
+                              <GoogleIcon className="size-4 shrink-0" />
+                              <span>선택 안 하면 <b className="text-slate-700">구글 지도</b>로 무료 연동됩니다</span>
                             </div>
                           )}
                         </div>

@@ -51,6 +51,10 @@ function computeLines(choiceIds: string[], steppers: Record<string, number>): { 
         }
       }
     }
+    // 네이버 지도를 선택하지 않으면 기본 구글 지도 무료 연동
+    if (section.id === 'integration' && !picked.has('int-navermap')) {
+      lines.push({ label: '연동 · 구글 지도 연동 (기본 무료)', price: 0 })
+    }
     // 스텝퍼(추가 페이지·수정 횟수 등)
     if (section.stepper) {
       const st = section.stepper

@@ -126,7 +126,7 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     icon: 'link',
     mode: 'multi',
     choices: [
-      { id: 'int-navermap', name: '네이버 지도 연동', desc: '오시는 길 지도 임베드', price: 100_000 },
+      { id: 'int-navermap', name: '네이버 지도 연동', desc: '오시는 길 지도 임베드 · 미선택 시 구글 지도 무료 연동', price: 100_000 },
       {
         id: 'int-booking',
         name: '예약 알림 개발',
