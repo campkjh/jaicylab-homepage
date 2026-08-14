@@ -1,20 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import {
-  LayoutGrid, FileText, Sparkles, Link2, Palette, ShieldCheck,
-  LayoutDashboard, Megaphone, RefreshCw,
-  Plus, Minus, Check, Send, X, ShoppingCart, Building2, Loader2, PartyPopper,
-  type LucideIcon,
-} from 'lucide-react'
+import { Plus, Minus, Check, X, Building2, Loader2, PartyPopper } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
-import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
-
-const ICONS: Record<string, LucideIcon> = {
-  layout: LayoutGrid, file: FileText, sparkles: Sparkles, link: Link2, palette: Palette, shield: ShieldCheck,
-  admin: LayoutDashboard, dynamic: Megaphone, revise: RefreshCw,
-}
+import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
+import { MedinityLogo } from './MedinityLogo'
+import { MedinitySectionIcon } from './MedinitySectionIcon'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -103,8 +95,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
           }
         }
       } else if (s.mode === 'stepper' && s.stepper) {
-        const q = steppers[s.stepper.id] ?? 0
-        if (q > 0) out.push({ key: s.stepper.id, label: `${s.stepper.name} ${q}${s.stepper.unit}`, sub: s.title, price: s.stepper.unitPrice * q, removable: true, onRemove: () => setSteppers(p => ({ ...p, [s.stepper!.id]: 0 })) })
+        const st = s.stepper
+        const q = steppers[st.id] ?? 0
+        if (q > 0) {
+          const free = st.freeUnits && q <= st.freeUnits ? '무료' : undefined
+          out.push({ key: st.id, label: `${st.name} ${q}${st.unit}`, sub: free ? `${s.title} · ${free}` : s.title, price: stepperPrice(st, q), removable: true, onRemove: () => setSteppers(p => ({ ...p, [st.id]: 0 })) })
+        }
       }
     }
     return out
@@ -168,14 +164,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       {/* 헤더 */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-sky-500 text-sm font-black text-white">M</div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-bold tracking-widest text-sky-600">MEDINITY</div>
-            <h1 className="text-[15px] font-bold leading-tight">치과 홈페이지 제작 견적</h1>
-          </div>
-          <div className="ml-auto hidden items-center gap-1.5 text-sm sm:flex">
-            <ShoppingCart className="size-4 text-slate-400" />
-            <span className="text-slate-500">합계</span>
+          <MedinityLogo className="h-[22px] w-auto text-slate-900" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block" />
+          <h1 className="hidden text-[13px] font-semibold text-slate-500 sm:block">치과 홈페이지 제작 견적</h1>
+          <div className="ml-auto flex items-center gap-1.5 text-sm">
+            <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
+            <span className="hidden text-slate-500 sm:inline">합계</span>
             <b className="tabular-nums text-sky-600">{formatWon(total)}</b>
           </div>
         </div>
@@ -190,12 +184,11 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
           </div>
 
           {sections.map(section => {
-            const Icon = ICONS[section.icon] ?? LayoutGrid
             return (
               <section key={section.id} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="mb-4 flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                    <Icon className="size-[18px]" />
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                    <MedinitySectionIcon name={section.icon} className="size-6" />
                   </div>
                   <div>
                     <h3 className="flex items-center gap-2 text-[15px] font-bold">
@@ -290,7 +283,10 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                     <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                       <div>
                         <div className="text-sm font-semibold">{st.name}</div>
-                        <div className="mt-0.5 text-[12px] text-slate-500">{formatWon(st.unitPrice)} / {st.unit} {q > 0 && <b className="text-slate-700">· 소계 {formatWon(st.unitPrice * q)}</b>}</div>
+                        <div className="mt-0.5 text-[12px] text-slate-500">
+                          {st.freeUnits ? `${st.freeUnits}${st.unit}까지 무료 · 이후 ` : ''}{formatWon(st.unitPrice)} / {st.unit}
+                          {q > 0 && <b className="text-slate-700"> · 소계 {formatWon(stepperPrice(st, q))}</b>}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <button onClick={() => setQty(st.id, st.min, st.max, -1)} disabled={q <= st.min} className="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:opacity-30">
@@ -313,7 +309,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         <aside className="lg:sticky lg:top-[68px] lg:h-fit">
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="size-4 text-sky-600" />
+              <MedinitySectionIcon name="cart" className="size-4 text-sky-600" />
               <h2 className="text-[15px] font-bold">견적 요약</h2>
               <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">{lines.length}개</span>
             </div>
@@ -358,7 +354,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                 disabled={sending}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:opacity-60"
               >
-                {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                {sending && <Loader2 className="size-4 animate-spin" />}
                 {sending ? '전송 중…' : `견적 요청 보내기 · ${formatWon(total)}`}
               </button>
               <p className="text-center text-[11px] text-slate-400">보내주시면 담당자가 확인 후 연락드립니다.</p>
@@ -379,7 +375,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
             disabled={sending}
             className="ml-auto flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:opacity-60"
           >
-            {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            {sending && <Loader2 className="size-4 animate-spin" />}
             견적 요청
           </button>
         </div>

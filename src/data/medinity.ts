@@ -25,6 +25,8 @@ export type MedinityStepper = {
   min: number
   max: number
   default: number
+  /** 이 수량까지는 무료. 초과분만 unitPrice 로 과금한다. (예: 수정 3회까지 무료) */
+  freeUnits?: number
 }
 
 export type MedinitySection = {
@@ -120,6 +122,7 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     mode: 'multi',
     choices: [
       { id: 'op-seo', name: 'SEO 기본 세팅', desc: '메타 태그·검색엔진 등록', price: 250_000 },
+      { id: 'op-searchadvisor', name: '네이버 서치어드바이저 작업', desc: '네이버 웹마스터도구 등록·최적화', price: 100_000 },
       { id: 'op-domain', name: '도메인 · 호스팅 1년', desc: '도메인 연결 + SSL 포함', price: 200_000 },
       { id: 'op-review', name: '의료광고 사전심의 대응', desc: '심의 필요 문구 정리·대응', price: 300_000 },
       { id: 'op-maintain', name: '6개월 유지보수', desc: '출시 후 수정·장애 대응', price: 600_000 },
@@ -128,15 +131,10 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
   {
     id: 'revision',
     title: '수정 횟수',
-    desc: '납품 후 보완 수정 횟수를 정합니다. (회당 10만원)',
+    desc: '납품 후 보완 수정 횟수입니다. 3회까지 무료, 4회차부터 회당 10만원.',
     icon: 'revise',
-    mode: 'single',
-    choices: [
-      { id: 'rev-0', name: '미포함', desc: '기본 검수 범위 내 수정', price: 0 },
-      { id: 'rev-1', name: '1회', desc: '추가 수정 1회', price: 100_000 },
-      { id: 'rev-2', name: '2회', desc: '추가 수정 2회', price: 200_000 },
-      { id: 'rev-3', name: '3회', desc: '추가 수정 3회', price: 300_000 },
-    ],
+    mode: 'stepper',
+    stepper: { id: 'revision-count', name: '수정 횟수', desc: '3회까지 무료', unitPrice: 100_000, unit: '회', min: 0, max: 12, default: 0, freeUnits: 3 },
   },
 ]
 
@@ -164,6 +162,11 @@ export function totalPageCount(selectedIds: Iterable<string>, extraPages: number
 /** 옵션의 실제 단가. perPage 가 있으면 페이지 수에 따라 계산한다. */
 export function priceOfChoice(choice: { price: number; perPage?: number }, totalPages: number): number {
   return choice.perPage != null ? choice.perPage * totalPages : choice.price
+}
+
+/** 스텝퍼 금액. freeUnits 까지는 무료, 초과분만 과금한다. */
+export function stepperPrice(st: { unitPrice: number; freeUnits?: number }, qty: number): number {
+  return st.unitPrice * Math.max(0, Math.floor(qty || 0) - (st.freeUnits ?? 0))
 }
 
 /** 선택된 옵션들이 무료로 기본 포함하는 다른 옵션 id 집합. */

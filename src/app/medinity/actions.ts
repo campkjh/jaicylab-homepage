@@ -8,6 +8,7 @@ import {
   includedChoiceIds,
   totalPageCount,
   priceOfChoice,
+  stepperPrice,
   VAT_RATE,
   formatWon,
 } from '@/data/medinity'
@@ -52,12 +53,14 @@ function computeLines(choiceIds: string[], steppers: Record<string, number>): { 
         }
       }
     }
-    // 스텝퍼(추가 페이지 등)
+    // 스텝퍼(추가 페이지·수정 횟수 등)
     if (section.stepper) {
-      const raw = Number(steppers[section.stepper.id] ?? 0)
-      const qty = Math.max(section.stepper.min, Math.min(section.stepper.max, Number.isFinite(raw) ? Math.floor(raw) : 0))
+      const st = section.stepper
+      const raw = Number(steppers[st.id] ?? 0)
+      const qty = Math.max(st.min, Math.min(st.max, Number.isFinite(raw) ? Math.floor(raw) : 0))
       if (qty > 0) {
-        lines.push({ label: `${section.title} · ${qty}${section.stepper.unit}`, price: section.stepper.unitPrice * qty })
+        const free = st.freeUnits ? ` (${st.freeUnits}${st.unit}까지 무료)` : ''
+        lines.push({ label: `${section.title} · ${qty}${st.unit}${free}`, price: stepperPrice(st, qty) })
       }
     }
   }
