@@ -553,6 +553,26 @@ export async function deleteCategory(fd: FormData): Promise<void> {
   revalidatePath('/admin/schedule')
 }
 
+// ─────────────────────────── 메디니티 견적 접수함
+
+const MEDINITY_STATUSES = ['new', 'contacted', 'done'] as const
+
+export async function updateMedinityQuoteStatus(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const status = str(fd, 'status')
+  if (!(MEDINITY_STATUSES as readonly string[]).includes(status)) return
+  await sql`UPDATE medinity_quotes SET status = ${status} WHERE id = ${int(fd, 'id')}`
+  revalidatePath('/admin/quotes')
+}
+
+export async function deleteMedinityQuote(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  await sql`DELETE FROM medinity_quotes WHERE id = ${int(fd, 'id')}`
+  revalidatePath('/admin/quotes')
+}
+
 // ─────────────────────────── 클라이언트
 
 export async function createClient(fd: FormData): Promise<void> {
@@ -611,13 +631,16 @@ export async function addAccount(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
   const clientId = int(fd, 'client_id')
-  // 간단 등록에선 이름을 따로 안 적는다. 종류 라벨(구글계정 등)을 그대로 쓴다.
-  const label = str(fd, 'label') || CATEGORY_LABEL[str(fd, 'category')] || '계정'
+  const category = str(fd, 'category') || 'etc'
+  // 종류 라벨(구글계정 등)은 설정에 등록된 종류에서 가져오고, 없으면 예전 라벨 표를 쓴다.
+  const fallback = CATEGORY_LABEL[category] ?? category
   const password = str(fd, 'password')
   await sql`
     INSERT INTO client_accounts (client_id, category, label, url, username, password_enc, memo)
-    VALUES (${clientId}, ${str(fd, 'category') || 'etc'}, ${label}, ${nullable(fd, 'url')},
-            ${nullable(fd, 'username')}, ${password ? encrypt(password) : null}, ${nullable(fd, 'memo')})
+    VALUES (${clientId}, ${category},
+            coalesce((SELECT label FROM account_categories WHERE key = ${category}), ${fallback}),
+            ${nullable(fd, 'url')}, ${nullable(fd, 'username')},
+            ${password ? encrypt(password) : null}, ${nullable(fd, 'memo')})
   `
   revalidatePath('/admin/clients')
 }
@@ -627,15 +650,83 @@ export async function updateAccount(fd: FormData): Promise<void> {
   await requireAdmin()
   await ensureSchema()
   const category = str(fd, 'category') || 'etc'
+  const fallback = CATEGORY_LABEL[category] ?? category
   const password = str(fd, 'password')
   await sql`
     UPDATE client_accounts SET
       category = ${category},
-      label = ${CATEGORY_LABEL[category] || '계정'},
+      label = coalesce((SELECT label FROM account_categories WHERE key = ${category}), ${fallback}),
       username = ${nullable(fd, 'username')},
       password_enc = ${password ? encrypt(password) : null}
     WHERE id = ${int(fd, 'id')}
   `
+  revalidatePath('/admin/clients')
+}
+
+// ─────────────────────────── 계정 종류 (설정)
+
+export async function createAccountCategory(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const label = str(fd, 'label')
+  if (!label) return
+  const rows = (await sql`SELECT coalesce(max(position), -1) + 1 AS next FROM account_categories`) as { next: number }[]
+  await sql`
+    INSERT INTO account_categories (key, label, position)
+    VALUES (gen_random_uuid()::text, ${label}, ${rows[0].next})
+  `
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/clients')
+}
+
+export async function updateAccountCategory(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const label = str(fd, 'label')
+  if (!label) return
+  const id = int(fd, 'id')
+  // 종류 이름을 바꾸면 그 종류를 쓰는 계정들의 표시 라벨도 함께 맞춘다.
+  await sql`UPDATE account_categories SET label = ${label} WHERE id = ${id}`
+  await sql`
+    UPDATE client_accounts SET label = ${label}
+    WHERE category = (SELECT key FROM account_categories WHERE id = ${id})
+  `
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/clients')
+}
+
+/** 종류를 지워도 계정은 남는다. 지운 종류를 쓰던 계정은 '기타'로 옮긴다(기타가 없으면 그대로 둔다). */
+export async function deleteAccountCategory(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const id = int(fd, 'id')
+  await sql`
+    UPDATE client_accounts
+    SET category = 'etc',
+        label = coalesce((SELECT label FROM account_categories WHERE key = 'etc'), '기타')
+    WHERE category = (SELECT key FROM account_categories WHERE id = ${id})
+      AND EXISTS (SELECT 1 FROM account_categories WHERE key = 'etc' AND id <> ${id})
+  `
+  await sql`DELETE FROM account_categories WHERE id = ${id}`
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/clients')
+}
+
+/** 설정에서 종류 순서를 위/아래로 옮긴다. 이웃과 position 을 맞바꾼다. */
+export async function moveAccountCategory(fd: FormData): Promise<void> {
+  await requireAdmin()
+  await ensureSchema()
+  const id = int(fd, 'id')
+  const up = str(fd, 'dir') === 'up'
+  const [cur] = (await sql`SELECT id, position FROM account_categories WHERE id = ${id}`) as { id: number; position: number }[]
+  if (!cur) return
+  const [neighbor] = (up
+    ? await sql`SELECT id, position FROM account_categories WHERE position < ${cur.position} ORDER BY position DESC LIMIT 1`
+    : await sql`SELECT id, position FROM account_categories WHERE position > ${cur.position} ORDER BY position ASC LIMIT 1`) as { id: number; position: number }[]
+  if (!neighbor) return
+  await sql`UPDATE account_categories SET position = ${neighbor.position} WHERE id = ${cur.id}`
+  await sql`UPDATE account_categories SET position = ${cur.position} WHERE id = ${neighbor.id}`
+  revalidatePath('/admin/settings')
   revalidatePath('/admin/clients')
 }
 

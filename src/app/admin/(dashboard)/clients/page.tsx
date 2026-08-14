@@ -1,4 +1,4 @@
-import { sql, ensureSchema, type Client, type ClientAccount, type AccountView } from '@/lib/db'
+import { sql, ensureSchema, type Client, type ClientAccount, type AccountView, type AccountCategory } from '@/lib/db'
 import { decrypt } from '@/lib/crypto'
 import ClientsBoard, { type ClientWithAccounts } from '@/components/admin/ClientsBoard'
 import { PageContainer } from '@/components/admin/ui'
@@ -8,12 +8,13 @@ export const dynamic = 'force-dynamic'
 export default async function ClientsPage() {
   await ensureSchema()
 
-  const [clientRows, accountRows] = await Promise.all([
+  const [clientRows, accountRows, categoryRows] = await Promise.all([
     sql`SELECT * FROM clients ORDER BY created_at DESC`,
     sql`
       SELECT id, client_id, category, label, url, username, password_enc, memo
       FROM client_accounts ORDER BY created_at
     `,
+    sql`SELECT id, key, label, position FROM account_categories ORDER BY position, id`,
   ])
   const clients = clientRows as Client[]
   // 비밀번호는 화면에서 원문으로 보이도록 여기서 복호화해 내려준다. (관리자 인증 화면 전용)
@@ -33,7 +34,7 @@ export default async function ClientsPage() {
 
   return (
     <PageContainer>
-      <ClientsBoard clients={rows} />
+      <ClientsBoard clients={rows} categories={categoryRows as AccountCategory[]} />
     </PageContainer>
   )
 }

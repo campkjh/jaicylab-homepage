@@ -3,16 +3,21 @@
 import { useRef, useState } from 'react'
 import Icon from './Icon'
 import { Button, Input } from './ui'
-import { ACCOUNT_KINDS, CATEGORY_LABEL, type AccountView, type Client } from '@/lib/types'
+import { CATEGORY_LABEL, type AccountCategory, type AccountView, type Client } from '@/lib/types'
 import { addAccount, createClient, deleteAccount, deleteClient, renameClient, updateAccount } from '@/app/admin/actions'
 
 export type ClientWithAccounts = Client & { accounts: AccountView[] }
 
-/** 종류 드롭다운 옵션. 예전 데이터의 종류(aws 등)도 현재 값이면 목록에 끼워 넣는다. */
-function kindOptions(current: string): string[] {
-  return (ACCOUNT_KINDS as readonly string[]).includes(current)
-    ? [...ACCOUNT_KINDS]
-    : [current, ...ACCOUNT_KINDS]
+/**
+ * 종류 드롭다운 옵션. 설정에 등록된 종류를 쓰고, 예전 데이터의 종류(aws 등)가 현재 값이면
+ * 목록에 끼워 넣어 사라지지 않게 한다.
+ */
+function kindOptions(categories: AccountCategory[], current: string): { key: string; label: string }[] {
+  const opts = categories.map(c => ({ key: c.key, label: c.label }))
+  if (current && !opts.some(o => o.key === current)) {
+    opts.unshift({ key: current, label: CATEGORY_LABEL[current] ?? current })
+  }
+  return opts
 }
 
 /** 입력을 멈추면 자동 저장. (프로젝트 보드에서도 쓴다) */
@@ -23,7 +28,7 @@ export function SaveHint({ state }: { state: 'idle' | 'saving' | 'saved' }) {
 }
 
 /** 계정 한 줄: [종류▾] 아이디 · 비밀번호(원문) — 값을 바꾸면 자동 저장된다. */
-function AccountRow({ account }: { account: AccountView }) {
+function AccountRow({ account, categories }: { account: AccountView; categories: AccountCategory[] }) {
   const formRef = useRef<HTMLFormElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [saved, setSaved] = useState(false)
@@ -54,8 +59,8 @@ function AccountRow({ account }: { account: AccountView }) {
           onChange={() => save(true)}
           className={`w-[116px] shrink-0 font-medium text-ink-soft ${cell}`}
         >
-          {kindOptions(account.category).map(k => (
-            <option key={k} value={k}>{CATEGORY_LABEL[k] ?? k}</option>
+          {kindOptions(categories, account.category).map(o => (
+            <option key={o.key} value={o.key}>{o.label}</option>
           ))}
         </select>
         <input
@@ -93,7 +98,7 @@ function AccountRow({ account }: { account: AccountView }) {
 }
 
 /** + 를 누르면 그 자리에 펼쳐지는 계정 추가 줄 */
-function AddAccountRow({ clientId, onDone }: { clientId: number; onDone: () => void }) {
+function AddAccountRow({ clientId, categories, onDone }: { clientId: number; categories: AccountCategory[]; onDone: () => void }) {
   return (
     <form
       action={async fd => {
@@ -105,11 +110,11 @@ function AddAccountRow({ clientId, onDone }: { clientId: number; onDone: () => v
       <input type="hidden" name="client_id" value={clientId} />
       <select
         name="category"
-        defaultValue="google"
+        defaultValue={categories[0]?.key ?? 'etc'}
         className="h-8 w-[116px] shrink-0 rounded-lg border border-line bg-surface px-1.5 text-xs text-ink outline-none transition focus:border-brand"
       >
-        {ACCOUNT_KINDS.map(k => (
-          <option key={k} value={k}>{CATEGORY_LABEL[k]}</option>
+        {categories.map(c => (
+          <option key={c.key} value={c.key}>{c.label}</option>
         ))}
       </select>
       <Input name="username" autoFocus placeholder="아이디 / 이메일 / 번호" autoComplete="off" className="!h-8 min-w-[140px] flex-1 !text-xs" />
@@ -119,7 +124,7 @@ function AddAccountRow({ clientId, onDone }: { clientId: number; onDone: () => v
   )
 }
 
-function ClientRow({ client }: { client: ClientWithAccounts }) {
+function ClientRow({ client, categories }: { client: ClientWithAccounts; categories: AccountCategory[] }) {
   const [addingAccount, setAddingAccount] = useState(false)
   const nameTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [saved, setSaved] = useState(false)
@@ -172,12 +177,12 @@ function ClientRow({ client }: { client: ClientWithAccounts }) {
       {client.accounts.length > 0 && (
         <ul className="divide-y divide-line border-t border-line">
           {client.accounts.map(a => (
-            <AccountRow key={a.id} account={a} />
+            <AccountRow key={a.id} account={a} categories={categories} />
           ))}
         </ul>
       )}
 
-      {addingAccount && <AddAccountRow clientId={client.id} onDone={() => setAddingAccount(false)} />}
+      {addingAccount && <AddAccountRow clientId={client.id} categories={categories} onDone={() => setAddingAccount(false)} />}
 
       {client.accounts.length === 0 && !addingAccount && (
         <p className="border-t border-dashed border-line px-3 py-2.5 text-xs text-ink-muted">
@@ -188,7 +193,7 @@ function ClientRow({ client }: { client: ClientWithAccounts }) {
   )
 }
 
-export default function ClientsBoard({ clients }: { clients: ClientWithAccounts[] }) {
+export default function ClientsBoard({ clients, categories }: { clients: ClientWithAccounts[]; categories: AccountCategory[] }) {
   const [creating, setCreating] = useState(false)
 
   return (
@@ -227,7 +232,7 @@ export default function ClientsBoard({ clients }: { clients: ClientWithAccounts[
       ) : (
         <ul className="flex flex-col gap-2.5">
           {clients.map(c => (
-            <ClientRow key={c.id} client={c} />
+            <ClientRow key={c.id} client={c} categories={categories} />
           ))}
         </ul>
       )}

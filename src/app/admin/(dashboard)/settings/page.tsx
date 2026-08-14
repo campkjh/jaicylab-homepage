@@ -1,8 +1,9 @@
-import { ensureSchema, sql, type EventCategory, type TimelineStatusDef } from '@/lib/db'
+import { ensureSchema, sql, type EventCategory, type TimelineStatusDef, type AccountCategory } from '@/lib/db'
 import { requireAdmin } from '@/lib/session'
 import { PageContainer, PageHeader, SectionTitle } from '@/components/admin/ui'
 import CategoryEditor from '@/components/admin/CategoryEditor'
 import TimelineStatusEditor from '@/components/admin/TimelineStatusEditor'
+import AccountCategoryEditor from '@/components/admin/AccountCategoryEditor'
 import AvatarUploader from '@/components/admin/AvatarUploader'
 
 export const dynamic = 'force-dynamic'
@@ -11,11 +12,13 @@ export default async function SettingsPage() {
   const admin = await requireAdmin()
   await ensureSchema()
 
-  const [categoryRows, usageRows, statusRows, statusUsageRows, profileRows] = await Promise.all([
+  const [categoryRows, usageRows, statusRows, statusUsageRows, acctCatRows, acctUsageRows, profileRows] = await Promise.all([
     sql`SELECT id, name, color, position FROM event_categories ORDER BY position, id`,
     sql`SELECT category_id, count(*)::int AS count FROM schedule_events WHERE category_id IS NOT NULL GROUP BY category_id`,
     sql`SELECT id, key, label, color, is_done, position FROM timeline_statuses ORDER BY position, id`,
     sql`SELECT status, count(*)::int AS count FROM schedule_timelines WHERE status IS NOT NULL GROUP BY status`,
+    sql`SELECT id, key, label, position FROM account_categories ORDER BY position, id`,
+    sql`SELECT category, count(*)::int AS count FROM client_accounts GROUP BY category`,
     sql`SELECT avatar_url, position FROM admin_profiles WHERE name = ${admin}`,
   ])
 
@@ -26,6 +29,10 @@ export default async function SettingsPage() {
   const statuses = statusRows as TimelineStatusDef[]
   const statusUsage = Object.fromEntries(
     (statusUsageRows as { status: string; count: number }[]).map(r => [r.status, r.count]),
+  )
+  const acctCategories = acctCatRows as AccountCategory[]
+  const acctUsage = Object.fromEntries(
+    (acctUsageRows as { category: string; count: number }[]).map(r => [r.category, r.count]),
   )
   const profile = (profileRows as { avatar_url: string | null; position: string | null }[])[0]
 
@@ -46,13 +53,22 @@ export default async function SettingsPage() {
         </p>
       </section>
 
-      <section>
+      <section className="mb-10">
         <SectionTitle count={statuses.length}>타임라인 상태 태그</SectionTitle>
         <TimelineStatusEditor statuses={statuses} usage={statusUsage} />
         <p className="mt-3 text-xs text-ink-muted">
           타임라인 할 일에 붙이는 상태 태그입니다. 위아래 화살표로 순서를 바꾸면 목록 정렬 순서도 따라갑니다.
           <b> 완료</b>를 켠 태그를 붙인 할 일은 체크 완료 처리되어 다음 날 <b>지난 기록</b>으로 넘어갑니다.
           태그를 삭제해도 할 일은 남고, 그 태그만 <b>미지정</b>으로 바뀝니다.
+        </p>
+      </section>
+
+      <section>
+        <SectionTitle count={acctCategories.length}>계정 종류</SectionTitle>
+        <AccountCategoryEditor categories={acctCategories} usage={acctUsage} />
+        <p className="mt-3 text-xs text-ink-muted">
+          계정 페이지에서 <b>+ 계정 추가</b> 시 고르는 종류입니다. 위아래 화살표로 순서를 바꾸면 드롭다운 순서도 따라갑니다.
+          종류를 삭제해도 계정은 남고, 그 종류를 쓰던 계정은 <b>기타</b>로 옮겨집니다.
         </p>
       </section>
     </PageContainer>

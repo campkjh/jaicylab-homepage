@@ -8,6 +8,11 @@ const intlMiddleware = createMiddleware(routing)
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // 메디니티 견적 페이지는 단일(한국어) 라우트라 로케일 라우팅을 타지 않는다.
+  if (pathname === '/medinity' || pathname.startsWith('/medinity/')) {
+    return NextResponse.next()
+  }
+
   // 관리자 영역은 로케일 라우팅을 타지 않는다.
   if (pathname.startsWith('/admin')) {
     const token = req.cookies.get(SESSION_COOKIE)?.value

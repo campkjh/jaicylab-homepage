@@ -181,6 +181,42 @@ const DDL = [
    ) AS v(key,label,color,is_done,position)
    WHERE NOT EXISTS (SELECT 1 FROM timeline_statuses)`,
 
+  // 계정 종류(구글계정·신용카드 등). 설정에서 추가·수정·삭제한다.
+  // client_accounts.category 는 여기 key 를 가리킨다.
+  `CREATE TABLE IF NOT EXISTS account_categories (
+    id         serial PRIMARY KEY,
+    key        text NOT NULL UNIQUE,
+    label      text NOT NULL,
+    position   integer NOT NULL DEFAULT 0,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  // 기존 하드코딩 종류를 그대로 옮긴다. key 는 기존 데이터와 맞춘다.
+  `INSERT INTO account_categories (key, label, position)
+   SELECT * FROM (VALUES
+     ('google','구글계정',0),
+     ('apple','애플계정',1),
+     ('naver','네이버계정',2),
+     ('biznum','사업자 등록번호',3),
+     ('card','신용카드',4),
+     ('etc','기타',5)
+   ) AS v(key,label,position)
+   WHERE NOT EXISTS (SELECT 1 FROM account_categories)`,
+
+  // 메디니티(치과 홈페이지) 견적 요청 접수. 공개 /medinity 페이지에서 제출한다.
+  `CREATE TABLE IF NOT EXISTS medinity_quotes (
+    id           serial PRIMARY KEY,
+    clinic_name  text,
+    contact_name text NOT NULL,
+    phone        text NOT NULL,
+    email        text,
+    memo         text,
+    selections   jsonb NOT NULL DEFAULT '[]'::jsonb,
+    subtotal     integer NOT NULL DEFAULT 0,
+    total        integer NOT NULL DEFAULT 0,
+    status       text NOT NULL DEFAULT 'new',
+    created_at   timestamptz NOT NULL DEFAULT now()
+  )`,
+
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (
     id         serial PRIMARY KEY,

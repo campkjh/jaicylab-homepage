@@ -211,6 +211,29 @@ export const CATEGORY_LABEL: Record<string, string> = {
   etc: '기타',
 }
 
+/** 메디니티(치과 홈페이지) 견적 요청 접수. 공개 /medinity 페이지에서 제출된다. */
+export type MedinityQuote = {
+  id: number
+  clinic_name: string | null
+  contact_name: string
+  phone: string
+  email: string | null
+  memo: string | null
+  selections: { label: string; price: number }[]
+  subtotal: number
+  total: number
+  status: string
+  created_at: string
+}
+
+/** 설정에서 관리하는 계정 종류. + 계정 추가의 종류 드롭다운에 나온다. */
+export type AccountCategory = {
+  id: number
+  key: string
+  label: string
+  position: number
+}
+
 /**
  * 계정 목록 표시·수정용. 비밀번호는 복호화한 원문을 함께 내려준다.
  * (관리자 인증으로 가려진 내부 화면에서만 쓴다)
