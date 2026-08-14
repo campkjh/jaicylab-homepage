@@ -7,6 +7,7 @@ import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/act
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
 import { MedinityLogo } from './MedinityLogo'
 import { MedinitySectionIcon } from './MedinitySectionIcon'
+import { AnimatedWon } from './AnimatedWon'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -182,7 +183,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
           <div className="ml-auto flex items-center gap-1.5 text-sm">
             <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
             <span className="hidden text-slate-500 sm:inline">합계</span>
-            <b className="tabular-nums text-[#3180F7]">{formatWon(total)}</b>
+            <AnimatedWon value={total} className="font-bold tabular-nums text-[#3180F7]" />
           </div>
         </div>
       </header>
@@ -344,9 +345,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
             </ul>
 
             <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-[13px]">
-              <div className="flex justify-between text-slate-500"><span>공급가</span><span className="tabular-nums">{formatWon(subtotal)}</span></div>
-              <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><span className="tabular-nums">{formatWon(vat)}</span></div>
-              <div className="flex items-center justify-between pt-1 text-base font-bold"><span>합계</span><span className="tabular-nums text-[#3180F7]">{formatWon(total)}</span></div>
+              <div className="flex justify-between text-slate-500"><span>공급가</span><AnimatedWon value={subtotal} className="tabular-nums" /></div>
+              <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><AnimatedWon value={vat} className="tabular-nums" /></div>
+              <div className="flex items-center justify-between pt-1 text-base font-bold"><span>합계</span><AnimatedWon value={total} className="tabular-nums text-[#3180F7]" /></div>
             </div>
 
             {/* 제출 폼 — 레퍼런스 PDF + 요청사항 + 보내기 */}
@@ -370,7 +371,18 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                 </button>
               )}
 
-              <textarea value={memo} onChange={e => setMemo(e.target.value)} placeholder="요청사항을 적어주세요" rows={3} className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]" />
+              <textarea
+                value={memo}
+                onChange={e => {
+                  setMemo(e.target.value)
+                  const el = e.currentTarget
+                  el.style.height = 'auto'
+                  el.style.height = `${el.scrollHeight}px`
+                }}
+                placeholder="요청사항을 적어주세요"
+                rows={3}
+                className="max-h-[280px] min-h-[76px] w-full resize-none overflow-y-auto rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]"
+              />
 
               <button
                 onClick={submit}
@@ -391,7 +403,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="min-w-0">
             <div className="text-[11px] text-slate-400">합계 (부가세 포함)</div>
-            <div className="truncate text-lg font-bold tabular-nums text-[#3180F7]">{formatWon(total)}</div>
+            <AnimatedWon value={total} className="block truncate text-lg font-bold tabular-nums text-[#3180F7]" />
           </div>
           <button
             onClick={submit}
