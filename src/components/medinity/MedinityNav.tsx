@@ -13,7 +13,7 @@ export type MedinityTab = (typeof TABS)[number]['id']
 /** 우측 세로 네비게이션(홈·견적서). 활성 탭 뒤로 파란 알약이 미끄러진다. (stady 태블릿 네비 스타일) */
 export function MedinityNav({ tab, onChange }: { tab: MedinityTab; onChange: (t: MedinityTab) => void }) {
   return (
-    <nav className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 flex-col gap-1 rounded-[24px] border border-slate-100 bg-white/95 p-1.5 shadow-[0_12px_40px_-6px_rgba(15,23,42,0.16)] backdrop-blur">
+    <nav className="fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-1 rounded-[24px] border border-slate-100 bg-white/95 p-1.5 shadow-[0_12px_40px_-6px_rgba(15,23,42,0.16)] backdrop-blur lg:flex">
       {TABS.map(t => {
         const on = tab === t.id
         return (

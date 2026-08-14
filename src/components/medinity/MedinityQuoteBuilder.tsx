@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
+import { Plus, Minus, Check, X, Loader2, ChevronUp } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
@@ -12,6 +13,7 @@ import { InteractionPreview } from './InteractionPreview'
 import { PrintableQuote } from './PrintableQuote'
 import { GoogleIcon } from './GoogleIcon'
 import { MedinityNav, type MedinityTab } from './MedinityNav'
+import { MedinityNavIcon } from './MedinityNavIcon'
 import { MedinityHome, type RequestEntry, type ReqStatus } from './MedinityHome'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
@@ -49,6 +51,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   }, [requests, reqLoaded])
   const setRequestStatus = (id: string, status: ReqStatus) =>
     setRequests(rs => rs.map(r => (r.id === id ? { ...r, status } : r)))
+  const deleteRequest = (id: string) => setRequests(rs => rs.filter(r => r.id !== id))
+
+  // 인쇄 대상(견적서 버튼=현재 견적 / 요청관리=해당 접수). null 이면 현재 견적을 인쇄.
+  const [printData, setPrintData] = useState<{ lines: { label: string; sub?: string; price: number }[]; subtotal: number; vat: number; total: number } | null>(null)
+  // 모바일 하단바에서 상세 견적 내역 펼침
+  const [detailOpen, setDetailOpen] = useState(false)
 
   // 스크롤해서 콘텐츠가 헤더에 닿으면 헤더 배경(불투명+블러)이 나타난다.
   const [scrolled, setScrolled] = useState(false)
@@ -62,7 +70,16 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   // 견적서 인쇄(→ PDF 저장). 인쇄 직전에 견적일을 찍고 브라우저 인쇄창을 연다.
   const printQuote = () => {
     const d = new Date()
+    setPrintData(null) // 현재 견적 사용
     setQuoteDate(`${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`)
+    setTimeout(() => window.print(), 60)
+  }
+  // 요청관리 접수 건을 PDF 로 인쇄
+  const printEntry = (entry: RequestEntry) => {
+    const items = entry.items ?? []
+    const subtotal = items.reduce((s, it) => s + it.price, 0)
+    setPrintData({ lines: items, subtotal, vat: entry.total - subtotal, total: entry.total })
+    setQuoteDate(entry.createdAt)
     setTimeout(() => window.print(), 60)
   }
 
@@ -186,11 +203,10 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         const d = new Date()
         const entry: RequestEntry = {
           id: (crypto.randomUUID?.() ?? String(res.id) + '-' + d.getTime()),
-          category: 'quote-inquiry',
           createdAt: `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`,
           total,
           itemsCount: lines.length,
-          status: 'wait',
+          status: 'inquiry',
           items: lines.map(l => ({ label: l.label, price: l.price })),
           memo: memo.trim() || undefined,
         }
@@ -230,18 +246,18 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   return (
     <>
     <MedinityNav tab={tab} onChange={setTab} />
-    <main className="min-h-screen bg-slate-50 pr-16 text-slate-900 sm:pr-20 print:hidden">
-      {/* 헤더 — 스크롤 전엔 투명, 콘텐츠가 닿으면 불투명 + 블러 24 */}
+    <main className="min-h-screen bg-slate-50 text-slate-900 print:hidden">
+      {/* 헤더 — 스크롤 전엔 투명, 콘텐츠가 닿으면 불투명 + 블러 24 (보더 없음) */}
       <header className="sticky top-0 z-30">
-        <div className={`pointer-events-none absolute inset-0 border-b border-slate-200 bg-white/70 backdrop-blur-[24px] transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-0'}`} />
+        <div className={`pointer-events-none absolute inset-0 bg-white/70 backdrop-blur-[24px] transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-0'}`} />
         <div className="relative mx-auto flex max-w-6xl items-center px-5 py-3">
           <MedinityLogo className="h-8 w-auto text-slate-900" />
         </div>
       </header>
 
-      {tab === 'home' && <MedinityHome requests={requests} onStatus={setRequestStatus} />}
+      {tab === 'home' && <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} />}
 
-      <div className={`mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 ${tab === 'home' ? 'hidden' : ''}`}>
+      <div className={`mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 lg:pr-20 ${tab === 'home' ? 'hidden' : ''}`}>
         {/* 옵션 섹션 */}
         <div className="flex flex-col gap-5">
           <div className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
@@ -478,27 +494,90 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         </aside>
       </div>
 
-      {/* 모바일 하단 합계 바 (견적서 탭에서만) */}
-      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-5 py-3 backdrop-blur lg:hidden ${tab === 'home' ? 'hidden' : ''}`}>
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <div className="min-w-0">
-            <div className="text-[11px] text-slate-400">합계 (부가세 포함)</div>
-            <AnimatedWon value={total} className="block truncate text-lg font-bold tabular-nums text-[#3180F7]" />
+      {/* 모바일 하단 바: 네비(홈/견적서) + 합계(chevron 상세) + 견적요청 */}
+      <div className="fixed inset-x-0 bottom-0 z-30 lg:hidden">
+        {/* 상세 견적 내역 (chevron으로 펼침) */}
+        <AnimatePresence>
+          {tab === 'quote' && detailOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              className="mx-auto max-w-6xl border-t border-slate-200 bg-white px-5 pb-1 pt-3 shadow-[0_-14px_34px_-12px_rgba(15,23,42,0.18)]"
+            >
+              <div className="max-h-[46vh] overflow-y-auto">
+                <ul className="flex flex-col gap-0.5 text-[13px]">
+                  {lines.map(l => (
+                    <li key={l.key} className="flex items-center justify-between gap-2 py-1">
+                      <span className="min-w-0 truncate text-slate-700">{l.label}{l.sub && <span className="ml-1 text-[11px] text-slate-400">{l.sub}</span>}</span>
+                      <span className="shrink-0 tabular-nums text-slate-500">{l.price === 0 ? '포함' : formatWon(l.price)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-2 space-y-0.5 border-t border-slate-200 pt-2 text-[13px]">
+                  <div className="flex justify-between text-slate-500"><span>공급가</span><span className="tabular-nums">{formatWon(subtotal)}</span></div>
+                  <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><span className="tabular-nums">{formatWon(vat)}</span></div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="border-t border-slate-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center gap-2.5">
+            {tab === 'quote' ? (
+              <button onClick={() => setDetailOpen(v => !v)} className="flex min-w-0 items-center gap-1 text-left">
+                <span className="min-w-0">
+                  <span className="block text-[11px] text-slate-400">합계 (부가세 포함)</span>
+                  <AnimatedWon value={total} className="block truncate text-[17px] font-bold tabular-nums text-[#3180F7]" />
+                </span>
+                <ChevronUp className={`size-4 shrink-0 text-slate-400 transition-transform ${detailOpen ? 'rotate-180' : ''}`} />
+              </button>
+            ) : (
+              <div className="text-[15px] font-bold text-slate-900">요청 관리</div>
+            )}
+
+            <div className="ml-auto flex items-center gap-1.5">
+              <div className="flex rounded-xl bg-slate-100 p-0.5">
+                {([['home', '홈', 'home'], ['quote', '견적서', 'quote']] as const).map(([id, label, icon]) => {
+                  const on = tab === id
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setTab(id)}
+                      className={`flex items-center gap-1 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold transition ${on ? 'bg-white text-[#3180F7] shadow-sm' : 'text-slate-400'}`}
+                    >
+                      <MedinityNavIcon name={icon} className="size-4" />
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+              {tab === 'quote' && (
+                <button
+                  onClick={submit}
+                  disabled={sending}
+                  className="flex items-center gap-2 rounded-xl bg-[#3180F7] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
+                >
+                  {sending && <Loader2 className="size-4 animate-spin" />}
+                  견적 요청
+                </button>
+              )}
+            </div>
           </div>
-          <button
-            onClick={submit}
-            disabled={sending}
-            className="ml-auto flex items-center gap-2 rounded-xl bg-[#3180F7] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
-          >
-            {sending && <Loader2 className="size-4 animate-spin" />}
-            견적 요청
-          </button>
         </div>
       </div>
     </main>
 
     {/* 인쇄(→ PDF) 전용 견적서 — 화면에선 숨김 */}
-    <PrintableQuote lines={lines} subtotal={subtotal} vat={vat} total={total} date={quoteDate} className="hidden print:block" />
+    <PrintableQuote
+      lines={printData?.lines ?? lines}
+      subtotal={printData?.subtotal ?? subtotal}
+      vat={printData?.vat ?? vat}
+      total={printData?.total ?? total}
+      date={quoteDate}
+      className="hidden print:block"
+    />
     </>
   )
 }
