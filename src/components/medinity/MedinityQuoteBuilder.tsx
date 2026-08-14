@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { Plus, Minus, Check, X, Loader2, Printer } from 'lucide-react'
+import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
@@ -370,7 +370,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
               onClick={printQuote}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              <Printer className="size-4" /> 견적서 PDF 출력
+              <MedinitySectionIcon name="printer" className="size-4" /> 견적서 PDF 출력
             </button>
 
             {/* 제출 폼 — 레퍼런스 PDF + 요청사항 + 보내기 */}
