@@ -51,7 +51,7 @@ export function MedinityHome({
       <p className="mt-1 text-sm text-slate-500">견적서 탭에서 제출하면 여기에 쌓입니다. 항목을 눌러 상태를 바꿔보세요.</p>
 
       {/* 단계 탭 (견적 문의 → 개발 의뢰 → 개발 완료) */}
-      <div className="mt-4 flex gap-1 rounded-full bg-slate-100 p-1">
+      <div className="mt-4 flex gap-1 rounded-2xl bg-slate-100 p-1">
         {STAGES.map(s => {
           const on = stage === s.id
           const count = requests.filter(r => r.status === s.id).length
@@ -59,9 +59,9 @@ export function MedinityHome({
             <button
               key={s.id}
               onClick={() => setStage(s.id)}
-              className={`relative flex-1 rounded-full px-3 py-2 text-[13px] font-semibold transition ${on ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`relative flex-1 rounded-[13px] px-3 py-2 text-[13px] font-semibold transition ${on ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              {on && <motion.span layoutId="homeStagePill" className="absolute inset-0 rounded-full bg-white shadow-sm" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+              {on && <motion.span layoutId="homeStagePill" className="absolute inset-0 rounded-[13px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
               <span className="relative">
                 {s.label}
                 {count > 0 && <span className="ml-1 text-[#3180F7]">{count}</span>}
