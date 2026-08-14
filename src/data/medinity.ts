@@ -52,8 +52,8 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     mode: 'single',
     required: true,
     choices: [
-      { id: 'base-onepage', name: '원페이지형', desc: '핵심 정보를 한 페이지에 스크롤로 담는 구성', price: 900_000, pages: 1 },
-      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지', price: 1_600_000, pages: 5 },
+      { id: 'base-onepage', name: '원페이지형', desc: '핵심 정보를 한 페이지에 스크롤로 담는 구성', price: 400_000, pages: 1 },
+      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지', price: 1_000_000, pages: 5 },
       { id: 'base-premium', name: '프리미엄형', desc: '맞춤 디자인 + 진료과목별 상세 · 기본 10페이지 포함', price: 2_600_000, pages: 10 },
     ],
   },
@@ -63,7 +63,7 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     desc: '기본 구성 외에 더 필요한 페이지 수를 정합니다.',
     icon: 'file',
     mode: 'stepper',
-    stepper: { id: 'extra-page', name: '추가 페이지', desc: '페이지당', unitPrice: 150_000, unit: '페이지', min: 0, max: 20, default: 0 },
+    stepper: { id: 'extra-page', name: '추가 페이지', desc: '페이지당', unitPrice: 120_000, unit: '페이지', min: 0, max: 20, default: 0 },
   },
   {
     id: 'interaction',
