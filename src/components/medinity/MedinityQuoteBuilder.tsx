@@ -11,6 +11,8 @@ import { AnimatedWon } from './AnimatedWon'
 import { InteractionPreview } from './InteractionPreview'
 import { PrintableQuote } from './PrintableQuote'
 import { GoogleIcon } from './GoogleIcon'
+import { MedinityNav, type MedinityTab } from './MedinityNav'
+import { MedinityHome } from './MedinityHome'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -33,6 +35,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState<number | null>(null)
   const [quoteDate, setQuoteDate] = useState('')
+  const [tab, setTab] = useState<MedinityTab>('quote')
 
   // 견적서 인쇄(→ PDF 저장). 인쇄 직전에 견적일을 찍고 브라우저 인쇄창을 연다.
   const printQuote = () => {
@@ -190,22 +193,27 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
 
   return (
     <>
-    <main className="min-h-screen bg-slate-50 text-slate-900 print:hidden">
+    <MedinityNav tab={tab} onChange={setTab} />
+    <main className="min-h-screen bg-slate-50 pr-16 text-slate-900 sm:pr-20 print:hidden">
       {/* 헤더 */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
           <MedinityLogo className="h-[22px] w-auto text-slate-900" />
           <div className="hidden h-4 w-px bg-slate-200 sm:block" />
-          <h1 className="hidden text-[13px] font-semibold text-slate-500 sm:block">치과 홈페이지 제작 견적</h1>
-          <div className="ml-auto flex items-center gap-1.5 text-sm">
-            <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
-            <span className="hidden text-slate-500 sm:inline">합계</span>
-            <AnimatedWon value={total} className="font-bold tabular-nums text-[#3180F7]" />
-          </div>
+          <h1 className="hidden text-[13px] font-semibold text-slate-500 sm:block">{tab === 'home' ? '홈' : '치과 홈페이지 제작 견적'}</h1>
+          {tab === 'quote' && (
+            <div className="ml-auto flex items-center gap-1.5 text-sm">
+              <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
+              <span className="hidden text-slate-500 sm:inline">합계</span>
+              <AnimatedWon value={total} className="font-bold tabular-nums text-[#3180F7]" />
+            </div>
+          )}
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6">
+      {tab === 'home' && <MedinityHome />}
+
+      <div className={`mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 ${tab === 'home' ? 'hidden' : ''}`}>
         {/* 옵션 섹션 */}
         <div className="flex flex-col gap-5">
           <div className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
@@ -442,8 +450,8 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         </aside>
       </div>
 
-      {/* 모바일 하단 합계 바 */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
+      {/* 모바일 하단 합계 바 (견적서 탭에서만) */}
+      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-5 py-3 backdrop-blur lg:hidden ${tab === 'home' ? 'hidden' : ''}`}>
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="min-w-0">
             <div className="text-[11px] text-slate-400">합계 (부가세 포함)</div>
