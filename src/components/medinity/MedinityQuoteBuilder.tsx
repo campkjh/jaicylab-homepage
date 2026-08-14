@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
+import { Plus, Minus, Check, X, Loader2, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
@@ -9,6 +9,7 @@ import { MedinityLogo } from './MedinityLogo'
 import { MedinitySectionIcon } from './MedinitySectionIcon'
 import { AnimatedWon } from './AnimatedWon'
 import { InteractionPreview } from './InteractionPreview'
+import { PrintableQuote } from './PrintableQuote'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -31,7 +32,15 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const [uploading, setUploading] = useState(false)
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState<number | null>(null)
+  const [quoteDate, setQuoteDate] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // 견적서 인쇄(→ PDF 저장). 인쇄 직전에 견적일을 찍고 브라우저 인쇄창을 연다.
+  const printQuote = () => {
+    const d = new Date()
+    setQuoteDate(`${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`)
+    setTimeout(() => window.print(), 60)
+  }
 
   const pickSingle = (sectionId: string, choiceId: string) =>
     setSingles(prev => {
@@ -174,7 +183,8 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <>
+    <main className="min-h-screen bg-slate-50 text-slate-900 print:hidden">
       {/* 헤더 */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
@@ -356,6 +366,13 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
               <div className="flex items-center justify-between pt-1 text-base font-bold"><span>합계</span><AnimatedWon value={total} className="tabular-nums text-[#3180F7]" /></div>
             </div>
 
+            <button
+              onClick={printQuote}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <Printer className="size-4" /> 견적서 PDF 출력
+            </button>
+
             {/* 제출 폼 — 레퍼런스 PDF + 요청사항 + 보내기 */}
             <div className="mt-4 space-y-2.5 border-t border-slate-200 pt-4">
               <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-700">
@@ -422,5 +439,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         </div>
       </div>
     </main>
+
+    {/* 인쇄(→ PDF) 전용 견적서 — 화면에선 숨김 */}
+    <PrintableQuote lines={lines} subtotal={subtotal} vat={vat} total={total} date={quoteDate} className="hidden print:block" />
+    </>
   )
 }
