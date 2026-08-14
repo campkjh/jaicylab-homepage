@@ -40,16 +40,33 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     setTimeout(() => window.print(), 60)
   }
 
-  const pickSingle = (sectionId: string, choiceId: string) =>
+  const modeOf = (id: string) => sections.find(s => s.id === MEDINITY_CHOICE_INDEX[id]?.sectionId)?.mode
+
+  const pickSingle = (sectionId: string, choiceId: string) => {
+    const oldInc = MEDINITY_CHOICE_INDEX[singles[sectionId]]?.includes ?? []
+    const newInc = MEDINITY_CHOICE_INDEX[choiceId]?.includes ?? []
+
     setSingles(prev => {
       const next = { ...prev, [sectionId]: choiceId }
-      // 프리미엄형 등 '기본 포함' 옵션을 고르면 포함된 단일 옵션도 자동 선택 (예: 상급 인터랙션)
-      for (const incId of MEDINITY_CHOICE_INDEX[choiceId]?.includes ?? []) {
-        const inc = MEDINITY_CHOICE_INDEX[incId]
-        if (inc && sections.find(s => s.id === inc.sectionId)?.mode === 'single') next[inc.sectionId] = incId
+      // '기본 포함' 옵션을 고르면 포함된 단일 옵션도 자동 선택 (예: 어드민 중, 중 모션)
+      for (const incId of newInc) {
+        if (modeOf(incId) === 'single' && MEDINITY_CHOICE_INDEX[incId]) next[MEDINITY_CHOICE_INDEX[incId].sectionId] = incId
       }
       return next
     })
+
+    // 포함된 다중 옵션은 자동 체크 (이전 선택의 포함분은 해제하고 새 선택의 포함분을 체크)
+    const oldMulti = oldInc.filter(id => modeOf(id) === 'multi')
+    const newMulti = newInc.filter(id => modeOf(id) === 'multi')
+    if (oldMulti.length || newMulti.length) {
+      setMulti(prev => {
+        const n = new Set(prev)
+        oldMulti.forEach(id => n.delete(id))
+        newMulti.forEach(id => n.add(id))
+        return n
+      })
+    }
+  }
 
   // 무료로 기본 포함되는 옵션 — 합계에서 0원 처리
   const includedIds = useMemo(() => includedChoiceIds([...Object.values(singles), ...multi]), [singles, multi])
