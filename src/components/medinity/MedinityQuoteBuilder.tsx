@@ -53,6 +53,8 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const setRequestStatus = (id: string, status: ReqStatus) =>
     setRequests(rs => rs.map(r => (r.id === id ? { ...r, status } : r)))
   const deleteRequest = (id: string) => setRequests(rs => rs.filter(r => r.id !== id))
+  const updateRequest = (id: string, patch: Partial<RequestEntry>) =>
+    setRequests(rs => rs.map(r => (r.id === id ? { ...r, ...patch } : r)))
 
   // 인쇄 대상(견적서 버튼=현재 견적 / 요청관리=해당 접수). null 이면 현재 견적을 인쇄.
   const [printData, setPrintData] = useState<{ lines: { label: string; sub?: string; price: number }[]; subtotal: number; vat: number; total: number } | null>(null)
@@ -259,7 +261,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       <AnimatePresence mode="wait" initial={false}>
       {tab === 'home' ? (
         <motion.div key="home" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
-          <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} />
+          <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} onUpdate={updateRequest} />
         </motion.div>
       ) : (
         <motion.div
