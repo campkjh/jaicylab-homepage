@@ -1,110 +1,133 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { formatWon } from '@/data/medinity'
+import { MedinityNavIcon } from './MedinityNavIcon'
 
-type ReqDef = { id: string; title: string; desc: string }
+export type ReqCategory = 'dev-request' | 'dev-booking' | 'quote-inquiry'
+export type ReqStatus = 'wait' | 'progress' | 'done'
 
-const REQUESTS: ReqDef[] = [
-  { id: 'dev-request', title: '개발 의뢰', desc: '홈페이지 제작을 정식으로 의뢰합니다.' },
-  { id: 'dev-booking', title: '개발 예약', desc: '상담·개발 일정을 예약합니다.' },
-  { id: 'quote-inquiry', title: '견적 문의', desc: '견적 관련 궁금한 점을 남깁니다.' },
-  { id: 'maintain', title: '유지보수 문의', desc: '출시 후 운영·유지보수를 문의합니다.' },
+export type RequestEntry = {
+  id: string
+  category: ReqCategory
+  createdAt: string
+  total: number
+  itemsCount: number
+  status: ReqStatus
+  memo?: string
+  items?: { label: string; price: number }[]
+}
+
+export const REQ_CATEGORIES: { id: ReqCategory; label: string }[] = [
+  { id: 'dev-request', label: '개발 의뢰' },
+  { id: 'dev-booking', label: '개발 예약' },
+  { id: 'quote-inquiry', label: '견적 문의' },
 ]
 
-type Status = 'wait' | 'progress' | 'done'
-const STATUS: Record<Status, { label: string; chip: string }> = {
+const STATUS: Record<ReqStatus, { label: string; chip: string }> = {
   wait: { label: '대기', chip: 'bg-slate-100 text-slate-500' },
   progress: { label: '진행중', chip: 'bg-[#EAF2FF] text-[#3180F7]' },
   done: { label: '완료', chip: 'bg-emerald-50 text-emerald-600' },
 }
-const STATUS_ORDER: Status[] = ['wait', 'progress', 'done']
+const STATUS_ORDER: ReqStatus[] = ['wait', 'progress', 'done']
 
-type Entry = { status: Status; clinic: string; contact: string; memo: string }
-const emptyEntry = (): Entry => ({ status: 'wait', clinic: '', contact: '', memo: '' })
-const KEY = 'medinity_home_v1'
-
-export function MedinityHome() {
-  const [data, setData] = useState<Record<string, Entry>>({})
+export function MedinityHome({
+  requests,
+  onStatus,
+}: {
+  requests: RequestEntry[]
+  onStatus: (id: string, s: ReqStatus) => void
+}) {
+  const [cat, setCat] = useState<ReqCategory>('quote-inquiry')
   const [openId, setOpenId] = useState<string | null>(null)
-  const [loaded, setLoaded] = useState(false)
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY)
-      if (raw) setData(JSON.parse(raw))
-    } catch {}
-    setLoaded(true)
-  }, [])
-  useEffect(() => {
-    if (loaded) try { localStorage.setItem(KEY, JSON.stringify(data)) } catch {}
-  }, [data, loaded])
-
-  const entry = (id: string) => data[id] ?? emptyEntry()
-  const update = (id: string, patch: Partial<Entry>) => setData(d => ({ ...d, [id]: { ...entry(id), ...patch } }))
-  const open = openId ? REQUESTS.find(r => r.id === openId) : null
+  const list = requests.filter(r => r.category === cat)
+  const open = openId ? requests.find(r => r.id === openId) : null
 
   return (
     <div className="mx-auto max-w-2xl px-5 pb-24 pt-2">
       <h2 className="text-lg font-bold text-slate-900">요청 관리</h2>
-      <p className="mt-1 text-sm text-slate-500">항목을 눌러 정보를 등록하고 상태를 바꿔보세요.</p>
+      <p className="mt-1 text-sm text-slate-500">견적서 탭에서 제출하면 여기에 쌓입니다. 항목을 눌러 상태를 바꿔보세요.</p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {REQUESTS.map(r => {
-          const e = entry(r.id)
-          const st = STATUS[e.status]
+      {/* 카테고리 탭 */}
+      <div className="mt-4 flex gap-1 rounded-full bg-slate-100 p-1">
+        {REQ_CATEGORIES.map(c => {
+          const on = cat === c.id
+          const count = requests.filter(r => r.category === c.id).length
           return (
-            <motion.button
-              key={r.id}
-              layoutId={`req-${r.id}`}
-              onClick={() => setOpenId(r.id)}
-              className="flex flex-col rounded-[20px] bg-white p-4 text-left shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5"
+            <button
+              key={c.id}
+              onClick={() => setCat(c.id)}
+              className={`relative flex-1 rounded-full px-3 py-2 text-[13px] font-semibold transition ${on ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <motion.span layoutId={`req-title-${r.id}`} className="text-[15px] font-bold text-slate-900">{r.title}</motion.span>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.chip}`}>{st.label}</span>
-              </div>
-              <span className="mt-1 text-[12.5px] text-slate-500">{r.desc}</span>
-              {(e.clinic || e.contact) && (
-                <span className="mt-2 truncate text-[11px] text-slate-400">{[e.clinic, e.contact].filter(Boolean).join(' · ')}</span>
+              {on && (
+                <motion.span layoutId="homeCatPill" className="absolute inset-0 rounded-full bg-white shadow-sm" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />
               )}
-            </motion.button>
+              <span className="relative">
+                {c.label}
+                {count > 0 && <span className="ml-1 text-[#3180F7]">{count}</span>}
+              </span>
+            </button>
           )
         })}
       </div>
 
-      {/* 그룹 포커스: 카드를 누르면 그 카드가 가운데로 확대되며 상태·정보를 편집 */}
+      {/* 누적 리스트 */}
+      {list.length === 0 ? (
+        <div className="mt-6 flex flex-col items-center gap-3 rounded-[20px] border border-dashed border-slate-200 py-14 text-center">
+          <MedinityNavIcon name="inbox" className="size-11 text-slate-300" />
+          <span className="text-sm text-slate-400">리스트가 없습니다</span>
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-col gap-2.5">
+          {list.map(r => {
+            const st = STATUS[r.status]
+            return (
+              <motion.button
+                key={r.id}
+                layoutId={`req-${r.id}`}
+                onClick={() => setOpenId(r.id)}
+                className="flex items-center gap-3 rounded-[18px] bg-white p-4 text-left shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <motion.span layoutId={`req-title-${r.id}`} className="text-[15px] font-bold text-slate-900">{formatWon(r.total)}</motion.span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.chip}`}>{st.label}</span>
+                  </div>
+                  <div className="mt-0.5 text-[12px] text-slate-400">{r.createdAt} · 항목 {r.itemsCount}개</div>
+                </div>
+                <span className="shrink-0 text-slate-300">›</span>
+              </motion.button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 그룹 포커스: 카드가 가운데로 확대되며 상태·상세를 편집 */}
       <AnimatePresence>
         {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpenId(null)} />
-            <motion.div
-              layoutId={`req-${open.id}`}
-              className="relative w-full max-w-md rounded-[24px] bg-white p-5 shadow-[0_24px_70px_-12px_rgba(15,23,42,0.4)]"
-            >
+            <motion.div layoutId={`req-${open.id}`} className="relative w-full max-w-md rounded-[24px] bg-white p-5 shadow-[0_24px_70px_-12px_rgba(15,23,42,0.4)]">
               <div className="flex items-start justify-between gap-2">
-                <motion.span layoutId={`req-title-${open.id}`} className="text-lg font-bold text-slate-900">{open.title}</motion.span>
+                <motion.span layoutId={`req-title-${open.id}`} className="text-lg font-bold text-slate-900">{formatWon(open.total)}</motion.span>
                 <button onClick={() => setOpenId(null)} aria-label="닫기" className="shrink-0 text-slate-400 transition hover:text-slate-700">
                   <X className="size-5" />
                 </button>
               </div>
-              <p className="mt-1 text-[13px] text-slate-500">{open.desc}</p>
+              <div className="mt-0.5 text-[12px] text-slate-400">{open.createdAt} · 항목 {open.itemsCount}개</div>
 
               <div className="mt-4">
                 <div className="mb-1.5 text-[12px] font-semibold text-slate-600">상태</div>
                 <div className="flex gap-1.5">
                   {STATUS_ORDER.map(s => {
-                    const on = entry(open.id).status === s
+                    const on = open.status === s
                     return (
                       <button
                         key={s}
-                        onClick={() => update(open.id, { status: s })}
+                        onClick={() => onStatus(open.id, s)}
                         className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition ${on ? `${STATUS[s].chip} ring-1 ring-current` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                       >
                         {STATUS[s].label}
@@ -114,16 +137,22 @@ export function MedinityHome() {
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2">
-                <div className="text-[12px] font-semibold text-slate-600">정보 등록</div>
-                <input value={entry(open.id).clinic} onChange={e => update(open.id, { clinic: e.target.value })} placeholder="병원명" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]" />
-                <input value={entry(open.id).contact} onChange={e => update(open.id, { contact: e.target.value })} placeholder="담당자 · 연락처" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]" />
-                <textarea value={entry(open.id).memo} onChange={e => update(open.id, { memo: e.target.value })} placeholder="내용" rows={3} className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]" />
-              </div>
+              {open.items && open.items.length > 0 && (
+                <div className="mt-4">
+                  <div className="mb-1.5 text-[12px] font-semibold text-slate-600">선택 항목</div>
+                  <ul className="max-h-44 overflow-y-auto rounded-lg bg-slate-50 p-3 text-[12.5px]">
+                    {open.items.map((it, i) => (
+                      <li key={i} className="flex justify-between gap-2 py-0.5">
+                        <span className="min-w-0 truncate text-slate-600">{it.label}</span>
+                        <span className="shrink-0 tabular-nums text-slate-400">{it.price === 0 ? '포함' : formatWon(it.price)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {open.memo && <div className="mt-3 rounded-lg bg-slate-50 p-3 text-[12.5px] leading-relaxed whitespace-pre-wrap text-slate-600">{open.memo}</div>}
 
-              <button onClick={() => setOpenId(null)} className="mt-4 w-full rounded-xl bg-[#3180F7] py-2.5 text-sm font-semibold text-white transition hover:bg-[#2470E6]">
-                저장
-              </button>
+              <button onClick={() => setOpenId(null)} className="mt-4 w-full rounded-xl bg-[#3180F7] py-2.5 text-sm font-semibold text-white transition hover:bg-[#2470E6]">닫기</button>
             </motion.div>
           </motion.div>
         )}

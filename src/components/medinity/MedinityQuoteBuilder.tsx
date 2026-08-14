@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
@@ -12,7 +12,7 @@ import { InteractionPreview } from './InteractionPreview'
 import { PrintableQuote } from './PrintableQuote'
 import { GoogleIcon } from './GoogleIcon'
 import { MedinityNav, type MedinityTab } from './MedinityNav'
-import { MedinityHome } from './MedinityHome'
+import { MedinityHome, type RequestEntry, type ReqStatus } from './MedinityHome'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
@@ -36,6 +36,28 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const [done, setDone] = useState<number | null>(null)
   const [quoteDate, setQuoteDate] = useState('')
   const [tab, setTab] = useState<MedinityTab>('quote')
+
+  // 홈 요청관리 목록 — 견적서 제출 시 여기에 쌓인다. (기기별 localStorage)
+  const [requests, setRequests] = useState<RequestEntry[]>([])
+  const [reqLoaded, setReqLoaded] = useState(false)
+  useEffect(() => {
+    try { const raw = localStorage.getItem('medinity_requests_v1'); if (raw) setRequests(JSON.parse(raw)) } catch {}
+    setReqLoaded(true)
+  }, [])
+  useEffect(() => {
+    if (reqLoaded) try { localStorage.setItem('medinity_requests_v1', JSON.stringify(requests)) } catch {}
+  }, [requests, reqLoaded])
+  const setRequestStatus = (id: string, status: ReqStatus) =>
+    setRequests(rs => rs.map(r => (r.id === id ? { ...r, status } : r)))
+
+  // 스크롤해서 콘텐츠가 헤더에 닿으면 헤더 배경(불투명+블러)이 나타난다.
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   // 견적서 인쇄(→ PDF 저장). 인쇄 직전에 견적일을 찍고 브라우저 인쇄창을 연다.
   const printQuote = () => {
@@ -159,8 +181,22 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         steppers,
       }
       const res = await submitMedinityQuote(payload)
-      if (res.ok) setDone(res.id)
-      else toast.error(res.error)
+      if (res.ok) {
+        // 홈 요청관리(견적 문의)에 누적
+        const d = new Date()
+        const entry: RequestEntry = {
+          id: (crypto.randomUUID?.() ?? String(res.id) + '-' + d.getTime()),
+          category: 'quote-inquiry',
+          createdAt: `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`,
+          total,
+          itemsCount: lines.length,
+          status: 'wait',
+          items: lines.map(l => ({ label: l.label, price: l.price })),
+          memo: memo.trim() || undefined,
+        }
+        setRequests(rs => [entry, ...rs])
+        setDone(res.id)
+      } else toast.error(res.error)
     } catch {
       toast.error('전송에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
@@ -195,23 +231,15 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     <>
     <MedinityNav tab={tab} onChange={setTab} />
     <main className="min-h-screen bg-slate-50 pr-16 text-slate-900 sm:pr-20 print:hidden">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
-          <MedinityLogo className="h-[22px] w-auto text-slate-900" />
-          <div className="hidden h-4 w-px bg-slate-200 sm:block" />
-          <h1 className="hidden text-[13px] font-semibold text-slate-500 sm:block">{tab === 'home' ? '홈' : '치과 홈페이지 제작 견적'}</h1>
-          {tab === 'quote' && (
-            <div className="ml-auto flex items-center gap-1.5 text-sm">
-              <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
-              <span className="hidden text-slate-500 sm:inline">합계</span>
-              <AnimatedWon value={total} className="font-bold tabular-nums text-[#3180F7]" />
-            </div>
-          )}
+      {/* 헤더 — 스크롤 전엔 투명, 콘텐츠가 닿으면 불투명 + 블러 24 */}
+      <header className="sticky top-0 z-30">
+        <div className={`pointer-events-none absolute inset-0 border-b border-slate-200 bg-white/70 backdrop-blur-[24px] transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-0'}`} />
+        <div className="relative mx-auto flex max-w-6xl items-center px-5 py-3">
+          <MedinityLogo className="h-8 w-auto text-slate-900" />
         </div>
       </header>
 
-      {tab === 'home' && <MedinityHome />}
+      {tab === 'home' && <MedinityHome requests={requests} onStatus={setRequestStatus} />}
 
       <div className={`mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6 ${tab === 'home' ? 'hidden' : ''}`}>
         {/* 옵션 섹션 */}
