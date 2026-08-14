@@ -14,6 +14,8 @@ import {
 } from '@/data/medinity'
 
 export type MedinityQuoteInput = {
+  /** 요청 제목 (예: 미소치과 홈페이지) */
+  title?: string
   memo?: string
   /** 레퍼런스 URL (참고용 링크) */
   referenceUrl?: string
@@ -76,6 +78,7 @@ export async function submitMedinityQuote(
 ): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await ensureSchema()
 
+  const title = (input.title ?? '').trim()
   const memo = (input.memo ?? '').trim()
   const referenceUrl = (input.referenceUrl ?? '').trim()
 
@@ -109,7 +112,7 @@ export async function submitMedinityQuote(
       const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#f8fafc;color:#0f172a">
         <div style="font-size:11px;font-weight:700;color:#0ea5e9;letter-spacing:.15em">MEDINITY · 홈페이지 제작 견적 요청</div>
-        <h1 style="margin:8px 0 20px;font-size:22px;font-weight:800">새 견적 요청 #${id}</h1>
+        <h1 style="margin:8px 0 20px;font-size:22px;font-weight:800">${title ? escapeHtml(title) : `새 견적 요청 #${id}`}</h1>
         ${referenceUrl ? `<div style="margin-bottom:16px"><a href="${escapeHtml(referenceUrl)}" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">🔗 레퍼런스 링크 열기</a></div>` : ''}
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
           <div style="font-size:11px;color:#0ea5e9;font-weight:700;margin-bottom:8px">선택 항목 (${lines.length})</div>
@@ -127,7 +130,7 @@ export async function submitMedinityQuote(
       </div>`
 
       const text = [
-        `[메디니티 견적 요청] #${id}`,
+        `[메디니티 견적 요청] #${id}${title ? ` · ${title}` : ''}`,
         referenceUrl ? `레퍼런스 링크: ${referenceUrl}` : '',
         '',
         '— 선택 항목 —',
@@ -139,7 +142,7 @@ export async function submitMedinityQuote(
         memo ? `\n— 요청사항 —\n${memo}` : '',
       ].filter(Boolean).join('\n')
 
-      await resend.emails.send({ from, to, subject: `[메디니티 견적] 새 요청 #${id} · ${formatWon(total)}`, text, html })
+      await resend.emails.send({ from, to, subject: `[메디니티 견적] ${title || `새 요청 #${id}`} · ${formatWon(total)}`, text, html })
     } else {
       console.log('[medinity] RESEND_API_KEY 없음 — 저장만 하고 이메일은 건너뜀', { id })
     }

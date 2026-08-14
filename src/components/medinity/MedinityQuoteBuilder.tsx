@@ -33,6 +33,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     return o
   })
 
+  const [title, setTitle] = useState('')
   const [memo, setMemo] = useState('')
   const [referenceUrl, setReferenceUrl] = useState('')
   const [sending, setSending] = useState(false)
@@ -195,6 +196,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     setSending(true)
     try {
       const payload: MedinityQuoteInput = {
+        title: title.trim() || undefined,
         memo,
         referenceUrl: referenceUrl.trim() || undefined,
         choiceIds: [...Object.values(singles), ...multi],
@@ -210,6 +212,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
           total,
           itemsCount: lines.length,
           status: 'inquiry',
+          title: title.trim() || undefined,
           items: lines.map(l => ({ label: l.label, price: l.price })),
           memo: memo.trim() || undefined,
         }
@@ -468,6 +471,14 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
               <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-700">
                 <MedinitySectionIcon name="request" className="size-4" /> 견적 요청 정보
               </div>
+
+              <input
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="제목 (예: 미소치과 홈페이지)"
+                autoComplete="off"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-[#3180F7]"
+              />
 
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition focus-within:border-[#3180F7]">
                 <MedinitySectionIcon name="link" className="size-4 shrink-0" />
