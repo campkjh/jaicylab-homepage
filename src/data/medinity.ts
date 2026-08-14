@@ -81,6 +81,20 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     ],
   },
   {
+    id: 'interaction-addon',
+    title: '인터랙션 추가 옵션',
+    desc: '원하는 인터랙션 효과를 골라 담으세요. (선택)',
+    icon: 'sparkles',
+    mode: 'multi',
+    choices: [
+      { id: 'ia-reveal', name: '스크롤 등장 애니메이션', desc: '스크롤 시 요소가 부드럽게 나타남', price: 100_000 },
+      { id: 'ia-hero', name: '히어로 배너 모션', desc: '메인 배너에 동적 모션 적용', price: 150_000 },
+      { id: 'ia-gallery', name: '이미지 갤러리 라이트박스', desc: '클릭 시 확대·슬라이드', price: 100_000 },
+      { id: 'ia-count', name: '숫자 카운트업', desc: '진료 실적·통계 카운트 효과', price: 80_000 },
+      { id: 'ia-floating', name: '플로팅 상담·전화 버튼', desc: '떠있는 버튼 + 애니메이션', price: 80_000 },
+    ],
+  },
+  {
     id: 'admin',
     title: '관리자 페이지 (어드민)',
     desc: '병원이 직접 콘텐츠를 수정·관리하는 관리자 화면입니다.',

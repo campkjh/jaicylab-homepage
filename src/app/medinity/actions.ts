@@ -14,11 +14,9 @@ import {
 } from '@/data/medinity'
 
 export type MedinityQuoteInput = {
-  clinicName?: string
-  contactName: string
-  phone: string
-  email?: string
   memo?: string
+  /** 업로드된 레퍼런스 PDF 링크 */
+  referenceUrl?: string
   choiceIds: string[]
   steppers: Record<string, number>
 }
@@ -74,13 +72,8 @@ export async function submitMedinityQuote(
 ): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await ensureSchema()
 
-  const contactName = (input.contactName ?? '').trim()
-  const phone = (input.phone ?? '').trim()
-  const email = (input.email ?? '').trim()
-  const clinicName = (input.clinicName ?? '').trim()
   const memo = (input.memo ?? '').trim()
-
-  if (!contactName || !phone) return { ok: false, error: '담당자 이름과 연락처를 입력해 주세요.' }
+  const referenceUrl = (input.referenceUrl ?? '').trim()
 
   // 유효한 옵션 id 만 남긴다.
   const choiceIds = (input.choiceIds ?? []).filter(id => MEDINITY_CHOICE_INDEX[id])
@@ -90,9 +83,8 @@ export async function submitMedinityQuote(
   const total = Math.round(subtotal * (1 + VAT_RATE))
 
   const rows = (await sql`
-    INSERT INTO medinity_quotes (clinic_name, contact_name, phone, email, memo, selections, subtotal, total)
-    VALUES (${clinicName || null}, ${contactName}, ${phone}, ${email || null}, ${memo || null},
-            ${JSON.stringify(lines)}, ${subtotal}, ${total})
+    INSERT INTO medinity_quotes (memo, reference_url, selections, subtotal, total)
+    VALUES (${memo || null}, ${referenceUrl || null}, ${JSON.stringify(lines)}, ${subtotal}, ${total})
     RETURNING id
   `) as { id: number }[]
   const id = rows[0].id
@@ -113,15 +105,8 @@ export async function submitMedinityQuote(
       const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:640px;margin:0 auto;padding:24px;background:#f8fafc;color:#0f172a">
         <div style="font-size:11px;font-weight:700;color:#0ea5e9;letter-spacing:.15em">MEDINITY · 홈페이지 제작 견적 요청</div>
-        <h1 style="margin:8px 0 20px;font-size:22px;font-weight:800">${escapeHtml(clinicName || contactName)} 견적 요청</h1>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
-          <tbody>
-            ${clinicName ? `<tr><td style="padding:5px 0;color:#64748b;width:90px">병원명</td><td style="padding:5px 0;font-weight:600">${escapeHtml(clinicName)}</td></tr>` : ''}
-            <tr><td style="padding:5px 0;color:#64748b">담당자</td><td style="padding:5px 0;font-weight:600">${escapeHtml(contactName)}</td></tr>
-            <tr><td style="padding:5px 0;color:#64748b">연락처</td><td style="padding:5px 0;font-weight:600">${escapeHtml(phone)}</td></tr>
-            ${email ? `<tr><td style="padding:5px 0;color:#64748b">이메일</td><td style="padding:5px 0;font-weight:600">${escapeHtml(email)}</td></tr>` : ''}
-          </tbody>
-        </table>
+        <h1 style="margin:8px 0 20px;font-size:22px;font-weight:800">새 견적 요청 #${id}</h1>
+        ${referenceUrl ? `<div style="margin-bottom:16px"><a href="${escapeHtml(referenceUrl)}" style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">📎 레퍼런스 PDF 열기</a></div>` : ''}
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
           <div style="font-size:11px;color:#0ea5e9;font-weight:700;margin-bottom:8px">선택 항목 (${lines.length})</div>
           <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -139,10 +124,7 @@ export async function submitMedinityQuote(
 
       const text = [
         `[메디니티 견적 요청] #${id}`,
-        clinicName ? `병원명: ${clinicName}` : '',
-        `담당자: ${contactName}`,
-        `연락처: ${phone}`,
-        email ? `이메일: ${email}` : '',
+        referenceUrl ? `레퍼런스 PDF: ${referenceUrl}` : '',
         '',
         '— 선택 항목 —',
         ...lines.map(l => `• ${l.label} — ${formatWon(l.price)}`),
@@ -153,8 +135,7 @@ export async function submitMedinityQuote(
         memo ? `\n— 요청사항 —\n${memo}` : '',
       ].filter(Boolean).join('\n')
 
-      const replyTo = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : undefined
-      await resend.emails.send({ from, to, subject: `[메디니티 견적] ${clinicName || contactName} · ${formatWon(total)}`, text, html, replyTo })
+      await resend.emails.send({ from, to, subject: `[메디니티 견적] 새 요청 #${id} · ${formatWon(total)}`, text, html })
     } else {
       console.log('[medinity] RESEND_API_KEY 없음 — 저장만 하고 이메일은 건너뜀', { id })
     }

@@ -24,8 +24,13 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
     <li className="overflow-hidden rounded-xl border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.chip}`}>{st.label}</span>
-        <span className="text-sm font-semibold text-ink">{quote.clinic_name || quote.contact_name}</span>
-        <span className="text-xs text-ink-muted">{quote.contact_name} · {quote.phone}{quote.email ? ` · ${quote.email}` : ''}</span>
+        <span className="text-sm font-semibold text-ink">{quote.clinic_name || quote.contact_name || `견적 요청 #${quote.id}`}</span>
+        {(quote.contact_name || quote.phone) && (
+          <span className="text-xs text-ink-muted">{[quote.contact_name, quote.phone, quote.email].filter(Boolean).join(' · ')}</span>
+        )}
+        {quote.reference_url && (
+          <a href={quote.reference_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-xs font-medium text-brand hover:underline">📎 레퍼런스 PDF</a>
+        )}
         <span className="ml-auto text-sm font-bold tabular-nums text-ink">{won(quote.total)}</span>
         <button onClick={() => setOpen(v => !v)} aria-label="상세" className="shrink-0 text-ink-muted transition hover:text-ink">
           <Icon name="arrowRight" className={`size-4 transition-transform ${open ? 'rotate-90' : ''}`} />

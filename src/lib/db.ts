@@ -216,6 +216,10 @@ const DDL = [
     status       text NOT NULL DEFAULT 'new',
     created_at   timestamptz NOT NULL DEFAULT now()
   )`,
+  // 레퍼런스 PDF 링크. 연락처 없이 요청사항+레퍼런스만으로도 보낼 수 있게 연락처는 선택으로.
+  `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS reference_url text`,
+  `ALTER TABLE medinity_quotes ALTER COLUMN contact_name DROP NOT NULL`,
+  `ALTER TABLE medinity_quotes ALTER COLUMN phone DROP NOT NULL`,
 
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (

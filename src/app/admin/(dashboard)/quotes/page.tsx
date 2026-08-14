@@ -10,7 +10,7 @@ export default async function QuotesPage() {
   await ensureSchema()
 
   const rows = await sql`
-    SELECT id, clinic_name, contact_name, phone, email, memo, selections, subtotal, total, status,
+    SELECT id, clinic_name, contact_name, phone, email, memo, reference_url, selections, subtotal, total, status,
            to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD"T"HH24:MI') AS created_at
     FROM medinity_quotes
     ORDER BY created_at DESC, id DESC

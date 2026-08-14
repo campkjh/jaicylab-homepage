@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Plus, Minus, Check, X, Building2, Loader2, PartyPopper } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { Plus, Minus, Check, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
@@ -24,9 +24,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     return o
   })
 
-  const [contact, setContact] = useState({ clinicName: '', contactName: '', phone: '', email: '', memo: '' })
+  const [memo, setMemo] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState<number | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const pickSingle = (sectionId: string, choiceId: string) =>
     setSingles(prev => {
@@ -111,18 +114,26 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   const total = subtotal + vat
 
   const submit = async () => {
-    if (!contact.contactName.trim() || !contact.phone.trim()) {
-      toast.error('담당자 이름과 연락처를 입력해 주세요.')
-      return
-    }
     setSending(true)
     try {
+      let referenceUrl: string | undefined
+      if (file) {
+        setUploading(true)
+        const fd = new FormData()
+        fd.append('file', file)
+        const up = await fetch('/api/medinity/upload', { method: 'POST', body: fd })
+        setUploading(false)
+        if (!up.ok) {
+          const j = await up.json().catch(() => ({}))
+          toast.error(j.error || 'PDF 업로드에 실패했어요.')
+          setSending(false)
+          return
+        }
+        referenceUrl = (await up.json()).url
+      }
       const payload: MedinityQuoteInput = {
-        clinicName: contact.clinicName,
-        contactName: contact.contactName,
-        phone: contact.phone,
-        email: contact.email,
-        memo: contact.memo,
+        memo,
+        referenceUrl,
         choiceIds: [...Object.values(singles), ...multi],
         steppers,
       }
@@ -133,6 +144,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       toast.error('전송에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setSending(false)
+      setUploading(false)
     }
   }
 
@@ -140,16 +152,16 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-sky-500 text-white">
-            <PartyPopper className="size-8" />
+          <div className="flex size-20 items-center justify-center rounded-[24px] bg-[#EAF2FF]">
+            <MedinitySectionIcon name="party" className="size-11" />
           </div>
           <h1 className="mt-6 text-2xl font-bold">견적 요청이 접수됐어요</h1>
           <p className="mt-2 text-slate-500">
-            접수번호 <b className="text-slate-700">#{done}</b> · 예상 합계 <b className="text-sky-600">{formatWon(total)}</b>
+            접수번호 <b className="text-slate-700">#{done}</b> · 예상 합계 <b className="text-[#3180F7]">{formatWon(total)}</b>
             <br />담당자가 확인 후 빠르게 연락드릴게요.
           </p>
           <button
-            onClick={() => { setDone(null); setContact({ clinicName: '', contactName: '', phone: '', email: '', memo: '' }) }}
+            onClick={() => { setDone(null); setMemo(''); setFile(null) }}
             className="mt-8 rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
           >
             새 견적 만들기
@@ -170,7 +182,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
           <div className="ml-auto flex items-center gap-1.5 text-sm">
             <MedinitySectionIcon name="cart" className="size-4 text-slate-400" />
             <span className="hidden text-slate-500 sm:inline">합계</span>
-            <b className="tabular-nums text-sky-600">{formatWon(total)}</b>
+            <b className="tabular-nums text-[#3180F7]">{formatWon(total)}</b>
           </div>
         </div>
       </header>
@@ -178,14 +190,14 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-5 py-6 pb-28 lg:grid-cols-[1fr_360px] lg:pb-6">
         {/* 옵션 섹션 */}
         <div className="flex flex-col gap-5">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
             <h2 className="text-lg font-bold">원하는 옵션을 담아보세요</h2>
             <p className="mt-1 text-sm text-slate-500">고르는 즉시 오른쪽 견적에 실시간으로 반영됩니다. 표시 금액은 부가세 별도 기준입니다.</p>
           </div>
 
           {sections.map(section => {
             return (
-              <section key={section.id} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <section key={section.id} className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
                 <div className="mb-4 flex items-start gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">
                     <MedinitySectionIcon name={section.icon} className="size-6" />
@@ -208,12 +220,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                         <button
                           key={c.id}
                           onClick={() => pickSingle(section.id, c.id)}
-                          className={`flex flex-col rounded-xl border p-3 text-left transition ${on ? 'border-sky-500 bg-sky-50/60 ring-1 ring-sky-500' : 'border-slate-200 hover:border-slate-300'}`}
+                          className={`flex flex-col rounded-xl border p-3 text-left transition ${on ? 'border-[#3180F7] bg-[#EAF2FF] ring-1 ring-[#3180F7]' : 'border-slate-200 hover:border-slate-300'}`}
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-semibold">{c.name}</span>
-                            <span className={`flex size-4 items-center justify-center rounded-full border ${on ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-300'}`}>
-                              {on && <Check className="size-3" strokeWidth={3} />}
+                            <span className={`flex size-5 items-center justify-center rounded-md border ${on ? 'border-[#3180F7] bg-[#3180F7] text-white' : 'border-slate-300'}`}>
+                              {on && <Check className="size-3.5" strokeWidth={3} />}
                             </span>
                           </div>
                           {c.desc && <span className="mt-1 text-[12px] leading-snug text-slate-500">{c.desc}</span>}
@@ -231,12 +243,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                       const on = multi.has(c.id)
                       const childIds = (c.children ?? []).map(ch => ch.id)
                       return (
-                        <div key={c.id} className={`rounded-xl border transition ${on ? 'border-sky-500' : 'border-slate-200'}`}>
+                        <div key={c.id} className={`rounded-xl border transition ${on ? 'border-[#3180F7]' : 'border-slate-200'}`}>
                           <button
                             onClick={() => toggleMulti(c.id, childIds)}
                             className="flex w-full items-center gap-3 p-3 text-left"
                           >
-                            <span className={`flex size-5 shrink-0 items-center justify-center rounded-md border ${on ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-300'}`}>
+                            <span className={`flex size-5 shrink-0 items-center justify-center rounded-md border ${on ? 'border-[#3180F7] bg-[#3180F7] text-white' : 'border-slate-300'}`}>
                               {on && <Check className="size-3.5" strokeWidth={3} />}
                             </span>
                             <span className="min-w-0 flex-1">
@@ -256,9 +268,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                                     <button
                                       key={ch.id}
                                       onClick={() => toggleChild(c.id, ch.id)}
-                                      className={`flex items-center gap-2 rounded-lg border bg-white px-2.5 py-2 text-left transition ${cOn ? 'border-sky-400' : 'border-slate-200 hover:border-slate-300'}`}
+                                      className={`flex items-center gap-2 rounded-lg border bg-white px-2.5 py-2 text-left transition ${cOn ? 'border-[#3180F7]' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
-                                      <span className={`flex size-4 shrink-0 items-center justify-center rounded border ${cOn ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-300'}`}>
+                                      <span className={`flex size-4 shrink-0 items-center justify-center rounded border ${cOn ? 'border-[#3180F7] bg-[#3180F7] text-white' : 'border-slate-300'}`}>
                                         {cOn && <Check className="size-2.5" strokeWidth={3} />}
                                       </span>
                                       <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">{ch.name}</span>
@@ -307,9 +319,9 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
 
         {/* 견적 요약 (장바구니) */}
         <aside className="lg:sticky lg:top-[68px] lg:h-fit">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="rounded-[24px] bg-white shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)] p-5">
             <div className="flex items-center gap-2">
-              <MedinitySectionIcon name="cart" className="size-4 text-sky-600" />
+              <MedinitySectionIcon name="summary" className="size-5" />
               <h2 className="text-[15px] font-bold">견적 요약</h2>
               <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">{lines.length}개</span>
             </div>
@@ -334,30 +346,41 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
             <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-[13px]">
               <div className="flex justify-between text-slate-500"><span>공급가</span><span className="tabular-nums">{formatWon(subtotal)}</span></div>
               <div className="flex justify-between text-slate-500"><span>부가세 (10%)</span><span className="tabular-nums">{formatWon(vat)}</span></div>
-              <div className="flex items-center justify-between pt-1 text-base font-bold"><span>합계</span><span className="tabular-nums text-sky-600">{formatWon(total)}</span></div>
+              <div className="flex items-center justify-between pt-1 text-base font-bold"><span>합계</span><span className="tabular-nums text-[#3180F7]">{formatWon(total)}</span></div>
             </div>
 
-            {/* 제출 폼 */}
-            <div className="mt-4 space-y-2 border-t border-slate-200 pt-4">
+            {/* 제출 폼 — 레퍼런스 PDF + 요청사항 + 보내기 */}
+            <div className="mt-4 space-y-2.5 border-t border-slate-200 pt-4">
               <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-700">
-                <Building2 className="size-3.5 text-slate-400" /> 견적 요청 정보
+                <MedinitySectionIcon name="request" className="size-4" /> 견적 요청 정보
               </div>
-              <input value={contact.clinicName} onChange={e => setContact(v => ({ ...v, clinicName: e.target.value }))} placeholder="병원명 (선택)" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-sky-500" />
-              <div className="grid grid-cols-2 gap-2">
-                <input value={contact.contactName} onChange={e => setContact(v => ({ ...v, contactName: e.target.value }))} placeholder="담당자 *" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-sky-500" />
-                <input value={contact.phone} onChange={e => setContact(v => ({ ...v, phone: e.target.value }))} placeholder="연락처 *" inputMode="tel" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-sky-500" />
-              </div>
-              <input value={contact.email} onChange={e => setContact(v => ({ ...v, email: e.target.value }))} placeholder="이메일 (선택)" inputMode="email" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-sky-500" />
-              <textarea value={contact.memo} onChange={e => setContact(v => ({ ...v, memo: e.target.value }))} placeholder="요청사항 (선택)" rows={2} className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-sky-500" />
+
+              <input ref={fileRef} type="file" accept="application/pdf" hidden onChange={e => setFile(e.target.files?.[0] ?? null)} />
+              {file ? (
+                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                  <MedinitySectionIcon name="file" className="size-4 shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                  <button onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = '' }} aria-label="첨부 제거" className="shrink-0 text-slate-400 transition hover:text-red-500">
+                    <X className="size-4" />
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => fileRef.current?.click()} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-sm text-slate-500 transition hover:border-[#3180F7] hover:text-[#3180F7]">
+                  <MedinitySectionIcon name="file" className="size-4" /> 레퍼런스 PDF 첨부
+                </button>
+              )}
+
+              <textarea value={memo} onChange={e => setMemo(e.target.value)} placeholder="요청사항을 적어주세요" rows={3} className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-[#3180F7]" />
+
               <button
                 onClick={submit}
                 disabled={sending}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#3180F7] py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
               >
                 {sending && <Loader2 className="size-4 animate-spin" />}
-                {sending ? '전송 중…' : `견적 요청 보내기 · ${formatWon(total)}`}
+                {uploading ? 'PDF 올리는 중…' : sending ? '전송 중…' : '보내기'}
               </button>
-              <p className="text-center text-[11px] text-slate-400">보내주시면 담당자가 확인 후 연락드립니다.</p>
+              <p className="text-center text-[11px] text-slate-400">레퍼런스와 요청사항을 보내주시면 담당자가 확인합니다.</p>
             </div>
           </div>
         </aside>
@@ -368,12 +391,12 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="min-w-0">
             <div className="text-[11px] text-slate-400">합계 (부가세 포함)</div>
-            <div className="truncate text-lg font-bold tabular-nums text-sky-600">{formatWon(total)}</div>
+            <div className="truncate text-lg font-bold tabular-nums text-[#3180F7]">{formatWon(total)}</div>
           </div>
           <button
             onClick={submit}
             disabled={sending}
-            className="ml-auto flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:opacity-60"
+            className="ml-auto flex items-center gap-2 rounded-xl bg-[#3180F7] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2470E6] disabled:opacity-60"
           >
             {sending && <Loader2 className="size-4 animate-spin" />}
             견적 요청

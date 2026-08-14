@@ -215,10 +215,11 @@ export const CATEGORY_LABEL: Record<string, string> = {
 export type MedinityQuote = {
   id: number
   clinic_name: string | null
-  contact_name: string
-  phone: string
+  contact_name: string | null
+  phone: string | null
   email: string | null
   memo: string | null
+  reference_url: string | null
   selections: { label: string; price: number }[]
   subtotal: number
   total: number
