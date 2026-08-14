@@ -55,8 +55,20 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
     required: true,
     choices: [
       { id: 'base-onepage', name: '원페이지형', desc: '핵심 정보를 한 페이지에 스크롤로 담는 구성', price: 400_000, pages: 1 },
-      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지', price: 1_000_000, pages: 5 },
-      { id: 'base-premium', name: '프리미엄형', desc: '맞춤 디자인 + 진료과목별 상세 · 기본 10페이지 포함', price: 2_600_000, pages: 10 },
+      { id: 'base-multi', name: '다중 페이지형', desc: '메인·병원소개·진료안내·오시는길 등 기본 5페이지 · 도메인 무료', price: 1_000_000, pages: 5, includes: ['op-domain'] },
+      {
+        id: 'base-premium',
+        name: '프리미엄형',
+        desc: '기본 10p + 전 페이지 모션·인터랙션 추가·어드민(콘텐츠 관리)·SEO·서치어드바이저 무료 포함',
+        price: 2_600_000,
+        pages: 10,
+        includes: [
+          'inter-mid',
+          'ia-reveal', 'ia-hero', 'ia-gallery', 'ia-count', 'ia-floating',
+          'admin-low', 'admin-mid',
+          'op-searchadvisor', 'op-seo',
+        ],
+      },
     ],
   },
   {

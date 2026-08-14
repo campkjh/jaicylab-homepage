@@ -102,7 +102,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         for (const c of s.choices ?? []) {
           if (multi.has(c.id)) {
             const childIds = (c.children ?? []).map(ch => ch.id)
-            out.push({ key: c.id, label: c.name, sub: s.title, price: includedIds.has(c.id) ? 0 : priceOfChoice(c, totalPages), removable: true, onRemove: () => toggleMulti(c.id, childIds) })
+            out.push({ key: c.id, label: c.name, sub: includedIds.has(c.id) ? `${s.title} · 기본 포함` : s.title, price: includedIds.has(c.id) ? 0 : priceOfChoice(c, totalPages), removable: true, onRemove: () => toggleMulti(c.id, childIds) })
             for (const ch of c.children ?? []) {
               if (multi.has(ch.id)) out.push({ key: ch.id, label: ch.name, sub: c.name, price: ch.price, removable: true, onRemove: () => toggleChild(c.id, ch.id) })
             }
@@ -272,7 +272,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
                               <span className="text-sm font-semibold">{c.name}</span>
                               {c.desc && <span className="mt-0.5 block text-[12px] leading-snug text-slate-500">{c.desc}</span>}
                             </span>
-                            <span className="shrink-0 text-sm font-bold">{c.price === 0 ? '기본 0원' : `+${formatWon(c.price)}`}</span>
+                            <span className="shrink-0 text-sm font-bold">{includedIds.has(c.id) ? '포함' : c.price === 0 ? '기본 0원' : `+${formatWon(c.price)}`}</span>
                           </button>
 
                           {on && c.children && c.children.length > 0 && (
