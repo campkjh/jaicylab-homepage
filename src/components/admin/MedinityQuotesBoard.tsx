@@ -91,6 +91,16 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
             </div>
           )}
 
+          <a
+            href={`/medinity/site/${quote.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+            style={{ background: '#12A594' }}
+          >
+            🦷 홈페이지 미리보기
+          </a>
+
           <div className="flex flex-wrap items-center gap-2">
             {(['new', 'contacted', 'done'] as const).map(s => (
               <form key={s} action={updateMedinityQuoteStatus}>

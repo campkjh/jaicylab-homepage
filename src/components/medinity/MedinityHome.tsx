@@ -247,6 +247,18 @@ export function MedinityHome({
               })()}
               </AnimatePresence>
 
+              {open.dbId && (
+                <a
+                  href={`/medinity/site/${open.dbId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+                  style={{ background: '#12A594' }}
+                >
+                  🦷 홈페이지 미리보기
+                </a>
+              )}
+
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={() => onPrint(open)}
