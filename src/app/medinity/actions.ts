@@ -2,6 +2,7 @@
 
 import { Resend } from 'resend'
 import { sql, ensureSchema } from '@/lib/db'
+import type { MedinityDevInfo } from '@/lib/types'
 import {
   MEDINITY_SECTIONS,
   MEDINITY_CHOICE_INDEX,
@@ -90,8 +91,8 @@ export async function submitMedinityQuote(
   const total = Math.round(subtotal * (1 + VAT_RATE))
 
   const rows = (await sql`
-    INSERT INTO medinity_quotes (memo, reference_url, selections, subtotal, total)
-    VALUES (${memo || null}, ${referenceUrl || null}, ${JSON.stringify(lines)}, ${subtotal}, ${total})
+    INSERT INTO medinity_quotes (title, memo, reference_url, selections, subtotal, total, req_status)
+    VALUES (${title || null}, ${memo || null}, ${referenceUrl || null}, ${JSON.stringify(lines)}, ${subtotal}, ${total}, 'inquiry')
     RETURNING id
   `) as { id: number }[]
   const id = rows[0].id
@@ -152,4 +153,26 @@ export async function submitMedinityQuote(
   }
 
   return { ok: true, id }
+}
+
+/**
+ * 개발의뢰 정보(제목·계정·카드·사업자)와 단계(req_status)를 접수 건에 실시간 저장한다.
+ * 홈 요청관리 그룹포커스에서 입력할 때마다(디바운스) 호출되어 admin 견적함에 그대로 반영된다.
+ * 값은 병원 운영 대행을 위해 평문으로 저장한다. (관리자 인증 화면에서만 열람)
+ */
+export async function saveMedinityDev(
+  id: number,
+  data: { title?: string | null; dev?: MedinityDevInfo | null; reqStatus?: string | null },
+): Promise<{ ok: boolean }> {
+  if (!Number.isFinite(id)) return { ok: false }
+  await ensureSchema()
+  const devJson = data.dev && Object.keys(data.dev).length > 0 ? JSON.stringify(data.dev) : null
+  await sql`
+    UPDATE medinity_quotes
+    SET title = ${data.title ?? null},
+        dev = ${devJson}::jsonb,
+        req_status = ${data.reqStatus ?? null}
+    WHERE id = ${id}
+  `
+  return { ok: true }
 }

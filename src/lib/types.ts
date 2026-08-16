@@ -212,8 +212,23 @@ export const CATEGORY_LABEL: Record<string, string> = {
 }
 
 /** 메디니티(치과 홈페이지) 견적 요청 접수. 공개 /medinity 페이지에서 제출된다. */
+/** 개발의뢰 시 받는 병원 정보(계정·카드·사업자). 관리자 화면에서만 열람한다. */
+export type MedinityDevInfo = {
+  googleId?: string
+  googlePw?: string
+  naverId?: string
+  naverPw?: string
+  cardNumber?: string
+  cardExpiry?: string
+  cardCvc?: string
+  bizNumber?: string
+  address?: string
+  ceo?: string
+}
+
 export type MedinityQuote = {
   id: number
+  title: string | null
   clinic_name: string | null
   contact_name: string | null
   phone: string | null
@@ -224,6 +239,9 @@ export type MedinityQuote = {
   subtotal: number
   total: number
   status: string
+  /** 홈 요청관리 단계: inquiry(견적문의) · requested(개발의뢰) · done(개발완료) */
+  req_status: string | null
+  dev: MedinityDevInfo | null
   created_at: string
 }
 

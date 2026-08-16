@@ -28,6 +28,8 @@ export type DevInfo = {
 
 export type RequestEntry = {
   id: string
+  /** 서버(medinity_quotes) 접수 id — 개발정보 실시간 저장·admin 동기화 대상 */
+  dbId?: number
   /** 요청 제목 (예: 미소치과 홈페이지) — 목록·모달에서 표시·편집 */
   title?: string
   createdAt: string

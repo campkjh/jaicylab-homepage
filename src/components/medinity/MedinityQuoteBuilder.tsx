@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus, Minus, Check, X, Loader2, ChevronUp } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { submitMedinityQuote, type MedinityQuoteInput } from '@/app/medinity/actions'
+import { submitMedinityQuote, saveMedinityDev, type MedinityQuoteInput } from '@/app/medinity/actions'
 import { VAT_RATE, formatWon, includedChoiceIds, totalPageCount, priceOfChoice, stepperPrice, MEDINITY_CHOICE_INDEX, type MedinitySection } from '@/data/medinity'
 import { MedinityLogo } from './MedinityLogo'
 import { MedinitySectionIcon } from './MedinitySectionIcon'
@@ -51,11 +51,27 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
   useEffect(() => {
     if (reqLoaded) try { localStorage.setItem('medinity_requests_v1', JSON.stringify(requests)) } catch {}
   }, [requests, reqLoaded])
-  const setRequestStatus = (id: string, status: ReqStatus) =>
+  // 개발정보·제목·단계를 접수 건(dbId)에 실시간(디바운스) 저장 → admin 견적함 동기화
+  const devSyncTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
+  const scheduleDevSync = (entry: RequestEntry) => {
+    const dbId = entry.dbId
+    if (!dbId) return
+    clearTimeout(devSyncTimers.current[dbId])
+    devSyncTimers.current[dbId] = setTimeout(() => {
+      saveMedinityDev(dbId, { title: entry.title ?? null, dev: entry.dev ?? null, reqStatus: entry.status }).catch(() => {})
+    }, 600)
+  }
+  const setRequestStatus = (id: string, status: ReqStatus) => {
     setRequests(rs => rs.map(r => (r.id === id ? { ...r, status } : r)))
+    const cur = requests.find(r => r.id === id)
+    if (cur) scheduleDevSync({ ...cur, status })
+  }
   const deleteRequest = (id: string) => setRequests(rs => rs.filter(r => r.id !== id))
-  const updateRequest = (id: string, patch: Partial<RequestEntry>) =>
+  const updateRequest = (id: string, patch: Partial<RequestEntry>) => {
     setRequests(rs => rs.map(r => (r.id === id ? { ...r, ...patch } : r)))
+    const cur = requests.find(r => r.id === id)
+    if (cur) scheduleDevSync({ ...cur, ...patch })
+  }
 
   // 인쇄 대상(견적서 버튼=현재 견적 / 요청관리=해당 접수). null 이면 현재 견적을 인쇄.
   const [printData, setPrintData] = useState<{ lines: { label: string; sub?: string; price: number }[]; subtotal: number; vat: number; total: number } | null>(null)
@@ -208,6 +224,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
         const d = new Date()
         const entry: RequestEntry = {
           id: (crypto.randomUUID?.() ?? String(res.id) + '-' + d.getTime()),
+          dbId: res.id,
           createdAt: `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`,
           total,
           itemsCount: lines.length,

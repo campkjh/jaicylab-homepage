@@ -220,6 +220,11 @@ const DDL = [
   `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS reference_url text`,
   `ALTER TABLE medinity_quotes ALTER COLUMN contact_name DROP NOT NULL`,
   `ALTER TABLE medinity_quotes ALTER COLUMN phone DROP NOT NULL`,
+  // 요청 제목 + 홈 요청관리 파이프라인 단계(inquiry/requested/done) + 개발의뢰 정보(계정·카드·사업자, 평문 jsonb).
+  // admin 견적함에서 그대로 열람한다. (모두 명시 컬럼 SELECT 라 캐시플랜 문제 없음)
+  `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS title text`,
+  `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS req_status text`,
+  `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS dev jsonb`,
 
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (

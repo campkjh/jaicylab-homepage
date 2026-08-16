@@ -11,6 +11,24 @@ const STATUS: Record<string, { label: string; chip: string }> = {
   done: { label: '완료', chip: 'bg-emerald-50 text-emerald-700' },
 }
 
+// 홈 요청관리 단계(고객이 직접 넘김: 견적문의 → 개발의뢰 → 개발완료)
+const REQ_STATUS: Record<string, { label: string; chip: string }> = {
+  inquiry: { label: '견적 문의', chip: 'bg-slate-100 text-slate-600' },
+  requested: { label: '개발 의뢰', chip: 'bg-indigo-50 text-indigo-700' },
+  done: { label: '개발 완료', chip: 'bg-emerald-50 text-emerald-700' },
+}
+
+// 개발의뢰 정보 한 줄 표시용
+function DevRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null
+  return (
+    <div className="flex gap-2 text-[13px]">
+      <span className="w-20 shrink-0 text-ink-muted">{label}</span>
+      <span className="min-w-0 flex-1 break-all font-medium text-ink-soft">{value}</span>
+    </div>
+  )
+}
+
 function won(n: number) {
   return `${n.toLocaleString('ko-KR')}원`
 }
@@ -24,7 +42,10 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
     <li className="overflow-hidden rounded-xl border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${st.chip}`}>{st.label}</span>
-        <span className="text-sm font-semibold text-ink">{quote.clinic_name || quote.contact_name || `견적 요청 #${quote.id}`}</span>
+        {quote.req_status && REQ_STATUS[quote.req_status] && (
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${REQ_STATUS[quote.req_status].chip}`}>{REQ_STATUS[quote.req_status].label}</span>
+        )}
+        <span className="text-sm font-semibold text-ink">{quote.title || quote.clinic_name || quote.contact_name || `견적 요청 #${quote.id}`}</span>
         {(quote.contact_name || quote.phone) && (
           <span className="text-xs text-ink-muted">{[quote.contact_name, quote.phone, quote.email].filter(Boolean).join(' · ')}</span>
         )}
@@ -51,6 +72,25 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
           {quote.memo && (
             <div className="mb-3 rounded-lg border border-line bg-surface px-3 py-2 text-[13px] whitespace-pre-wrap text-ink-soft">{quote.memo}</div>
           )}
+
+          {quote.dev && Object.values(quote.dev).some(Boolean) && (
+            <div className="mb-3 rounded-lg border border-line bg-surface px-3 py-2.5">
+              <div className="mb-2 text-[11px] font-semibold text-brand">개발 의뢰 정보</div>
+              <div className="flex flex-col gap-1">
+                <DevRow label="구글 아이디" value={quote.dev.googleId} />
+                <DevRow label="구글 비번" value={quote.dev.googlePw} />
+                <DevRow label="네이버 아이디" value={quote.dev.naverId} />
+                <DevRow label="네이버 비번" value={quote.dev.naverPw} />
+                <DevRow label="카드번호" value={quote.dev.cardNumber} />
+                <DevRow label="유효기간" value={quote.dev.cardExpiry} />
+                <DevRow label="CVC" value={quote.dev.cardCvc} />
+                <DevRow label="사업자번호" value={quote.dev.bizNumber} />
+                <DevRow label="주소" value={quote.dev.address} />
+                <DevRow label="대표자" value={quote.dev.ceo} />
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-2">
             {(['new', 'contacted', 'done'] as const).map(s => (
               <form key={s} action={updateMedinityQuoteStatus}>
