@@ -2,6 +2,7 @@
 
 import { Resend } from 'resend'
 import { sql, ensureSchema } from '@/lib/db'
+import { requireAdmin } from '@/lib/session'
 import type { MedinityDevInfo } from '@/lib/types'
 import {
   MEDINITY_SECTIONS,
@@ -77,6 +78,7 @@ function computeLines(choiceIds: string[], steppers: Record<string, number>): { 
 export async function submitMedinityQuote(
   input: MedinityQuoteInput,
 ): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
+  await requireAdmin() // 내부 제작 도구 — 로그인 필수
   await ensureSchema()
 
   const title = (input.title ?? '').trim()
@@ -164,6 +166,7 @@ export async function saveMedinityDev(
   id: number,
   data: { title?: string | null; dev?: MedinityDevInfo | null; reqStatus?: string | null },
 ): Promise<{ ok: boolean }> {
+  await requireAdmin() // 내부 제작 도구 — 로그인 필수
   if (!Number.isFinite(id)) return { ok: false }
   await ensureSchema()
   const devJson = data.dev && Object.keys(data.dev).length > 0 ? JSON.stringify(data.dev) : null

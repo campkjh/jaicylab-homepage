@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Toaster } from 'sonner'
+import { requireAdmin } from '@/lib/session'
 import '../globals.css'
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function MedinityLayout({ children }: { children: React.ReactNode }) {
+// 내부 제작 도구 — 관리자 로그인 필수. 견적빌더·요청관리·개발정보·생성사이트 전부 이 가드로 커버.
+export default async function MedinityLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin()
   return (
     <html lang="ko">
       <body>
