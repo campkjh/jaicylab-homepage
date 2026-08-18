@@ -32,6 +32,8 @@ type UI = {
   selectedCount: (n: number) => string
   presetSearchPlaceholder: string
   ctaSubmit: string
+  tabApp: string
+  tabWeb: string
   basicReference: string
   monthsSuffix: string
   similarService: string
@@ -183,6 +185,8 @@ const ko: UI = {
   selectedCount: (n: number) => `${n}개`,
   presetSearchPlaceholder: '프리셋 검색',
   ctaSubmit: '제출하기',
+  tabApp: '앱 견적',
+  tabWeb: '홈페이지 견적',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
   similarService: '비슷한 서비스',
@@ -351,6 +355,8 @@ const en: UI = {
   selectedCount: (n: number) => `${n} items`,
   presetSearchPlaceholder: 'Search presets',
   ctaSubmit: 'Submit',
+  tabApp: 'App',
+  tabWeb: 'Website',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
   similarService: 'Similar services',
@@ -519,6 +525,8 @@ const ja: UI = {
   selectedCount: (n: number) => `${n}件`,
   presetSearchPlaceholder: 'プリセット検索',
   ctaSubmit: '送信する',
+  tabApp: 'アプリ',
+  tabWeb: 'ホームページ',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
   similarService: '類似サービス',
@@ -687,6 +695,8 @@ const zh: UI = {
   selectedCount: (n: number) => `${n} 项`,
   presetSearchPlaceholder: '搜索预设',
   ctaSubmit: '提交',
+  tabApp: 'App',
+  tabWeb: '网站',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',
   similarService: '类似服务',

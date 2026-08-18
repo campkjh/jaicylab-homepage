@@ -19,6 +19,8 @@ import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 import { EstimateIcon } from '@/components/estimate/EstimateIcon'
 import { UiIcon } from '@/components/estimate/UiIcon'
+import { WebQuotePanel } from '@/components/estimate/WebQuotePanel'
+import { motion } from 'framer-motion'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useLocale } from 'next-intl'
@@ -664,6 +666,8 @@ export default function EstimatePage() {
   const [presetsExpanded, setPresetsExpanded] = useState(false)
   // 프리셋 검색어 (분류탭 옆 검색창)
   const [presetQuery, setPresetQuery] = useState('')
+  // 견적 종류 탭 — 앱 / 홈페이지(메디니티 카탈로그)
+  const [quoteKind, setQuoteKind] = useState<'app' | 'web'>('app')
   const [hoverPkgTier, setHoverPkgTier] = useState<{ pkg: string; tier: TierId } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
   const [query, setQuery] = useState('')
@@ -1005,8 +1009,40 @@ export default function EstimatePage() {
       </header>
 
 
+      {/* 견적 종류 탭 — 메디니티 홈 탭 디자인/애니메이션 (슬라이딩 pill) */}
+      <div className="mx-auto max-w-[1320px] px-6 pt-[76px]">
+        <div className="flex w-full max-w-[360px] gap-1 rounded-2xl bg-[#F2F3F5] p-1">
+          {([['app', c.tabApp], ['web', c.tabWeb]] as const).map(([id, label]) => {
+            const on = quoteKind === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setQuoteKind(id)}
+                className={`relative flex-1 rounded-[13px] px-3 py-2 text-[13px] font-semibold transition-colors ${on ? 'text-[#2B313D]' : 'text-[#A4ABBA] hover:text-[#51535C]'}`}
+              >
+                {on && (
+                  <motion.span
+                    layoutId="quoteKindPill"
+                    className="absolute inset-0 rounded-[13px] bg-white shadow-sm"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span className="relative">{label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {quoteKind === 'web' ? (
+        <section className="pb-12 pt-6">
+          <WebQuotePanel onSubmit={() => setQuickOpen(true)} />
+        </section>
+      ) : (
+      <>
       {/* PACKAGES CAROUSEL */}
-      <section ref={presetSectionRef} className={`relative pb-1 pt-[76px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
+      <section ref={presetSectionRef} className={`relative pb-1 transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <h2 className="text-[20px] font-bold tracking-tight text-[#2B313D]">{c.packageCountTitle(PACKAGES.length)}</h2>
@@ -1103,6 +1139,9 @@ export default function EstimatePage() {
           </div>
         </div>
       </section>
+
+      </>
+      )}
 
       {/* Floating Tooltip (fixed — carousel overflow 바깥) */}
       {hoverPkgTier && tooltipPos && (() => {
