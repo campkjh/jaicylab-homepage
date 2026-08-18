@@ -489,7 +489,7 @@ const CATEGORIES: Category[] = [
 
 // 아이콘 테마 — 전 카테고리 공통 뉴트럴 그레이
 const ICON_THEME = {
-  bg: 'bg-slate-50',
+  bg: 'bg-[#F2F3F5]',
   bgActive: 'bg-[#EAF2FF]',
   icon: '',
   iconActive: '',
@@ -570,11 +570,11 @@ function PackageCard({
           <EstimateIcon name={p.iconKey} className="h-7 w-7" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
+          <p className="truncate text-[14px] font-bold text-[#2B313D]">{p.label}</p>
           {/* 키워드 태그 */}
           <div className="mt-1.5 flex flex-wrap gap-1">
             {keywords.map((k, i) => (
-              <span key={i} className="rounded-md bg-slate-100 px-1.5 py-[2px] text-[10px] font-medium text-slate-500">
+              <span key={i} className="rounded-md bg-[#F2F3F5] px-1.5 py-[2px] text-[10px] font-medium text-[#51535C]">
                 {k}
               </span>
             ))}
@@ -583,23 +583,23 @@ function PackageCard({
       </div>
 
       {/* 평균 견적 금액 */}
-      <div className="mt-3 flex items-baseline gap-1.5 text-[11px] text-slate-500">
+      <div className="mt-3 flex items-baseline gap-1.5 text-[11px] text-[#51535C]">
         <span className="font-medium">{c.avgPriceLabel}</span>
         <span className="text-[15px] font-bold text-[#3180F7]">{avgPrice.toLocaleString()}{c.manwonSuffix}</span>
-        <span className="text-slate-400">{c.basicReference}</span>
+        <span className="text-[#A4ABBA]">{c.basicReference}</span>
       </div>
 
       {isActivePkg && activeTier && (
         <div className="mt-3 flex items-center gap-1.5 text-[11px]">
           <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>{TIER_META[activeTier].label}</span>
-          <span className="text-slate-300">·</span>
-          <span className="text-slate-500">{c.pricingItemsCount(p.tiers[activeTier].length, priceOf(p.tiers[activeTier]).toLocaleString())}</span>
+          <span className="text-[#C8CEDA]">·</span>
+          <span className="text-[#51535C]">{c.pricingItemsCount(p.tiers[activeTier].length, priceOf(p.tiers[activeTier]).toLocaleString())}</span>
         </div>
       )}
 
       {PACKAGE_EXAMPLES[p.id] && (
-        <div className="mt-3 border-t border-slate-100 pt-3">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{c.similarService}</p>
+        <div className="mt-3 border-t border-[#F2F3F5] pt-3">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-[#A4ABBA]">{c.similarService}</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             {PACKAGE_EXAMPLES[p.id].map(ex => (
               <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
@@ -608,10 +608,10 @@ function PackageCard({
                   src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
                   alt={ex.name}
                   width={16} height={16}
-                  className="h-4 w-4 rounded-sm bg-slate-100 object-contain"
+                  className="h-4 w-4 rounded-sm bg-[#F2F3F5] object-contain"
                   onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
                 />
-                <span className="text-[11px] font-medium text-slate-600">{ex.name}</span>
+                <span className="text-[11px] font-medium text-[#51535C]">{ex.name}</span>
               </div>
             ))}
           </div>
@@ -933,7 +933,7 @@ export default function EstimatePage() {
   const totalItems = CATEGORIES.reduce((a, c) => a + c.items.length, 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-[#2B313D]">
       <Script
         src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.1.6/dist/unicornStudio.umd.js"
         strategy="afterInteractive"
@@ -947,17 +947,17 @@ export default function EstimatePage() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 || presetStuck ? 'bg-white/80 backdrop-blur-2xl shadow-[0_2px_12px_-6px_rgba(15,23,42,0.08)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Logo height={22} className="text-slate-900" />
-            <span className="text-[12px] font-normal text-slate-500">{c.brand}</span>
+            <Logo height={22} className="text-[#2B313D]" />
+            <span className="text-[12px] font-normal text-[#51535C]">{c.brand}</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">{c.navAbout}</Link>
-            <Link href="/estimate" className="text-[13px] font-bold text-slate-900 transition-all">{c.navEstimate}</Link>
-            <Link href="/about#문의" className="text-[13px] font-medium text-slate-500 transition-all hover:text-slate-900">{c.navContact}</Link>
+            <Link href="/about" className="text-[13px] font-medium text-[#51535C] transition-all hover:text-[#2B313D]">{c.navAbout}</Link>
+            <Link href="/estimate" className="text-[13px] font-bold text-[#2B313D] transition-all">{c.navEstimate}</Link>
+            <Link href="/about#문의" className="text-[13px] font-medium text-[#51535C] transition-all hover:text-[#2B313D]">{c.navContact}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <Link href="/about#문의" className="rounded-xl bg-slate-900 px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-slate-800 active:scale-95">{c.ctaProject}</Link>
+            <Link href="/about#문의" className="rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{c.ctaProject}</Link>
           </div>
         </div>
 
@@ -972,7 +972,7 @@ export default function EstimatePage() {
           <div className="overflow-hidden">
             <div className="mx-auto max-w-[1320px] px-4">
               <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-2.5">
-            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">{c.presets}</span>
+            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-[#A4ABBA]">{c.presets}</span>
             {filteredPackages.map(p => {
               const isActive = activePkg === p.id
               const tier = isActive && activeTier ? activeTier : 'basic'
@@ -985,10 +985,10 @@ export default function EstimatePage() {
                   className={`group flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
                     isActive
                       ? 'bg-[#EAF2FF] text-[#3180F7]'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      : 'bg-[#F2F3F5] text-[#51535C] hover:bg-[#E3E6EB]'
                   }`}
                 >
-                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-slate-50'}`}>
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-[#F2F3F5]'}`}>
                     <EstimateIcon name={p.iconKey} className="h-4 w-4" />
                   </div>
                   <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
@@ -1009,13 +1009,13 @@ export default function EstimatePage() {
       <section ref={presetSectionRef} className={`relative pb-1 pt-[76px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
-            <h2 className="text-[20px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
+            <h2 className="text-[20px] font-bold tracking-tight text-[#2B313D]">{c.packageCountTitle(PACKAGES.length)}</h2>
             <div className="flex shrink-0 items-center gap-3">
-              {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">{c.resetSelection}</button>}
+              {activePkg && <button onClick={clearAll} className="text-[12px] text-[#A4ABBA] hover:text-[#51535C]">{c.resetSelection}</button>}
               <button
                 type="button"
                 onClick={() => setPresetsExpanded(v => !v)}
-                className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-all hover:bg-slate-200 active:scale-95"
+                className="flex items-center gap-1.5 rounded-full bg-[#F2F3F5] px-3.5 py-2 text-[12px] font-semibold text-[#51535C] transition-all hover:bg-[#E3E6EB] active:scale-95"
               >
                 {presetsExpanded ? c.presetsCollapse : c.presetsExpand(filteredPackages.length)}
                 <UiIcon name="chevron-down" className={`h-3.5 w-3.5 transition-transform duration-300 ${presetsExpanded ? 'rotate-180' : ''}`} />
@@ -1056,11 +1056,11 @@ export default function EstimatePage() {
                 value={presetQuery}
                 onChange={e => setPresetQuery(e.target.value)}
                 placeholder={c.presetSearchPlaceholder}
-                className="h-10 w-full rounded-full bg-[#F2F3F5] pl-10 pr-9 text-[13px] text-slate-900 outline-none transition-colors placeholder:text-[#A4ABBA] focus:bg-[#E9EBEF]"
+                className="h-10 w-full rounded-full bg-[#F2F3F5] pl-10 pr-9 text-[13px] text-[#2B313D] outline-none transition-colors placeholder:text-[#A4ABBA] focus:bg-[#E9EBEF]"
               />
               {presetQuery && (
                 <button type="button" onClick={() => setPresetQuery('')} aria-label="검색어 지우기"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4ABBA] transition-colors hover:text-slate-700">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4ABBA] transition-colors hover:text-[#51535C]">
                   <UiIcon name="x" className="h-3.5 w-3.5" />
                 </button>
               )}
@@ -1072,12 +1072,12 @@ export default function EstimatePage() {
             {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
               className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
-              <UiIcon name="chevron-left" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:-translate-x-0.5" />
+              <UiIcon name="chevron-left" className="h-5 w-5 text-[#2B313D] transition-transform duration-200 group-hover:-translate-x-0.5" />
             </button>}
             {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
               className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
-              <UiIcon name="chevron-right" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <UiIcon name="chevron-right" className="h-5 w-5 text-[#2B313D] transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>}
 
             <div ref={carouselRef} key={`${pkgCategory}-${presetsExpanded}`}
@@ -1120,25 +1120,25 @@ export default function EstimatePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${meta.soft}`}>{meta.label}</span>
-                <span className="text-[11px] text-slate-500">{meta.desc}</span>
+                <span className="text-[11px] text-[#51535C]">{meta.desc}</span>
               </div>
               <span className="text-[11px] font-bold text-[#3180F7]">{priceOf(tierIds).toLocaleString()}{c.manwonSuffix}</span>
             </div>
-            <p className="mt-2 text-[12px] font-bold text-slate-900">{pkg.label}</p>
+            <p className="mt-2 text-[12px] font-bold text-[#2B313D]">{pkg.label}</p>
             <div className="mt-3">
-              <p className="mb-1.5 text-[10px] font-bold text-slate-400">{c.includedItems(tierIds.length)}</p>
+              <p className="mb-1.5 text-[10px] font-bold text-[#A4ABBA]">{c.includedItems(tierIds.length)}</p>
               <ul className="space-y-1">
                 {tierIds.slice(0, 10).map(id => {
                   const item = ITEM_LOOKUP[id]
                   return item ? (
-                    <li key={id} className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                    <li key={id} className="flex items-center gap-1.5 text-[11px] text-[#51535C]">
                       <UiIcon name="check" className="h-3 w-3 shrink-0 text-emerald-500" />
                       <span className="truncate">{item.label}</span>
                     </li>
                   ) : null
                 })}
                 {tierIds.length > 10 && (
-                  <li className="pl-5 text-[10px] text-slate-400">{c.moreItems(tierIds.length - 10)}</li>
+                  <li className="pl-5 text-[10px] text-[#A4ABBA]">{c.moreItems(tierIds.length - 10)}</li>
                 )}
               </ul>
             </div>
@@ -1164,19 +1164,19 @@ export default function EstimatePage() {
                 <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] bg-white transition-all duration-300">
                   <div className="flex items-center justify-between px-5 py-4">
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-slate-50 transition-transform duration-300 hover:scale-110">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#F2F3F5] transition-transform duration-300 hover:scale-110">
                         <EstimateIcon name={`cat-${cat.id}`} className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400">{c.categoryTitles[cat.id]?.tag ?? cat.tag}</p>
-                        <p className="text-[15px] font-bold text-slate-900">{c.categoryTitles[cat.id]?.title ?? cat.title}</p>
+                        <p className="text-[11px] font-medium text-[#A4ABBA]">{c.categoryTitles[cat.id]?.tag ?? cat.tag}</p>
+                        <p className="text-[15px] font-bold text-[#2B313D]">{c.categoryTitles[cat.id]?.title ?? cat.title}</p>
                       </div>
                     </button>
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] text-slate-400">{selCount}/{cat.items.length}</span>
+                      <span className="text-[11px] text-[#A4ABBA]">{selCount}/{cat.items.length}</span>
                       {catTotal > 0 && <span className="text-[12px] font-bold text-[#3180F7]">+{catTotal.toLocaleString()}{c.manwonSuffix}</span>}
                       {!searchMatches && (
-                        <button type="button" onClick={() => toggleCat(cat.id)} className="text-slate-400 hover:text-slate-700">
+                        <button type="button" onClick={() => toggleCat(cat.id)} className="text-[#A4ABBA] hover:text-[#51535C]">
                           <UiIcon name="chevron-down" className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                         </button>
                       )}
@@ -1184,12 +1184,12 @@ export default function EstimatePage() {
                   </div>
 
                   {isOpen && (
-                    <div className="animate-[fadeUp_0.3s_ease-out] border-t border-slate-100">
+                    <div className="animate-[fadeUp_0.3s_ease-out] border-t border-[#F2F3F5]">
                       {!searchMatches && (
-                        <div className="flex items-center justify-end gap-3 px-5 py-2 text-[10px] text-slate-400">
-                          <button type="button" onClick={() => selectAllInCat(cat.id)} className="transition-colors hover:text-slate-700">{c.selectAll}</button>
-                          <span className="text-slate-200">|</span>
-                          <button type="button" onClick={() => clearCat(cat.id)} className="transition-colors hover:text-slate-700">{c.clearAll}</button>
+                        <div className="flex items-center justify-end gap-3 px-5 py-2 text-[10px] text-[#A4ABBA]">
+                          <button type="button" onClick={() => selectAllInCat(cat.id)} className="transition-colors hover:text-[#51535C]">{c.selectAll}</button>
+                          <span className="text-[#C8CEDA]">|</span>
+                          <button type="button" onClick={() => clearCat(cat.id)} className="transition-colors hover:text-[#51535C]">{c.clearAll}</button>
                         </div>
                       )}
                       <ul>
@@ -1198,12 +1198,12 @@ export default function EstimatePage() {
                           return (
                             <li key={item.id}>
                               <button type="button" onClick={() => toggle(item.id)}
-                                className={`group flex w-full items-center gap-3 border-t border-slate-100 px-5 py-3 text-left transition-all duration-200 ${active ? 'bg-[#3180F7]/[0.06]' : 'hover:bg-slate-50'}`}>
-                                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 ${active ? 'border-[#3180F7] bg-[#3180F7]' : 'border-slate-300 bg-white group-hover:border-slate-500'}`}>
+                                className={`group flex w-full items-center gap-3 border-t border-[#F2F3F5] px-5 py-3 text-left transition-all duration-200 ${active ? 'bg-[#3180F7]/[0.06]' : 'hover:bg-[#F2F3F5]'}`}>
+                                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 ${active ? 'border-[#3180F7] bg-[#3180F7]' : 'border-[#C8CEDA] bg-white group-hover:border-[#A4ABBA]'}`}>
                                   {active && <UiIcon name="check" className="h-3.5 w-3.5 animate-[checkIn_0.25s_ease-out] text-white" />}
                                 </div>
-                                <span className={`flex-1 text-[13px] ${active ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'}`}>{item.label}</span>
-                                <span className={`text-[12px] ${active ? 'font-bold text-[#3180F7]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
+                                <span className={`flex-1 text-[13px] ${active ? 'text-[#2B313D]' : 'text-[#51535C] group-hover:text-[#2B313D]'}`}>{item.label}</span>
+                                <span className={`text-[12px] ${active ? 'font-bold text-[#3180F7]' : 'text-[#A4ABBA]'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
                               </button>
                             </li>
                           )
@@ -1218,18 +1218,18 @@ export default function EstimatePage() {
             {/* 견적서 요청 */}
             <div className="mt-12 rounded-[18px] bg-white p-7">
               <p className="text-[12px] font-semibold text-[#3180F7]">{c.requestEyebrow}</p>
-              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.requestTitle}</h2>
-              <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
+              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-[#2B313D]">{c.requestTitle}</h2>
+              <p className="mt-2 text-[13px] text-[#51535C]">{c.requestDesc}</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none rounded-xl bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <textarea className="h-28 w-full resize-none rounded-xl bg-[#F2F3F5] px-4 py-3 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
-                <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
+                <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2B313D] py-3.5 text-[15px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-[0.98] disabled:opacity-50">
                   <UiIcon name="send" className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
                 </button>
               </form>
@@ -1242,8 +1242,8 @@ export default function EstimatePage() {
               {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
               <div className="rounded-[24px] bg-white p-5">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[15px] font-bold text-slate-900">{c.totalEstimate}</h2>
-                  <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                  <h2 className="text-[15px] font-bold text-[#2B313D]">{c.totalEstimate}</h2>
+                  <span className="ml-auto rounded-full bg-[#F2F3F5] px-2 py-0.5 text-[11px] font-semibold text-[#51535C]">
                     {c.selectedCount(selectedLines.length)}
                   </span>
                 </div>
@@ -1251,37 +1251,37 @@ export default function EstimatePage() {
                 {selectedLines.length > 0 ? (
                   <ul className="mt-3 flex max-h-[34vh] flex-col gap-1 overflow-y-auto lg:max-h-[38vh]">
                     {selectedLines.map(l => (
-                      <li key={l.id} className="group/li flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-slate-50">
+                      <li key={l.id} className="group/li flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-[#F2F3F5]">
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate font-medium text-slate-800">{l.label}</span>
-                          <span className="block truncate text-[11px] text-slate-400">{l.catTitle}</span>
+                          <span className="block truncate font-medium text-[#2B313D]">{l.label}</span>
+                          <span className="block truncate text-[11px] text-[#A4ABBA]">{l.catTitle}</span>
                         </span>
-                        <span className="shrink-0 tabular-nums text-slate-700">{l.price.toLocaleString()}{c.manwonSuffix}</span>
-                        <button onClick={() => toggle(l.id)} aria-label="제거" className="shrink-0 text-slate-300 transition hover:text-red-500">
+                        <span className="shrink-0 tabular-nums text-[#51535C]">{l.price.toLocaleString()}{c.manwonSuffix}</span>
+                        <button onClick={() => toggle(l.id)} aria-label="제거" className="shrink-0 text-[#C8CEDA] transition hover:text-[#E36B74]">
                           <UiIcon name="x" className="h-3.5 w-3.5" />
                         </button>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-3 rounded-lg bg-slate-50 px-3 py-6 text-center text-[12px] text-slate-400">{c.selectItemsNotice}</p>
+                  <p className="mt-3 rounded-lg bg-[#F2F3F5] px-3 py-6 text-center text-[12px] text-[#A4ABBA]">{c.selectItemsNotice}</p>
                 )}
 
-                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-[13px]">
-                  <div className="flex justify-between text-slate-500"><span>{c.itemsTotal}</span><span className="tabular-nums">{calc.baseSum.toLocaleString()}{c.manwonSuffix}</span></div>
+                <div className="mt-3 space-y-1 border-t border-[#C8CEDA] pt-3 text-[13px]">
+                  <div className="flex justify-between text-[#51535C]"><span>{c.itemsTotal}</span><span className="tabular-nums">{calc.baseSum.toLocaleString()}{c.manwonSuffix}</span></div>
                   {calc.nativeAdd > 0 && (
-                    <div className="flex justify-between text-slate-500"><span>{c.nativeAdjust} (×{nativeMode.mult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.nativeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between text-[#51535C]"><span>{c.nativeAdjust} (×{nativeMode.mult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.nativeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                   )}
                   {calc.designAdd > 0 && (
-                    <div className="flex justify-between text-slate-500"><span>{c.designAdjust} (×{calc.designMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.designAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between text-[#51535C]"><span>{c.designAdjust} (×{calc.designMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.designAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                   )}
                   {calc.timeAdd > 0 && (
-                    <div className="flex justify-between text-slate-500"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between text-[#51535C]"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                   )}
-                  <div className="flex justify-between text-slate-500"><span>{c.supplyPriceBold}</span><span className="tabular-nums">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
-                  <div className="flex justify-between text-slate-500"><span>{c.vatLine}</span><span className="tabular-nums">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
+                  <div className="flex justify-between text-[#51535C]"><span>{c.supplyPriceBold}</span><span className="tabular-nums">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
+                  <div className="flex justify-between text-[#51535C]"><span>{c.vatLine}</span><span className="tabular-nums">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
                   <div className="flex items-center justify-between pt-1 text-base font-bold">
-                    <span className="text-slate-900">{c.vatIncludedFinal}</span>
+                    <span className="text-[#2B313D]">{c.vatIncludedFinal}</span>
                     <span key={calc.subtotal} className="animate-[priceBump_0.35s_ease-out] tabular-nums text-[#3180F7]">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span>
                   </div>
                 </div>
@@ -1294,12 +1294,12 @@ export default function EstimatePage() {
                   <span className="relative">{c.ctaGetDiscount}</span>
                   <UiIcon name="arrow-right" className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
-                <Link href="/about#문의" className="flex w-full items-center justify-center rounded-[14px] bg-slate-100 py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-200">
+                <Link href="/about#문의" className="flex w-full items-center justify-center rounded-[14px] bg-[#F2F3F5] py-3 text-[13px] font-bold text-[#51535C] transition-all hover:bg-[#E3E6EB]">
                   {c.ctaDirectConsult}
                 </Link>
               </div>
 
-              <p className="text-[10px] leading-relaxed text-slate-400">
+              <p className="text-[10px] leading-relaxed text-[#A4ABBA]">
                 {c.disclaimer}
               </p>
             </div>
@@ -1343,20 +1343,20 @@ export default function EstimatePage() {
               type="button"
               onClick={() => !quickSending && setQuickOpen(false)}
               aria-label={c.ariaClose}
-              className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-slate-900 backdrop-blur-md transition-all hover:bg-white/90"
+              className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-[#2B313D] backdrop-blur-md transition-all hover:bg-white/90"
             >
               <UiIcon name="x" className="h-4 w-4" />
             </button>
 
             <div className="scrollbar-hide relative z-10 flex-1 overflow-y-auto">
               {/* 헤더 — 검정 텍스트 (애니메이션 아래 위치) */}
-              <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-[160px] text-slate-900" style={{ animationDelay: '80ms' }}>
-                <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
+              <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-[160px] text-[#2B313D]" style={{ animationDelay: '80ms' }}>
+                <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#2B313D]/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
                   <Sparkles className="h-3 w-3" />
                   {c.limitedOfferTemplate(calc.subtotal.toLocaleString())}
                 </div>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-slate-900">{c.modalTitle}</h2>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-slate-700" dangerouslySetInnerHTML={{ __html: c.modalSubtitle }} />
+                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-[#2B313D]">{c.modalTitle}</h2>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-[#51535C]" dangerouslySetInnerHTML={{ __html: c.modalSubtitle }} />
               </div>
 
               {/* 선택된 항목 요약 태그 — 카드 없이 플로우로 */}
@@ -1367,7 +1367,7 @@ export default function EstimatePage() {
                 return (
                   <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-1 pt-2" style={{ animationDelay: '180ms' }}>
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold tracking-wide text-slate-700">{c.selectedItemsTemplate(labels.length)}</p>
+                      <p className="text-[11px] font-bold tracking-wide text-[#51535C]">{c.selectedItemsTemplate(labels.length)}</p>
                       {activePkg && activeTier && (
                         <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>
                           {TIER_META[activeTier].label}
@@ -1378,14 +1378,14 @@ export default function EstimatePage() {
                       {shown.map((label, i) => (
                         <span
                           key={i}
-                          className="rounded-lg bg-white/70 px-2 py-[3px] text-[11px] font-medium text-slate-700 backdrop-blur"
+                          className="rounded-lg bg-white/70 px-2 py-[3px] text-[11px] font-medium text-[#51535C] backdrop-blur"
                           style={{ border: '0.4px solid rgba(15, 23, 42, 0.15)' }}
                         >
                           {label}
                         </span>
                       ))}
                       {remain > 0 && (
-                        <span className="rounded-lg bg-slate-900 px-2 py-[3px] text-[11px] font-semibold text-white">
+                        <span className="rounded-lg bg-[#2B313D] px-2 py-[3px] text-[11px] font-semibold text-white">
                           +{remain}
                         </span>
                       )}
@@ -1410,22 +1410,22 @@ export default function EstimatePage() {
                         onChange={e => setQuick({ ...quick, [f.key]: e.target.value })}
                         required={f.required}
                         placeholder=" "
-                        className="peer h-14 w-full rounded-xl border border-white/60 bg-white/40 px-4 pt-5 text-[14px] font-medium text-slate-900 outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-slate-900 focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                        className="peer h-14 w-full rounded-xl border border-white/60 bg-white/40 px-4 pt-5 text-[14px] font-medium text-[#2B313D] outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-[#2B313D] focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
                       />
                       <label
                         htmlFor={`quick-${f.key}`}
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[#51535C] transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#51535C] peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
                       >
                         {f.label}{f.required && <span className="ml-0.5 text-[#3180F7]">*</span>}
                       </label>
                       {/* 포커스 시 하단 언더라인 스트로크 */}
                       <span
                         aria-hidden
-                        className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-slate-900 transition-all duration-400 peer-focus:w-[calc(100%-32px)]"
+                        className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#2B313D] transition-all duration-400 peer-focus:w-[calc(100%-32px)]"
                       />
                       {/* 플레이스홀더 (포커스 시만) */}
                       <span
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] text-slate-300 opacity-0 transition-opacity duration-200 peer-focus:opacity-100"
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] text-[#C8CEDA] opacity-0 transition-opacity duration-200 peer-focus:opacity-100"
                         style={{ top: '32px' }}
                       >
                         {f.value ? '' : f.placeholder}
@@ -1441,11 +1441,11 @@ export default function EstimatePage() {
                       onChange={e => setQuick({ ...quick, memo: e.target.value })}
                       placeholder=" "
                       rows={5}
-                      className="peer w-full resize-none rounded-xl border border-white/60 bg-white/40 px-4 pb-4 pt-7 text-[13px] font-medium leading-relaxed text-slate-900 outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-slate-900 focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                      className="peer w-full resize-none rounded-xl border border-white/60 bg-white/40 px-4 pb-4 pt-7 text-[13px] font-medium leading-relaxed text-[#2B313D] outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-[#2B313D] focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
                     />
                     <label
                       htmlFor="quick-memo"
-                      className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
+                      className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-[#51535C] transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#51535C] peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
                     >
                       {c.requestNote}
                     </label>
@@ -1453,7 +1453,7 @@ export default function EstimatePage() {
                       type="button"
                       onClick={handleAiDraft}
                       disabled={aiDrafting || selected.size === 0}
-                      className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-slate-800 hover:to-slate-600 active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+                      className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#2B313D] to-[#51535C] px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-[#3A414F] hover:to-[#5E6270] active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
                       title={c.aiDraftTitle}
                     >
                       <Sparkles className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
@@ -1466,13 +1466,13 @@ export default function EstimatePage() {
                   type="submit"
                   disabled={quickSending}
                   style={{ animationDelay: '580ms' }}
-                  className="group relative mt-5 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center gap-2 overflow-hidden rounded-xl bg-slate-900 text-[15px] font-bold text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
+                  className="group relative mt-5 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#2B313D] text-[15px] font-bold text-white transition-all duration-200 hover:bg-[#3A414F] hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <span className="relative">{quickSending ? c.quickSending : c.submitQuickCta}</span>
                 </button>
 
-                <p className="pt-3 text-center text-[11px] text-slate-500">
+                <p className="pt-3 text-center text-[11px] text-[#51535C]">
                   {c.quickConsent}
                 </p>
               </form>
@@ -1487,16 +1487,16 @@ export default function EstimatePage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <Logo height={20} className="text-slate-900" />
-                <span className="text-[13px] text-slate-500">{c.footerTag}</span>
+                <Logo height={20} className="text-[#2B313D]" />
+                <span className="text-[13px] text-[#51535C]">{c.footerTag}</span>
               </div>
-              <p className="mt-2 text-[11px] text-slate-400">{c.footerTagline}</p>
-              <p className="text-[10px] text-slate-300">{c.footerCopyright}</p>
+              <p className="mt-2 text-[11px] text-[#A4ABBA]">{c.footerTagline}</p>
+              <p className="text-[10px] text-[#C8CEDA]">{c.footerCopyright}</p>
             </div>
-            <div className="flex gap-4 text-[12px] text-slate-400">
-              <Link href="/" className="transition-colors hover:text-slate-700">{c.footerHome}</Link>
-              <Link href="/about" className="transition-colors hover:text-slate-700">{c.footerAbout}</Link>
-              <Link href="/about#문의" className="transition-colors hover:text-slate-700">{c.footerContact}</Link>
+            <div className="flex gap-4 text-[12px] text-[#A4ABBA]">
+              <Link href="/" className="transition-colors hover:text-[#51535C]">{c.footerHome}</Link>
+              <Link href="/about" className="transition-colors hover:text-[#51535C]">{c.footerAbout}</Link>
+              <Link href="/about#문의" className="transition-colors hover:text-[#51535C]">{c.footerContact}</Link>
             </div>
           </div>
         </div>
