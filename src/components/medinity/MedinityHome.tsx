@@ -55,12 +55,15 @@ export function MedinityHome({
   onDelete,
   onPrint,
   onUpdate,
+  canPreview = true,
 }: {
   requests: RequestEntry[]
   onStatus: (id: string, s: ReqStatus) => void
   onDelete: (id: string) => void
   onPrint: (entry: RequestEntry) => void
   onUpdate: (id: string, patch: Partial<RequestEntry>) => void
+  /** 홈페이지 미리보기 버튼 노출 여부 (제한 계정은 false) */
+  canPreview?: boolean
 }) {
   const [stage, setStage] = useState<ReqStatus>('inquiry')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -247,7 +250,7 @@ export function MedinityHome({
               })()}
               </AnimatePresence>
 
-              {open.dbId && (
+              {open.dbId && canPreview && (
                 <a
                   href={`/medinity/site/${open.dbId}`}
                   target="_blank"

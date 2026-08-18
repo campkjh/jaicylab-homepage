@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { ensureSchema, sql, type MedinityQuote } from '@/lib/db'
 import { buildSiteConfig } from '@/data/medinity-site'
 import { ClinicSite } from '@/components/medinity/ClinicSite'
+import { requireFullAdmin } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,6 +11,7 @@ export const dynamic = 'force-dynamic'
  * /medinity/site/{id} — 관리자 견적함의 "홈페이지 미리보기"에서 연다.
  */
 export default async function ClinicSitePreview({ params }: { params: Promise<{ id: string }> }) {
+  await requireFullAdmin() // 어드민만 열람 — 제한 계정(메디니티)은 /medinity 로 리다이렉트
   const { id } = await params
   const n = Number(id)
   if (!Number.isFinite(n)) notFound()

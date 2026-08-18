@@ -33,7 +33,7 @@ function won(n: number) {
   return `${n.toLocaleString('ko-KR')}원`
 }
 
-function QuoteCard({ quote }: { quote: MedinityQuote }) {
+function QuoteCard({ quote, canPreview }: { quote: MedinityQuote; canPreview: boolean }) {
   const [open, setOpen] = useState(false)
   const st = STATUS[quote.status] ?? STATUS.new
   const date = quote.created_at?.slice(0, 16).replace('T', ' ')
@@ -91,15 +91,17 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
             </div>
           )}
 
-          <a
-            href={`/medinity/site/${quote.id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mb-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-bold text-white transition hover:opacity-90"
-            style={{ background: '#12A594' }}
-          >
-            🦷 홈페이지 미리보기
-          </a>
+          {canPreview && (
+            <a
+              href={`/medinity/site/${quote.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mb-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+              style={{ background: '#2E3A5C' }}
+            >
+              🦷 홈페이지 미리보기
+            </a>
+          )}
 
           <div className="flex flex-wrap items-center gap-2">
             {(['new', 'contacted', 'done'] as const).map(s => (
@@ -127,7 +129,7 @@ function QuoteCard({ quote }: { quote: MedinityQuote }) {
   )
 }
 
-export default function MedinityQuotesBoard({ quotes }: { quotes: MedinityQuote[] }) {
+export default function MedinityQuotesBoard({ quotes, canPreview = true }: { quotes: MedinityQuote[]; canPreview?: boolean }) {
   if (quotes.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-line py-12 text-center text-sm text-ink-muted">
@@ -138,7 +140,7 @@ export default function MedinityQuotesBoard({ quotes }: { quotes: MedinityQuote[
   return (
     <ul className="flex flex-col gap-2.5">
       {quotes.map(q => (
-        <QuoteCard key={q.id} quote={q} />
+        <QuoteCard key={q.id} quote={q} canPreview={canPreview} />
       ))}
     </ul>
   )

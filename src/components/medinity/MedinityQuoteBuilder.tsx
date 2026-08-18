@@ -19,7 +19,7 @@ import { MedinityHome, type RequestEntry, type ReqStatus } from './MedinityHome'
 
 type Line = { key: string; label: string; sub?: string; price: number; removable: boolean; onRemove?: () => void }
 
-export default function MedinityQuoteBuilder({ sections }: { sections: MedinitySection[] }) {
+export default function MedinityQuoteBuilder({ sections, canPreview = true }: { sections: MedinitySection[]; canPreview?: boolean }) {
   // 필수 단일 섹션은 첫 옵션을 기본 선택
   const [singles, setSingles] = useState<Record<string, string>>(() => {
     const o: Record<string, string> = {}
@@ -281,7 +281,7 @@ export default function MedinityQuoteBuilder({ sections }: { sections: MedinityS
       <AnimatePresence mode="wait" initial={false}>
       {tab === 'home' ? (
         <motion.div key="home" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
-          <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} onUpdate={updateRequest} />
+          <MedinityHome requests={requests} onStatus={setRequestStatus} onDelete={deleteRequest} onPrint={printEntry} onUpdate={updateRequest} canPreview={canPreview} />
         </motion.div>
       ) : (
         <motion.div
