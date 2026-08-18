@@ -966,9 +966,9 @@ export default function EstimatePage() {
 
         {/* 프리셋 바 — 헤더와 같은 표면 위에서 높이가 접히듯 펼쳐진다 (경계 없음) */}
         <div
-          aria-hidden={!presetStuck}
+          aria-hidden={!presetStuck || quoteKind !== 'app'}
           className={`grid transition-all duration-[420ms] ease-out ${
-            presetStuck ? 'pointer-events-auto grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0'
+            presetStuck && quoteKind === 'app' ? 'pointer-events-auto grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0'
           }`}
           style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
         >
@@ -1277,7 +1277,7 @@ export default function EstimatePage() {
 
           {/* RIGHT */}
           <aside>
-            <div className={`scrollbar-hide sticky space-y-4 overflow-y-auto pb-1 transition-all duration-300 ${presetStuck ? 'top-[136px] max-h-[calc(100vh-152px)]' : 'top-[80px] max-h-[calc(100vh-96px)]'}`} style={{ scrollbarWidth: 'none' }}>
+            <div className={`scrollbar-hide sticky space-y-4 overflow-y-auto pb-1 transition-all duration-300 ${presetStuck && quoteKind === 'app' ? 'top-[136px] max-h-[calc(100vh-152px)]' : 'top-[80px] max-h-[calc(100vh-96px)]'}`} style={{ scrollbarWidth: 'none' }}>
               {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
               <div className="rounded-[24px] bg-white p-5">
                 <div className="flex items-center gap-2">
