@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
 import { EstimateIcon } from '@/components/estimate/EstimateIcon'
+import { UiIcon } from '@/components/estimate/UiIcon'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useLocale } from 'next-intl'
@@ -539,9 +540,9 @@ const TIER_HEX: Record<TierId, string> = {
 // ───────────────────────────── PackageCard ─────────────────────────────
 
 function PackageCard({
-  p, idx, isActivePkg, activeTier, applyTier, onHoverEnter, onHoverLeave, c,
+  p, idx, isActivePkg, activeTier, applyTier, onHoverEnter, onHoverLeave, c, expanded = false,
 }: {
-  p: Pkg; idx: number; isActivePkg: boolean; activeTier: TierId | null;
+  p: Pkg; idx: number; isActivePkg: boolean; activeTier: TierId | null; expanded?: boolean;
   applyTier: (pkg: Pkg, tier: TierId) => void;
   onHoverEnter: (tier: TierId, rect: DOMRect) => void;
   onHoverLeave: (tier: TierId) => void;
@@ -576,7 +577,7 @@ function PackageCard({
   return (
     <div
       style={{ animationDelay: `${idx * 40}ms` }}
-      className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-[18px] border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+      className={`group relative flex animate-[fadeUp_0.5s_ease-out_both] flex-col rounded-[18px] bg-white p-5 shadow-[0_10px_40px_-8px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_64px_-12px_rgba(15,23,42,0.18)] ${expanded ? 'w-full' : 'w-[300px] shrink-0 snap-start'}`}
     >
       <div className="flex items-start gap-3">
         <div
@@ -709,6 +710,8 @@ export default function EstimatePage() {
   const [activePkg, setActivePkg] = useState<string | null>('shop')
   const [activeTier, setActiveTier] = useState<TierId | null>('basic')
   const [pkgCategory, setPkgCategory] = useState<string>('all')
+  // 프리셋 전체 펼치기 — 캐러셀(가로 스크롤) ↔ 그리드(한눈에 보기) 전환
+  const [presetsExpanded, setPresetsExpanded] = useState(false)
   const [hoverPkgTier, setHoverPkgTier] = useState<{ pkg: string; tier: TierId } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
   const [query, setQuery] = useState('')
@@ -974,7 +977,7 @@ export default function EstimatePage() {
       />
 
       {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/70 backdrop-blur-2xl border-b border-slate-200/60' : 'bg-transparent'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/70 backdrop-blur-2xl shadow-[0_6px_28px_-10px_rgba(15,23,42,0.14)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-slate-900" />
@@ -994,7 +997,7 @@ export default function EstimatePage() {
 
 
       {/* PACKAGES CAROUSEL */}
-      <section ref={presetSectionRef} className={`relative border-b border-slate-200/70 bg-white pb-12 pt-[92px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
+      <section ref={presetSectionRef} className={`relative bg-white pb-12 pt-[92px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -1002,11 +1005,21 @@ export default function EstimatePage() {
               <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
               <p className="mt-2 text-[13px] text-slate-500">{c.packageDesc}</p>
             </div>
-            {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">{c.resetSelection}</button>}
+            <div className="flex shrink-0 items-center gap-3">
+              {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">{c.resetSelection}</button>}
+              <button
+                type="button"
+                onClick={() => setPresetsExpanded(v => !v)}
+                className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-all hover:bg-slate-200 active:scale-95"
+              >
+                {presetsExpanded ? c.presetsCollapse : c.presetsExpand(filteredPackages.length)}
+                <UiIcon name="chevron-down" className={`h-3.5 w-3.5 transition-transform duration-300 ${presetsExpanded ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {/* 카테고리 필터 — 슬라이딩 알약 인디케이터 */}
-          <div ref={tabsRef} className="relative mt-6 flex flex-wrap gap-2">
+          <div ref={tabsRef} className="relative mt-5 flex flex-wrap gap-2">
             {pill && (
               <span
                 aria-hidden
@@ -1023,7 +1036,7 @@ export default function EstimatePage() {
                 <button
                   key={c.id} type="button" data-tab-id={c.id}
                   onClick={() => setPkgCategory(c.id)}
-                  className={`relative z-10 rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors duration-300 active:scale-95 ${active ? 'border-transparent text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'}`}
+                  className={`relative z-10 rounded-full px-4 py-2 text-[12px] font-semibold transition-colors duration-300 active:scale-95 ${active ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
                 >
                   {c.label}
                 </button>
@@ -1031,24 +1044,26 @@ export default function EstimatePage() {
             })}
           </div>
 
-          {/* Carousel */}
-          <div className="relative mt-6">
-            <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
-              className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
+          {/* Carousel / 펼침 그리드 */}
+          <div className="relative mt-2">
+            {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
+              className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
-              <ChevronLeft className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:-translate-x-0.5" />
-            </button>
-            <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
-              className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-95 md:flex"
+              <UiIcon name="chevron-left" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:-translate-x-0.5" />
+            </button>}
+            {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
+              className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
               style={{ width: 48, height: 48 }}>
-              <ChevronRight className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </button>
+              <UiIcon name="chevron-right" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </button>}
 
-            <div ref={carouselRef} key={pkgCategory}
-              className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-6"
+            <div ref={carouselRef} key={`${pkgCategory}-${presetsExpanded}`}
+              className={presetsExpanded
+                ? 'grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 px-1 py-3'
+                : 'scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-3'}
               style={{ scrollbarWidth: 'none' }}>
               {filteredPackages.map((p, idx) => (
-                <PackageCard key={p.id} p={p} idx={idx} c={c}
+                <PackageCard key={p.id} p={p} idx={idx} c={c} expanded={presetsExpanded}
                   isActivePkg={activePkg === p.id}
                   activeTier={activeTier}
                   applyTier={applyTier}
@@ -1072,7 +1087,7 @@ export default function EstimatePage() {
         const leftClamped = Math.min(Math.max(tooltipPos.left, width / 2 + 16), vw - width / 2 - 16)
         return (
           <div
-            className="pointer-events-none fixed z-[100] w-[320px] -translate-x-1/2 animate-[tooltipIn_0.15s_ease-out] rounded-xl border border-slate-200 bg-white p-4 text-left shadow-[0_16px_48px_rgba(15,23,42,0.18)]"
+            className="pointer-events-none fixed z-[100] w-[320px] -translate-x-1/2 animate-[tooltipIn_0.15s_ease-out] rounded-xl bg-white p-4 text-left shadow-[0_20px_60px_-10px_rgba(15,23,42,0.24)]"
             style={{ top: tooltipPos.top, left: leftClamped }}
           >
             <div className="flex items-center justify-between">
@@ -1090,7 +1105,7 @@ export default function EstimatePage() {
                   const item = ITEM_LOOKUP[id]
                   return item ? (
                     <li key={id} className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                      <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+                      <UiIcon name="check" className="h-3 w-3 shrink-0 text-emerald-500" />
                       <span className="truncate">{item.label}</span>
                     </li>
                   ) : null
@@ -1107,7 +1122,7 @@ export default function EstimatePage() {
       {/* Sticky Compact Preset Bar — 프리셋 섹션 스크롤 아웃 시 헤더 아래 부착 */}
       <div
         aria-hidden={!presetStuck}
-        className={`fixed inset-x-0 top-[60px] z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl transition-all duration-300 ease-out ${
+        className={`fixed inset-x-0 top-[60px] z-40 bg-white/85 shadow-[0_8px_28px_-12px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-all duration-300 ease-out ${
           presetStuck ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none -translate-y-4 opacity-0'
         }`}
       >
@@ -1123,10 +1138,10 @@ export default function EstimatePage() {
                   key={p.id}
                   type="button"
                   onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
-                  className={`group flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
+                  className={`group flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
                     isActive
-                      ? 'border-[#3180F7] bg-[#EAF2FF] text-[#3180F7] shadow-[0_4px_14px_rgba(49,128,247,0.18)]'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                      ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_20px_-6px_rgba(49,128,247,0.45)]'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-slate-50'}`}>
@@ -1151,13 +1166,13 @@ export default function EstimatePage() {
           <div className="space-y-4">
 
             {/* 프로젝트 조건 */}
-            <div className="rounded-[18px] border border-slate-200 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)]">
+            <div className="rounded-[18px] bg-white p-6 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
               <p className="text-[12px] font-semibold text-slate-400">{c.projectCondition}</p>
 
               <div className="mt-4 space-y-4">
                 <div>
                   <p className="mb-2 text-[11px] font-medium text-slate-500">{c.devModeLabel}</p>
-                  <div className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'border-[#3180F7]/40 bg-[#3180F7]/5' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className={`flex items-center justify-between rounded-xl px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'bg-[#EAF2FF]' : 'bg-slate-50'}`}>
                     <div>
                       <p className="text-[13px] font-bold text-slate-900">{nativeMode.id === 'both-native' ? c.devModeBothNative : nativeMode.id === 'single-native' ? c.devModeSingleNative : c.devModeCross}</p>
                       <p className="mt-0.5 text-[11px] text-slate-500">
@@ -1178,7 +1193,7 @@ export default function EstimatePage() {
                         const dl = d.id === 'template' ? c.designs.template : d.id === 'custom' ? c.designs.custom : c.designs.premium
                         return (
                         <button key={d.id} type="button" onClick={() => setDesign(d.id)}
-                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'border-[#3180F7] bg-[#3180F7]/10 text-[#3180F7]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_18px_-6px_rgba(49,128,247,0.45)]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                           {dl}
                           <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
                         </button>
@@ -1193,7 +1208,7 @@ export default function EstimatePage() {
                         const tl = t.id === 'normal' ? c.timelines.normal : t.id === 'fast' ? c.timelines.fast : c.timelines.urgent
                         return (
                         <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
-                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'border-[#3180F7] bg-[#3180F7]/10 text-[#3180F7]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_18px_-6px_rgba(49,128,247,0.45)]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                           {tl}
                           <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
                         </button>
@@ -1207,16 +1222,16 @@ export default function EstimatePage() {
 
             {/* 검색 */}
             <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><UiIcon name="search" className="h-4 w-4" /></span>
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={c.searchPlaceholder}
-                className="h-12 w-full rounded-[18px] border border-slate-200 bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all placeholder-slate-400 focus:border-[#3180F7] focus:shadow-[0_4px_16px_rgba(41,121,255,0.1)]"
+                className="h-12 w-full rounded-[18px] bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_8px_28px_-8px_rgba(15,23,42,0.10)] transition-all placeholder-slate-400 focus:shadow-[0_10px_34px_-8px_rgba(49,128,247,0.28)]"
               />
               {query && (
                 <button type="button" onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
-                  <X className="h-4 w-4" />
+                  <UiIcon name="x" className="h-4 w-4" />
                 </button>
               )}
               {q && (
@@ -1234,7 +1249,7 @@ export default function EstimatePage() {
               const catTotal = cat.items.filter(i => selected.has(i.id)).reduce((a, b) => a + b.price, 0)
               const visibleItems = searchMatches ? cat.items.filter(i => searchMatches[cat.id].has(i.id)) : cat.items
               return (
-                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300 hover:shadow-[0_10px_34px_-8px_rgba(15,23,42,0.10)]">
+                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] bg-white shadow-[0_10px_40px_-10px_rgba(15,23,42,0.10)] transition-all duration-300 hover:shadow-[0_18px_56px_-12px_rgba(15,23,42,0.16)]">
                   <div className="flex items-center justify-between px-5 py-4">
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
                       <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-slate-50 transition-transform duration-300 hover:scale-110">
@@ -1250,7 +1265,7 @@ export default function EstimatePage() {
                       {catTotal > 0 && <span className="text-[12px] font-bold text-[#3180F7]">+{catTotal.toLocaleString()}{c.manwonSuffix}</span>}
                       {!searchMatches && (
                         <button type="button" onClick={() => toggleCat(cat.id)} className="text-slate-400 hover:text-slate-700">
-                          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                          <UiIcon name="chevron-down" className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                         </button>
                       )}
                     </div>
@@ -1273,7 +1288,7 @@ export default function EstimatePage() {
                               <button type="button" onClick={() => toggle(item.id)}
                                 className={`group flex w-full items-center gap-3 border-t border-slate-100 px-5 py-3 text-left transition-all duration-200 ${active ? 'bg-[#3180F7]/[0.06]' : 'hover:bg-slate-50'}`}>
                                 <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 ${active ? 'border-[#3180F7] bg-[#3180F7]' : 'border-slate-300 bg-white group-hover:border-slate-500'}`}>
-                                  {active && <Check className="h-3.5 w-3.5 animate-[checkIn_0.25s_ease-out] text-white" />}
+                                  {active && <UiIcon name="check" className="h-3.5 w-3.5 animate-[checkIn_0.25s_ease-out] text-white" />}
                                 </div>
                                 <span className={`flex-1 text-[13px] ${active ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'}`}>{item.label}</span>
                                 <span className={`text-[12px] ${active ? 'font-bold text-[#3180F7]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
@@ -1289,21 +1304,21 @@ export default function EstimatePage() {
             })}
 
             {/* 견적서 요청 */}
-            <div className="mt-12 rounded-[18px] border border-slate-200 bg-white p-7">
+            <div className="mt-12 rounded-[18px] bg-white p-7 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
               <p className="text-[12px] font-semibold text-[#3180F7]">{c.requestEyebrow}</p>
               <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.requestTitle}</h2>
               <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <textarea className="h-28 w-full resize-none rounded-xl bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
-                  <Send className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
+                  <UiIcon name="send" className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
                 </button>
               </form>
             </div>
@@ -1312,7 +1327,7 @@ export default function EstimatePage() {
           {/* RIGHT */}
           <aside>
             <div className="sticky top-[80px] space-y-4">
-              <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_12px_40px_-8px_rgba(15,23,42,0.12)] transition-all duration-300 hover:shadow-[0_16px_50px_-10px_rgba(15,23,42,0.16)]">
+              <div className="relative overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_18px_60px_-12px_rgba(15,23,42,0.18)] transition-all duration-300 hover:shadow-[0_26px_78px_-14px_rgba(15,23,42,0.24)]">
                 <div className="relative">
                   <p className="text-[12px] font-semibold text-[#3180F7]">{c.totalEstimate}</p>
                   <p className="mt-3 text-[11px] text-slate-500">{c.supplyPrice} <span className="text-slate-400">{c.vatExcluded}</span></p>
@@ -1338,7 +1353,7 @@ export default function EstimatePage() {
                 </div>
               </div>
 
-              <div className="rounded-[18px] border border-slate-200 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)]">
+              <div className="rounded-[18px] bg-white p-6 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
                 <p className="text-[12px] font-semibold text-slate-400">{c.teamAllocation}</p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div>
@@ -1362,7 +1377,7 @@ export default function EstimatePage() {
                   </ul>
                 ) : (
                   <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-700">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <UiIcon name="alert-circle" className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>{c.selectItemsNotice}</span>
                   </div>
                 )}
@@ -1375,9 +1390,9 @@ export default function EstimatePage() {
                   className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:bg-[#2470E6] active:scale-[0.98]">
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <span className="relative">{c.ctaGetDiscount}</span>
-                  <ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <UiIcon name="arrow-right" className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
-                <Link href="/about#문의" className="flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-50">
+                <Link href="/about#문의" className="flex w-full items-center justify-center rounded-[14px] bg-slate-100 py-3 text-[13px] font-bold text-slate-700 transition-all hover:bg-slate-200">
                   {c.ctaDirectConsult}
                 </Link>
               </div>
@@ -1428,7 +1443,7 @@ export default function EstimatePage() {
               aria-label={c.ariaClose}
               className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-slate-900 backdrop-blur-md transition-all hover:bg-white/90"
             >
-              <X className="h-4 w-4" />
+              <UiIcon name="x" className="h-4 w-4" />
             </button>
 
             <div className="scrollbar-hide relative z-10 flex-1 overflow-y-auto">
@@ -1565,7 +1580,7 @@ export default function EstimatePage() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/70 bg-white py-12">
+      <footer className="bg-white py-12">
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>

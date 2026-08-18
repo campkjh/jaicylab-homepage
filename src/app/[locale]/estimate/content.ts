@@ -21,6 +21,8 @@ type UI = {
   packageCountTitle: (n: number) => string
   packageDesc: string
   resetSelection: string
+  presetsExpand: (n: number) => string
+  presetsCollapse: string
   prev: string
   next: string
 
@@ -167,6 +169,8 @@ const ko: UI = {
   packageCountTitle: (n) => `${n}개 패키지 프리셋`,
   packageDesc: '서비스 유형과 5단계 티어 중 원하는 조합을 선택하면 자동으로 체크됩니다.',
   resetSelection: '선택 초기화',
+  presetsExpand: (n: number) => `전체 ${n}개 펼쳐보기`,
+  presetsCollapse: '접기',
   prev: '이전',
   next: '다음',
 
@@ -329,6 +333,8 @@ const en: UI = {
   packageCountTitle: (n) => `${n} Package Presets`,
   packageDesc: 'Pick a service type and one of 5 tiers — items auto-select.',
   resetSelection: 'Reset selection',
+  presetsExpand: (n: number) => `Show all ${n}`,
+  presetsCollapse: 'Collapse',
   prev: 'Previous',
   next: 'Next',
 
@@ -491,6 +497,8 @@ const ja: UI = {
   packageCountTitle: (n) => `${n} パッケージプリセット`,
   packageDesc: 'サービス種別と5段階ティアから組み合わせを選ぶと、自動で項目が選択されます。',
   resetSelection: '選択をリセット',
+  presetsExpand: (n: number) => `全${n}件を表示`,
+  presetsCollapse: '折りたたむ',
   prev: '前へ',
   next: '次へ',
 
@@ -653,6 +661,8 @@ const zh: UI = {
   packageCountTitle: (n) => `${n} 款套餐预设`,
   packageDesc: '选择服务类型和 5 档中的组合,即可自动勾选相关项目。',
   resetSelection: '清空选择',
+  presetsExpand: (n: number) => `展开全部 ${n} 个`,
+  presetsCollapse: '收起',
   prev: '上一个',
   next: '下一个',
 
