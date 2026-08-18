@@ -1397,7 +1397,7 @@ export default function EstimatePage() {
               type="button"
               onClick={() => !quickSending && setQuickOpen(false)}
               aria-label={c.ariaClose}
-              className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 bg-white/60 text-[#2B313D] backdrop-blur-md transition-all hover:bg-white/90"
+              className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F3F5] text-[#51535C] transition-colors hover:bg-[#E3E6EB]"
             >
               <UiIcon name="x" className="h-4 w-4" />
             </button>
@@ -1408,41 +1408,6 @@ export default function EstimatePage() {
                 <h2 className="text-[26px] font-bold leading-tight tracking-tight text-[#2B313D]">{c.ctaSubmit}</h2>
                 <p className="mt-2 text-[12.5px] leading-relaxed text-[#51535C]" dangerouslySetInnerHTML={{ __html: c.modalSubtitle }} />
               </div>
-
-              {/* 선택된 항목 요약 태그 — 카드 없이 플로우로 */}
-              {selected.size > 0 && (() => {
-                const labels = Array.from(selected).map(id => ITEM_LOOKUP[id]?.label).filter(Boolean) as string[]
-                const shown = labels.slice(0, 12)
-                const remain = labels.length - shown.length
-                return (
-                  <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-1 pt-2" style={{ animationDelay: '180ms' }}>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold tracking-wide text-[#51535C]">{c.selectedItemsTemplate(labels.length)}</p>
-                      {activePkg && activeTier && (
-                        <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${TIER_META[activeTier].soft}`}>
-                          {TIER_META[activeTier].label}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {shown.map((label, i) => (
-                        <span
-                          key={i}
-                          className="rounded-lg bg-white/70 px-2 py-[3px] text-[11px] font-medium text-[#51535C] backdrop-blur"
-                          style={{ border: '0.4px solid rgba(15, 23, 42, 0.15)' }}
-                        >
-                          {label}
-                        </span>
-                      ))}
-                      {remain > 0 && (
-                        <span className="rounded-lg bg-[#2B313D] px-2 py-[3px] text-[11px] font-semibold text-white">
-                          +{remain}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )
-              })()}
 
               {/* 폼 */}
               <form onSubmit={handleQuickSubmit} className="px-7 pb-7 pt-2">
@@ -1459,11 +1424,11 @@ export default function EstimatePage() {
                         onChange={e => setQuick({ ...quick, [f.key]: e.target.value })}
                         required={f.required}
                         placeholder=" "
-                        className="peer h-14 w-full rounded-xl border border-white/60 bg-white/40 px-4 pt-5 text-[14px] font-medium text-[#2B313D] outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-[#2B313D] focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                        className="peer h-14 w-full rounded-xl bg-[#F2F3F5] px-4 pt-5 text-[14px] font-medium text-[#2B313D] outline-none transition-colors duration-200 hover:bg-[#E3E6EB] focus:bg-white focus:ring-2 focus:ring-[#3180F7]"
                       />
                       <label
                         htmlFor={`quick-${f.key}`}
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[#51535C] transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#51535C] peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-[#A4ABBA] transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#3180F7] peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
                       >
                         {f.label}{f.required && <span className="ml-0.5 text-[#3180F7]">*</span>}
                       </label>
@@ -1477,7 +1442,7 @@ export default function EstimatePage() {
                     </div>
                   ))}
 
-                  {/* 요청사항 textarea + AI 작성 */}
+                  {/* 요청사항 */}
                   <div className="group relative animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: '500ms' }}>
                     <textarea
                       id="quick-memo"
@@ -1485,24 +1450,14 @@ export default function EstimatePage() {
                       onChange={e => setQuick({ ...quick, memo: e.target.value })}
                       placeholder=" "
                       rows={5}
-                      className="peer w-full resize-none rounded-xl border border-white/60 bg-white/40 px-4 pb-4 pt-7 text-[13px] font-medium leading-relaxed text-[#2B313D] outline-none backdrop-blur-md transition-all duration-300 hover:border-white/80 hover:bg-white/60 focus:border-[#2B313D] focus:bg-white/85 focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+                      className="peer w-full resize-none rounded-xl bg-[#F2F3F5] px-4 pb-4 pt-7 text-[13px] font-medium leading-relaxed text-[#2B313D] outline-none transition-colors duration-200 hover:bg-[#E3E6EB] focus:bg-white focus:ring-2 focus:ring-[#3180F7]"
                     />
                     <label
                       htmlFor="quick-memo"
-                      className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-[#51535C] transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#51535C] peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
+                      className="pointer-events-none absolute left-4 top-3 text-[13px] font-medium text-[#A4ABBA] transition-all duration-300 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#3180F7] peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-[#51535C]"
                     >
                       {c.requestNote}
                     </label>
-                    <button
-                      type="button"
-                      onClick={handleAiDraft}
-                      disabled={aiDrafting || selected.size === 0}
-                      className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#2B313D] to-[#51535C] px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-[#3A414F] hover:to-[#5E6270] active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
-                      title={c.aiDraftTitle}
-                    >
-                      <UiIcon name="sparkle" className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
-                      {aiDrafting ? c.aiDraftWriting : c.aiDraftLabel}
-                    </button>
                   </div>
                 </div>
 
@@ -1519,7 +1474,7 @@ export default function EstimatePage() {
                   type="submit"
                   disabled={quickSending || !quickAgree}
                   style={{ animationDelay: '580ms' }}
-                  className="mt-3 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center rounded-xl bg-[#2B313D] text-[15px] font-bold text-white transition-colors duration-200 hover:bg-[#3A414F] active:scale-[0.98] disabled:opacity-40"
+                  className={`mt-3 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center rounded-[14px] text-[15px] font-bold text-white transition-colors duration-200 active:scale-[0.98] ${quickSending || !quickAgree ? 'bg-[#C8CEDA]' : 'bg-[#3180F7] hover:bg-[#2470E6]'}`}
                 >
                   {quickSending ? c.quickSending : c.ctaSubmit}
                 </button>
