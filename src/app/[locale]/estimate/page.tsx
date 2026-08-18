@@ -551,9 +551,8 @@ function PackageCard({
   // 카드 하단 키워드 태그 (sub를 '·'로 분리)
   const keywords = p.sub.split(/\s*[·•,]\s*/).filter(Boolean)
 
-  // 평균 개발 기간 (Basic 티어 기준)
-  const basicMM = priceOf(p.tiers.basic) / 600
-  const avgMonths = Math.max(0.5, basicMM / 2.5)
+  // 평균 견적 금액 (Basic 티어 기준 공급가)
+  const avgPrice = priceOf(p.tiers.basic)
 
   return (
     <div
@@ -583,15 +582,10 @@ function PackageCard({
         </div>
       </div>
 
-      {/* 평균 개발 기간 */}
-      <div className="mt-3 flex items-center gap-1 text-[11px] text-slate-500">
-        <svg className="h-3 w-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <circle cx="8" cy="8" r="6" />
-          <path d="M8 4.5 V8 L10.5 9.5" />
-        </svg>
-        <span className="font-medium">{c.avgDevPeriod}</span>
-        <span className="text-slate-300">·</span>
-        <span className="font-semibold text-slate-700">{avgMonths.toFixed(1)}{c.monthsSuffix}</span>
+      {/* 평균 견적 금액 */}
+      <div className="mt-3 flex items-baseline gap-1.5 text-[11px] text-slate-500">
+        <span className="font-medium">{c.avgPriceLabel}</span>
+        <span className="text-[15px] font-bold text-[#3180F7]">{avgPrice.toLocaleString()}{c.manwonSuffix}</span>
         <span className="text-slate-400">{c.basicReference}</span>
       </div>
 

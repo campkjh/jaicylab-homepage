@@ -28,6 +28,7 @@ type UI = {
 
   // Package card
   avgDevPeriod: string
+  avgPriceLabel: string
   basicReference: string
   monthsSuffix: string
   similarService: string
@@ -175,6 +176,7 @@ const ko: UI = {
   next: '다음',
 
   avgDevPeriod: '평균 개발 기간',
+  avgPriceLabel: '평균',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
   similarService: '비슷한 서비스',
@@ -339,6 +341,7 @@ const en: UI = {
   next: 'Next',
 
   avgDevPeriod: 'Avg. dev time',
+  avgPriceLabel: 'Avg.',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
   similarService: 'Similar services',
@@ -503,6 +506,7 @@ const ja: UI = {
   next: '次へ',
 
   avgDevPeriod: '平均開発期間',
+  avgPriceLabel: '平均',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
   similarService: '類似サービス',
@@ -667,6 +671,7 @@ const zh: UI = {
   next: '下一个',
 
   avgDevPeriod: '平均开发周期',
+  avgPriceLabel: '平均',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',
   similarService: '类似服务',
