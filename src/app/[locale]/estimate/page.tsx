@@ -952,7 +952,6 @@ export default function EstimatePage() {
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-[#2B313D]" />
-            <span className="text-[12px] font-normal text-[#51535C]">{c.brand}</span>
           </Link>
           <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
             <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navAbout}</Link>

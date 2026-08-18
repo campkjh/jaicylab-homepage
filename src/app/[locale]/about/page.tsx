@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useInView } from 'framer-motion'
 import { useLocale } from 'next-intl'
+import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { ChevronRight, MapPin, Phone, Mail, Building2, FileText, Users, Clock, Send, Shield, X, CheckCircle, Zap, BarChart3, Smartphone, Server, Sparkles, Code2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,7 +15,24 @@ import { Reveal } from '@/components/Reveal'
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
-type NavKey = 'about' | 'tech' | 'services' | 'process' | 'vision' | 'resources' | 'contact'
+// 포트폴리오 — 케이스 커버(로케일 공통), 카테고리 라벨만 번역
+const PORTFOLIO = [
+  { name: '야놀자 글로벌', img: '/portfolio/yanolja.jpg', cat: 'travel' },
+  { name: 'AIMUS', img: '/portfolio/aimus.jpg', cat: 'sports' },
+  { name: '스타디', img: '/portfolio/stady.jpg', cat: 'edu' },
+  { name: '오늘특템', img: '/portfolio/olee.jpg', cat: 'commerce' },
+  { name: 'Freetiful', img: '/portfolio/freetiful.jpg', cat: 'platform' },
+  { name: 'Graddy', img: '/portfolio/graddy.jpg', cat: 'platform' },
+] as const
+
+const PORTFOLIO_CATS: Record<'ko' | 'en' | 'ja' | 'zh', Record<string, string>> = {
+  ko: { travel: '여행 플랫폼', edu: 'AI 학습', sports: '스포츠', commerce: '커머스', platform: '매칭 플랫폼' },
+  en: { travel: 'Travel', edu: 'EdTech', sports: 'Sports', commerce: 'Commerce', platform: 'Platform' },
+  ja: { travel: '旅行', edu: '学習', sports: 'スポーツ', commerce: 'コマース', platform: 'プラットフォーム' },
+  zh: { travel: '旅行', edu: '学习', sports: '体育', commerce: '电商', platform: '平台' },
+}
+
+type NavKey = 'about' | 'tech' | 'services' | 'portfolio' | 'process' | 'vision' | 'resources' | 'contact'
 
 type Content = {
   brandSub: string
@@ -109,7 +127,7 @@ type Content = {
 const CONTENT: Record<Locale, Content> = {
   ko: {
     brandSub: '제이씨랩',
-    nav: { about: '회사소개', tech: '기술스택', services: '서비스', process: '프로세스', vision: '비전', resources: '자료실', contact: '문의' },
+    nav: { about: '회사소개', tech: '기술스택', services: '서비스', portfolio: '포트폴리오', process: '프로세스', vision: '비전', resources: '자료실', contact: '문의' },
     extraSelfEstimate: '자가견적',
     ctaInquiry: '프로젝트 의뢰',
     heroKicker: 'APP DEVELOPMENT STUDIO',
@@ -218,7 +236,7 @@ const CONTENT: Record<Locale, Content> = {
   },
   en: {
     brandSub: 'JAICYLAB',
-    nav: { about: 'About', tech: 'Tech Stack', services: 'Services', process: 'Process', vision: 'Vision', resources: 'Resources', contact: 'Contact' },
+    nav: { about: 'About', tech: 'Tech Stack', services: 'Services', portfolio: 'Work', process: 'Process', vision: 'Vision', resources: 'Resources', contact: 'Contact' },
     extraSelfEstimate: 'Self Estimate',
     ctaInquiry: 'Start a Project',
     heroKicker: 'APP DEVELOPMENT STUDIO',
@@ -327,7 +345,7 @@ const CONTENT: Record<Locale, Content> = {
   },
   ja: {
     brandSub: 'JAICYLAB',
-    nav: { about: '会社紹介', tech: '技術スタック', services: 'サービス', process: 'プロセス', vision: 'ビジョン', resources: '資料室', contact: 'お問い合わせ' },
+    nav: { about: '会社紹介', tech: '技術スタック', services: 'サービス', portfolio: '実績', process: 'プロセス', vision: 'ビジョン', resources: '資料室', contact: 'お問い合わせ' },
     extraSelfEstimate: 'セルフ見積',
     ctaInquiry: 'プロジェクト依頼',
     heroKicker: 'APP DEVELOPMENT STUDIO',
@@ -436,7 +454,7 @@ const CONTENT: Record<Locale, Content> = {
   },
   zh: {
     brandSub: 'JAICYLAB',
-    nav: { about: '公司介绍', tech: '技术栈', services: '服务', process: '流程', vision: '愿景', resources: '资料中心', contact: '联系我们' },
+    nav: { about: '公司介绍', tech: '技术栈', services: '服务', portfolio: '案例', process: '流程', vision: '愿景', resources: '资料中心', contact: '联系我们' },
     extraSelfEstimate: '自助报价',
     ctaInquiry: '项目咨询',
     heroKicker: 'APP DEVELOPMENT STUDIO',
@@ -577,16 +595,6 @@ export default function AboutPage() {
 
   function scrollTo(id: string) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }) }
 
-  const NAV_ITEMS: { key: NavKey; id: string }[] = [
-    { key: 'about', id: 'about' },
-    { key: 'tech', id: 'tech' },
-    { key: 'services', id: 'services' },
-    { key: 'process', id: 'process' },
-    { key: 'vision', id: 'vision' },
-    { key: 'resources', id: 'resources' },
-    { key: 'contact', id: 'contact' },
-  ]
-
   async function handleInquiry(e: React.FormEvent) {
     e.preventDefault()
     if (!inquiry.name || !inquiry.phone || !inquiry.message) { toast.error(c.formRequired); return }
@@ -629,11 +637,12 @@ export default function AboutPage() {
         <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-white" />
-            <span className="text-[12px] font-normal text-white/30">{c.brandSub}</span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            {NAV_ITEMS.map(n => (<button key={n.id} onClick={() => scrollTo(n.id)} className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav[n.key]}</button>))}
-            <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.extraSelfEstimate}</Link>
+          {/* 3개 메뉴 — 회사소개 · 자가견적 · 문의 (메디니티식 세그먼트 탭) */}
+          <nav className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 md:flex">
+            <button onClick={() => scrollTo('about')} className="rounded-[13px] bg-white/95 px-4 py-1.5 text-[13px] font-bold text-[#0b0b0b] transition-colors">{c.nav.about}</button>
+            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.extraSelfEstimate}</Link>
+            <button onClick={() => scrollTo('contact')} className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.nav.contact}</button>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
@@ -779,6 +788,32 @@ export default function AboutPage() {
                   <div>
                     <p className="text-[15px] font-bold">{t.title}</p>
                     <p className="mt-1 text-[13px] text-white/40">{t.desc}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portfolio */}
+      <section id="portfolio" className="border-t border-white/5 py-28">
+        <div className="mx-auto max-w-[1100px] px-6">
+          <Reveal><p className="text-[11px] font-bold tracking-wide text-[#2979FF]">PORTFOLIO</p></Reveal>
+          <Reveal delay={100}><h2 className="mt-3 text-[32px] font-bold tracking-tight">{c.nav.portfolio}</h2></Reveal>
+          <div className="mt-12 grid gap-5 md:grid-cols-2">
+            {PORTFOLIO.map((pf, i) => (
+              <Reveal key={pf.name} delay={i * 70}>
+                <div className="group overflow-hidden border border-white/8 bg-white/[0.02] transition-all duration-300 hover:border-[#2979FF]/30 hover:shadow-[0_18px_60px_rgba(41,121,255,0.14)]">
+                  <div className="relative aspect-video overflow-hidden">
+                    <Image src={pf.img} alt={pf.name} fill sizes="(max-width: 768px) 100vw, 550px"
+                      className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.04]" />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-5 py-4">
+                    <span className="text-[15px] font-bold text-white">{pf.name}</span>
+                    <span className="shrink-0 border border-white/10 px-2.5 py-1 text-[11px] tracking-wider text-white/40">
+                      {(PORTFOLIO_CATS[locale] ?? PORTFOLIO_CATS.ko)[pf.cat]}
+                    </span>
                   </div>
                 </div>
               </Reveal>
