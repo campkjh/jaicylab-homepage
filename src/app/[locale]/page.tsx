@@ -2,6 +2,7 @@
 
 import { useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { ArrowRight, Smartphone, Server, Sparkles, Code2, Layers, Rocket } from 'lucide-react'
 import { Logo } from '@/components/Logo'
@@ -15,16 +16,17 @@ type Locale = 'ko' | 'en' | 'ja' | 'zh'
 
 const CONTENT: Record<Locale, {
   brand: string
-  nav: { about: string; services: string; estimate: string; guides: string; contact: string; cta: string }
+  nav: { about: string; services: string; portfolio: string; estimate: string; guides: string; contact: string; cta: string }
   hero: { eyebrow: string; title1: string; title2: string; desc: string; cta1: string; cta2: string; refs: string }
   services: { label: string; title: string; items: { title: string; desc: string }[] }
+  portfolio: { label: string; title: string; cats: Record<string, string> }
   process: { label: string; title: string; items: { phase: string; title: string; desc: string }[] }
   cta: { title: string; desc: string; button: string }
   footer: { about: string; contact: string }
 }> = {
   ko: {
     brand: '제이씨랩',
-    nav: { about: '회사소개', services: '서비스', estimate: '자가견적', guides: '가이드', contact: '문의', cta: '프로젝트 의뢰' },
+    nav: { about: '회사소개', services: '서비스', portfolio: '포트폴리오', estimate: '자가견적', guides: '가이드', contact: '문의', cta: '프로젝트 의뢰' },
     hero: {
       eyebrow: 'APP DEVELOPMENT STUDIO',
       title1: '아이디어를',
@@ -54,12 +56,16 @@ const CONTENT: Record<Locale, {
         { phase: '04', title: 'Launch & Grow', desc: '스토어 출시, 분석 도입, 운영 자동화까지 같은 팀이 책임집니다.' },
       ],
     },
+    portfolio: {
+      label: 'PORTFOLIO', title: '우리가 만든 제품들',
+      cats: { travel: '여행 플랫폼', edu: 'AI 학습', sports: '스포츠', commerce: '커머스', platform: '매칭 플랫폼' },
+    },
     cta: { title: '함께 만들어 볼까요?', desc: '아이디어 단계여도 좋습니다. 가볍게 이야기 나눠보세요.', button: '프로젝트 의뢰하기' },
     footer: { about: '회사소개', contact: '문의' },
   },
   en: {
     brand: 'JAICYLAB',
-    nav: { about: 'About', services: 'Services', estimate: 'Estimate', guides: 'Guides', contact: 'Contact', cta: 'Start a Project' },
+    nav: { about: 'About', services: 'Services', portfolio: 'Work', estimate: 'Estimate', guides: 'Guides', contact: 'Contact', cta: 'Start a Project' },
     hero: {
       eyebrow: 'APP DEVELOPMENT STUDIO',
       title1: 'Ideas into',
@@ -89,12 +95,16 @@ const CONTENT: Record<Locale, {
         { phase: '04', title: 'Launch & Grow', desc: 'Store release, analytics, and ops automation — the same team sees it through.' },
       ],
     },
+    portfolio: {
+      label: 'PORTFOLIO', title: 'Selected work',
+      cats: { travel: 'Travel', edu: 'EdTech', sports: 'Sports', commerce: 'Commerce', platform: 'Platform' },
+    },
     cta: { title: 'Shall we build it together?', desc: 'Even an idea is enough. Let\'s have a casual chat.', button: 'Start a Project' },
     footer: { about: 'About', contact: 'Contact' },
   },
   ja: {
     brand: 'JAICYLAB',
-    nav: { about: '会社紹介', services: 'サービス', estimate: '見積もり', guides: 'ガイド', contact: 'お問い合わせ', cta: 'プロジェクト依頼' },
+    nav: { about: '会社紹介', services: 'サービス', portfolio: '実績', estimate: '見積もり', guides: 'ガイド', contact: 'お問い合わせ', cta: 'プロジェクト依頼' },
     hero: {
       eyebrow: 'APP DEVELOPMENT STUDIO',
       title1: 'アイデアを',
@@ -124,12 +134,16 @@ const CONTENT: Record<Locale, {
         { phase: '04', title: 'Launch & Grow', desc: 'ストア公開、分析導入、運用自動化まで同じチームが責任を持ちます。' },
       ],
     },
+    portfolio: {
+      label: 'PORTFOLIO', title: '制作実績',
+      cats: { travel: '旅行', edu: '学習', sports: 'スポーツ', commerce: 'コマース', platform: 'プラットフォーム' },
+    },
     cta: { title: '一緒に作りませんか?', desc: 'アイデア段階でも大丈夫です。気軽にご相談ください。', button: 'プロジェクトを依頼する' },
     footer: { about: '会社紹介', contact: 'お問い合わせ' },
   },
   zh: {
     brand: 'JAICYLAB',
-    nav: { about: '公司介绍', services: '服务', estimate: '在线报价', guides: '指南', contact: '联系', cta: '委托项目' },
+    nav: { about: '公司介绍', services: '服务', portfolio: '案例', estimate: '在线报价', guides: '指南', contact: '联系', cta: '委托项目' },
     hero: {
       eyebrow: 'APP DEVELOPMENT STUDIO',
       title1: '把创意',
@@ -159,10 +173,24 @@ const CONTENT: Record<Locale, {
         { phase: '04', title: 'Launch & Grow', desc: '上架发布、数据分析、运营自动化,由同一团队持续跟进。' },
       ],
     },
+    portfolio: {
+      label: 'PORTFOLIO', title: '精选案例',
+      cats: { travel: '旅行', edu: '学习', sports: '体育', commerce: '电商', platform: '平台' },
+    },
     cta: { title: '一起打造吧?', desc: '有想法就足够了,欢迎轻松聊聊。', button: '委托项目' },
     footer: { about: '公司介绍', contact: '联系' },
   },
 }
+
+// 포트폴리오 프로젝트 — 이미지는 로케일 공통, 카테고리 라벨만 번역(c.portfolio.cats)
+const PORTFOLIO = [
+  { name: '야놀자 글로벌', img: '/portfolio/yanolja.jpg', cat: 'travel' },
+  { name: 'AIMUS', img: '/portfolio/aimus.jpg', cat: 'sports' },
+  { name: '스타디', img: '/portfolio/stady.jpg', cat: 'edu' },
+  { name: '오늘특템', img: '/portfolio/olee.jpg', cat: 'commerce' },
+  { name: 'Freetiful', img: '/portfolio/freetiful.jpg', cat: 'platform' },
+  { name: 'Graddy', img: '/portfolio/graddy.jpg', cat: 'platform' },
+] as const
 
 export default function HomePage() {
   const locale = useLocale() as Locale
@@ -188,6 +216,7 @@ export default function HomePage() {
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.about}</Link>
             <a href="#services" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.services}</a>
+            <a href="#portfolio" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.portfolio}</a>
             <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.estimate}</Link>
             <Link href="/guides" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.guides}</Link>
             <Link href="/about#contact" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{c.nav.contact}</Link>
@@ -294,6 +323,44 @@ export default function HomePage() {
                   </motion.div>
                   <h3 className="mt-4 text-[17px] font-bold">{s.title}</h3>
                   <p className="mt-2 text-[13px] leading-relaxed text-white/40">{s.desc}</p>
+                </motion.div>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </div>
+      </section>
+
+      <section id="portfolio" className="border-t border-white/5 py-28">
+        <div className="mx-auto max-w-[1100px] px-6">
+          <Reveal>
+            <p className="text-[11px] font-bold tracking-wide text-[#2979FF]">{c.portfolio.label}</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <h2 className="mt-3 text-[36px] font-bold tracking-tight">{c.portfolio.title}</h2>
+          </Reveal>
+          <Stagger stagger={0.08} className="mt-14 grid gap-5 md:grid-cols-2">
+            {PORTFOLIO.map((p) => (
+              <StaggerItem key={p.name}>
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                  className="group overflow-hidden border border-white/8 bg-white/[0.02] transition-colors duration-300 hover:border-[#2979FF]/30 hover:shadow-[0_18px_60px_rgba(41,121,255,0.14)]"
+                >
+                  <div className="relative aspect-video overflow-hidden">
+                    <Image
+                      src={p.img}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 550px"
+                      className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-5 py-4">
+                    <span className="text-[15px] font-bold text-white">{p.name}</span>
+                    <span className="shrink-0 border border-white/10 px-2.5 py-1 text-[11px] tracking-wider text-white/40">
+                      {c.portfolio.cats[p.cat]}
+                    </span>
+                  </div>
                 </motion.div>
               </StaggerItem>
             ))}
