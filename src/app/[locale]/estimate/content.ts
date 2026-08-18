@@ -37,6 +37,7 @@ type UI = {
   printQuote: string
   toastNeedContact: string
   toastBadEmail: string
+  toastNeedConsent: string
   quoteDocTitle: string
   basicReference: string
   monthsSuffix: string
@@ -194,6 +195,7 @@ const ko: UI = {
   printQuote: '견적서 PDF 출력',
   toastNeedContact: '연락처와 이메일을 입력해 주세요.',
   toastBadEmail: '이메일 형식을 확인해 주세요.',
+  toastNeedConsent: '개인정보 수집·이용에 동의해 주세요.',
   quoteDocTitle: '앱 개발 견적서 · 기능명세서',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
@@ -295,7 +297,7 @@ const ko: UI = {
   close: '닫기',
   limitedOfferTemplate: (price) => `LIMITED OFFER · 공급가 ${price}만원`,
   modalTitle: '견적받고 할인받기',
-  modalSubtitle: '<b>1영업일 내 맞춤 견적서</b>와 <b>최대 15% 할인 제안</b>을 함께 드려요.',
+  modalSubtitle: '입력하신 이메일로 <b>견적서를 보내드립니다.</b> 담당자가 1영업일 내 연락드려요.',
   selectedItemsTemplate: (n) => `선택한 항목 · ${n}개`,
   quickName: '이름',
   quickNamePh: '홍길동',
@@ -309,7 +311,7 @@ const ko: UI = {
   aiDraftWriting: '작성 중...',
   submitQuickCta: '제출하고 할인 받기',
   quickSending: '전송 중...',
-  quickConsent: '제출 시 개인정보 수집·이용에 동의하는 것으로 간주됩니다.',
+  quickConsent: '개인정보 수집·이용에 동의합니다. (필수)',
 
   toastNeedName: '담당자명과 연락처를 입력해주세요',
   toastNeedItem: '견적 항목을 1개 이상 선택해주세요',
@@ -368,6 +370,7 @@ const en: UI = {
   printQuote: 'Export PDF',
   toastNeedContact: 'Please enter your phone and email.',
   toastBadEmail: 'Please check the email format.',
+  toastNeedConsent: 'Please agree to the privacy policy.',
   quoteDocTitle: 'App Development Quote & Spec',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
@@ -469,7 +472,7 @@ const en: UI = {
   close: 'Close',
   limitedOfferTemplate: (price) => `LIMITED OFFER · Subtotal ${price}만원`,
   modalTitle: 'Get a quote & a discount',
-  modalSubtitle: "We'll send you a <b>custom quote within 1 business day</b> along with <b>up to 15% off</b>.",
+  modalSubtitle: "We'll <b>email you the quote</b> and get back to you within 1 business day.",
   selectedItemsTemplate: (n) => `Selected · ${n} items`,
   quickName: 'Name',
   quickNamePh: 'Jane Doe',
@@ -483,7 +486,7 @@ const en: UI = {
   aiDraftWriting: 'Writing...',
   submitQuickCta: 'Submit & get discount',
   quickSending: 'Sending...',
-  quickConsent: 'By submitting you agree to our collection and use of personal information.',
+  quickConsent: 'I agree to the collection and use of personal information. (required)',
 
   toastNeedName: 'Please enter your name and phone number',
   toastNeedItem: 'Please select at least one item',
@@ -542,6 +545,7 @@ const ja: UI = {
   printQuote: '見積書PDF出力',
   toastNeedContact: '電話番号とメールアドレスを入力してください。',
   toastBadEmail: 'メール形式をご確認ください。',
+  toastNeedConsent: '個人情報の取り扱いに同意してください。',
   quoteDocTitle: 'アプリ開発 見積書・機能仕様書',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
@@ -643,7 +647,7 @@ const ja: UI = {
   close: '閉じる',
   limitedOfferTemplate: (price) => `LIMITED OFFER · 税抜${price}万ウォン`,
   modalTitle: '見積りと割引を受け取る',
-  modalSubtitle: '<b>1営業日以内のカスタム見積書</b>と<b>最大15%割引のご提案</b>をお届けいたします。',
+  modalSubtitle: 'ご入力のメールアドレスへ<b>見積書をお送りします。</b>1営業日以内にご連絡いたします。',
   selectedItemsTemplate: (n) => `選択した項目・${n}件`,
   quickName: 'お名前',
   quickNamePh: '山田 太郎',
@@ -716,6 +720,7 @@ const zh: UI = {
   printQuote: '导出报价单 PDF',
   toastNeedContact: '请输入电话与邮箱。',
   toastBadEmail: '请检查邮箱格式。',
+  toastNeedConsent: '请同意个人信息收集与使用。',
   quoteDocTitle: 'App 开发报价单 · 功能规格书',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',
@@ -816,7 +821,7 @@ const zh: UI = {
   close: '关闭',
   limitedOfferTemplate: (price) => `LIMITED OFFER · 不含税 ${price}万韩元`,
   modalTitle: '获取报价并领取折扣',
-  modalSubtitle: '我们将在 <b>1 个工作日内提供定制报价</b>,并附上 <b>最高 15% 的折扣</b>。',
+  modalSubtitle: '我们会将<b>报价单发送至您填写的邮箱</b>,并在 1 个工作日内与您联系。',
   selectedItemsTemplate: (n) => `已选项目 · ${n} 项`,
   quickName: '姓名',
   quickNamePh: '张三',

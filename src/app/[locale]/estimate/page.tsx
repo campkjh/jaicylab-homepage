@@ -640,6 +640,7 @@ export default function EstimatePage() {
   const [quickOpen, setQuickOpen] = useState(false)
   const [quick, setQuick] = useState({ name: '', phone: '', email: '', memo: '' })
   const [quickSending, setQuickSending] = useState(false)
+  const [quickAgree, setQuickAgree] = useState(false)
   const [aiDrafting, setAiDrafting] = useState(false)
 
   // UnicornStudio 재초기화 (모달 열릴 때마다 재시도)
@@ -918,6 +919,7 @@ export default function EstimatePage() {
 
   async function handleQuickSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!quickAgree) { toast.error(c.toastNeedConsent); return }
     if (!quick.phone || !quick.email) { toast.error(c.toastNeedContact); return }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quick.email)) { toast.error(c.toastBadEmail); return }
     if (selected.size === 0) { toast.error(c.toastNeedItem); return }
@@ -926,6 +928,7 @@ export default function EstimatePage() {
       await sendInquiry({ name: quick.email.split('@')[0], phone: quick.phone, email: quick.email, memo: quick.memo })
       toast.success(c.toastQuickOk)
       setQuick({ name: '', phone: '', email: '', memo: '' })
+      setQuickAgree(false)
       setQuickOpen(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : c.toastSendFailed)
@@ -1389,27 +1392,6 @@ export default function EstimatePage() {
             className="relative mx-auto flex max-h-[92vh] w-full max-w-[440px] animate-[fadeUp_0.35s_ease-out] flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.3)] sm:rounded-3xl"
             onClick={e => e.stopPropagation()}
           >
-            {/* UnicornStudio — 상단 고정 높이 영역 */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[240px] overflow-hidden">
-              <div
-                data-us-project="62NofPZ8VN0npDqUw1vB"
-                className="absolute inset-0"
-                style={{ pointerEvents: 'none', width: '100%', height: '100%' }}
-              />
-              {/* 그라데이션 블러 — 하단으로 갈수록 블러 강 */}
-              <div
-                className="absolute inset-x-0 bottom-0 h-[55%]"
-                style={{
-                  backdropFilter: 'blur(22px)',
-                  WebkitBackdropFilter: 'blur(22px)',
-                  maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 35%, black 75%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 35%, black 75%)',
-                }}
-              />
-              {/* 화이트 페이드 — 자연스럽게 흰 영역으로 흘러감 */}
-              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-white/0 via-white/70 to-white" />
-            </div>
-
             {/* 닫기 */}
             <button
               type="button"
@@ -1422,12 +1404,8 @@ export default function EstimatePage() {
 
             <div className="scrollbar-hide relative z-10 flex-1 overflow-y-auto">
               {/* 헤더 — 검정 텍스트 (애니메이션 아래 위치) */}
-              <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-[160px] text-[#2B313D]" style={{ animationDelay: '80ms' }}>
-                <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#2B313D]/10 bg-white/60 px-2.5 py-1 text-[10px] font-semibold tracking-wider backdrop-blur-md">
-                  <Sparkles className="h-3 w-3" />
-                  {c.limitedOfferTemplate(calc.subtotal.toLocaleString())}
-                </div>
-                <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-[#2B313D]">{c.modalTitle}</h2>
+              <div className="animate-[fadeUp_0.5s_ease-out_both] px-7 pb-4 pt-8 text-[#2B313D]" style={{ animationDelay: '80ms' }}>
+                <h2 className="text-[26px] font-bold leading-tight tracking-tight text-[#2B313D]">{c.ctaSubmit}</h2>
                 <p className="mt-2 text-[12.5px] leading-relaxed text-[#51535C]" dangerouslySetInnerHTML={{ __html: c.modalSubtitle }} />
               </div>
 
@@ -1489,11 +1467,6 @@ export default function EstimatePage() {
                       >
                         {f.label}{f.required && <span className="ml-0.5 text-[#3180F7]">*</span>}
                       </label>
-                      {/* 포커스 시 하단 언더라인 스트로크 */}
-                      <span
-                        aria-hidden
-                        className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#2B313D] transition-all duration-400 peer-focus:w-[calc(100%-32px)]"
-                      />
                       {/* 플레이스홀더 (포커스 시만) */}
                       <span
                         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] text-[#C8CEDA] opacity-0 transition-opacity duration-200 peer-focus:opacity-100"
@@ -1527,25 +1500,31 @@ export default function EstimatePage() {
                       className="absolute right-3 top-3 flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#2B313D] to-[#51535C] px-2.5 py-1.5 text-[10px] font-bold text-white shadow-sm transition-all duration-200 hover:from-[#3A414F] hover:to-[#5E6270] active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
                       title={c.aiDraftTitle}
                     >
-                      <Sparkles className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
+                      <UiIcon name="sparkle" className={`h-3 w-3 ${aiDrafting ? 'animate-spin' : ''}`} />
                       {aiDrafting ? c.aiDraftWriting : c.aiDraftLabel}
                     </button>
                   </div>
                 </div>
 
+                {/* 개인정보 수집·이용 동의 (필수) */}
+                <label className="mt-5 flex cursor-pointer items-center gap-2 select-none">
+                  <input type="checkbox" checked={quickAgree} onChange={e => setQuickAgree(e.target.checked)} className="peer sr-only" />
+                  <span className="flex size-[18px] shrink-0 items-center justify-center rounded-[6px] bg-[#F2F3F5] transition-colors peer-checked:bg-[#3180F7]">
+                    <UiIcon name="check" className={`h-3 w-3 ${quickAgree ? 'text-white' : 'text-[#C8CEDA]'}`} />
+                  </span>
+                  <span className="text-[12px] text-[#51535C]">{c.quickConsent}</span>
+                </label>
+
                 <button
                   type="submit"
-                  disabled={quickSending}
+                  disabled={quickSending || !quickAgree}
                   style={{ animationDelay: '580ms' }}
-                  className="group relative mt-5 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#2B313D] text-[15px] font-bold text-white transition-all duration-200 hover:bg-[#3A414F] hover:shadow-[0_10px_28px_rgba(15,23,42,0.25)] active:scale-[0.98] disabled:opacity-60"
+                  className="mt-3 flex h-12 w-full animate-[fadeUp_0.5s_ease-out_both] items-center justify-center rounded-xl bg-[#2B313D] text-[15px] font-bold text-white transition-colors duration-200 hover:bg-[#3A414F] active:scale-[0.98] disabled:opacity-40"
                 >
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <span className="relative">{quickSending ? c.quickSending : c.submitQuickCta}</span>
+                  {quickSending ? c.quickSending : c.ctaSubmit}
                 </button>
 
-                <p className="pt-3 text-center text-[11px] text-[#51535C]">
-                  {c.quickConsent}
-                </p>
+
               </form>
             </div>
           </div>
