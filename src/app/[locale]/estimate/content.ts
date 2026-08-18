@@ -31,6 +31,7 @@ type UI = {
   avgPriceLabel: string
   selectedCount: (n: number) => string
   presetSearchPlaceholder: string
+  ctaSubmit: string
   basicReference: string
   monthsSuffix: string
   similarService: string
@@ -181,6 +182,7 @@ const ko: UI = {
   avgPriceLabel: '평균',
   selectedCount: (n: number) => `${n}개`,
   presetSearchPlaceholder: '프리셋 검색',
+  ctaSubmit: '제출하기',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
   similarService: '비슷한 서비스',
@@ -348,6 +350,7 @@ const en: UI = {
   avgPriceLabel: 'Avg.',
   selectedCount: (n: number) => `${n} items`,
   presetSearchPlaceholder: 'Search presets',
+  ctaSubmit: 'Submit',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
   similarService: 'Similar services',
@@ -515,6 +518,7 @@ const ja: UI = {
   avgPriceLabel: '平均',
   selectedCount: (n: number) => `${n}件`,
   presetSearchPlaceholder: 'プリセット検索',
+  ctaSubmit: '送信する',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
   similarService: '類似サービス',
@@ -682,6 +686,7 @@ const zh: UI = {
   avgPriceLabel: '平均',
   selectedCount: (n: number) => `${n} 项`,
   presetSearchPlaceholder: '搜索预设',
+  ctaSubmit: '提交',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',
   similarService: '类似服务',

@@ -950,10 +950,10 @@ export default function EstimatePage() {
             <Logo height={22} className="text-[#2B313D]" />
             <span className="text-[12px] font-normal text-[#51535C]">{c.brand}</span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-[#51535C] transition-all hover:text-[#2B313D]">{c.navAbout}</Link>
-            <Link href="/estimate" className="text-[13px] font-bold text-[#2B313D] transition-all">{c.navEstimate}</Link>
-            <Link href="/about#문의" className="text-[13px] font-medium text-[#51535C] transition-all hover:text-[#2B313D]">{c.navContact}</Link>
+          <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
+            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navAbout}</Link>
+            <Link href="/estimate" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{c.navEstimate}</Link>
+            <Link href="/about#문의" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navContact}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
@@ -1012,6 +1012,18 @@ export default function EstimatePage() {
             <h2 className="text-[20px] font-bold tracking-tight text-[#2B313D]">{c.packageCountTitle(PACKAGES.length)}</h2>
             <div className="flex shrink-0 items-center gap-3">
               {activePkg && <button onClick={clearAll} className="text-[12px] text-[#A4ABBA] hover:text-[#51535C]">{c.resetSelection}</button>}
+              {!presetsExpanded && (
+                <div className="hidden items-center gap-1 md:flex">
+                  <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
+                    className="group grid h-9 w-9 place-items-center rounded-full bg-[#F2F3F5] transition-colors hover:bg-[#E3E6EB] active:scale-95">
+                    <UiIcon name="chevron-left" className="h-4 w-4 text-[#51535C] transition-transform duration-200 group-hover:-translate-x-0.5" />
+                  </button>
+                  <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
+                    className="group grid h-9 w-9 place-items-center rounded-full bg-[#F2F3F5] transition-colors hover:bg-[#E3E6EB] active:scale-95">
+                    <UiIcon name="chevron-right" className="h-4 w-4 text-[#51535C] transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </button>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setPresetsExpanded(v => !v)}
@@ -1069,17 +1081,6 @@ export default function EstimatePage() {
 
           {/* Carousel / 펼침 그리드 */}
           <div className="relative mt-2">
-            {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('left')} aria-label={c.ariaPrev}
-              className="group absolute left-0 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
-              style={{ width: 48, height: 48 }}>
-              <UiIcon name="chevron-left" className="h-5 w-5 text-[#2B313D] transition-transform duration-200 group-hover:-translate-x-0.5" />
-            </button>}
-            {!presetsExpanded && <button type="button" onClick={() => scrollCarousel('right')} aria-label={c.ariaNext}
-              className="group absolute right-0 top-1/2 z-20 hidden translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.24)] transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:shadow-[0_18px_54px_-10px_rgba(15,23,42,0.32)] active:scale-95 md:flex"
-              style={{ width: 48, height: 48 }}>
-              <UiIcon name="chevron-right" className="h-5 w-5 text-[#2B313D] transition-transform duration-200 group-hover:translate-x-0.5" />
-            </button>}
-
             <div ref={carouselRef} key={`${pkgCategory}-${presetsExpanded}`}
               className={presetsExpanded
                 ? 'grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 px-1 py-3'
@@ -1289,10 +1290,8 @@ export default function EstimatePage() {
 
               <div className="space-y-2">
                 <button type="button" onClick={() => setQuickOpen(true)}
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:bg-[#2470E6] active:scale-[0.98]">
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <span className="relative">{c.ctaGetDiscount}</span>
-                  <UiIcon name="arrow-right" className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  className="flex w-full items-center justify-center rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-colors duration-200 hover:bg-[#2470E6] active:scale-[0.98]">
+                  {c.ctaSubmit}
                 </button>
                 <Link href="/about#문의" className="flex w-full items-center justify-center rounded-[14px] bg-[#F2F3F5] py-3 text-[13px] font-bold text-[#51535C] transition-all hover:bg-[#E3E6EB]">
                   {c.ctaDirectConsult}
