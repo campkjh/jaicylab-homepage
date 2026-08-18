@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/Logo'
+import { EstimateIcon } from '@/components/estimate/EstimateIcon'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useLocale } from 'next-intl'
@@ -483,23 +484,14 @@ const CATEGORIES: Category[] = [
   },
 ]
 
-// Lucide 라인 아이콘 매핑 (iconKey → 컴포넌트)
-import type { LucideIcon } from 'lucide-react'
-const ICON_LUCIDE: Record<string, LucideIcon> = {
-  Home, User, Scale, Hospital: Building2, Calendar, Building, Briefcase, Calculator, HardHat,
-  BookOpen, ShoppingBag, Shirt, ShoppingCart, Leaf, Gem, Repeat, Factory, Gavel, TrendingUp,
-  UtensilsCrossed, CalendarCheck, Receipt, Coffee, ChefHat, Utensils, Soup, Baby, Languages,
-  Terminal, GraduationCap, Award, Dumbbell, Heart, Brain, Apple, Dog, Stethoscope,
-  Users2, PartyPopper, MapPin, Church, CheckSquare, NotebookPen, Users, Kanban, FileText,
-  MessageCircle, SprayCan, Truck, Wrench, Plane,
-}
+// 아이콘은 public/estimate-icons/<iconKey>.svg (토스 컬러 세트) 를 EstimateIcon 으로 렌더한다.
 
 // 아이콘 테마 — 전 카테고리 공통 뉴트럴 그레이
 const ICON_THEME = {
-  bg: 'bg-slate-100',
-  bgActive: 'bg-slate-900',
-  icon: 'text-slate-700',
-  iconActive: 'text-white',
+  bg: 'bg-slate-50',
+  bgActive: 'bg-[#EAF2FF]',
+  icon: '',
+  iconActive: '',
 }
 
 const DESIGNS = [
@@ -574,8 +566,6 @@ function PackageCard({
     return () => window.removeEventListener('resize', measure)
   }, [isActivePkg, activeTier])
 
-  const Icon = ICON_LUCIDE[p.iconKey] ?? FileText
-
   // 카드 하단 키워드 태그 (sub를 '·'로 분리)
   const keywords = p.sub.split(/\s*[·•,]\s*/).filter(Boolean)
 
@@ -586,13 +576,13 @@ function PackageCard({
   return (
     <div
       style={{ animationDelay: `${idx * 40}ms` }}
-      className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+      className="group relative flex w-[300px] shrink-0 animate-[fadeUp_0.5s_ease-out_both] snap-start flex-col rounded-[18px] border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
     >
       <div className="flex items-start gap-3">
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] transition-colors duration-300 ${isActivePkg ? ICON_THEME.bgActive : ICON_THEME.bg}`}
         >
-          <Icon className={`h-6 w-6 ${isActivePkg ? ICON_THEME.iconActive : ICON_THEME.icon}`} strokeWidth={2} />
+          <EstimateIcon name={p.iconKey} className="h-7 w-7" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="truncate text-[14px] font-bold text-slate-900">{p.label}</p>
@@ -1002,41 +992,13 @@ export default function EstimatePage() {
         </div>
       </header>
 
-      {/* Hero + Spline */}
-      <section className={`relative border-b border-slate-200/70 pt-[60px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        {/* Spline 3D — 히어로 배경 */}
-        <div className="pointer-events-none relative h-[240px] w-full overflow-hidden md:h-[300px]">
-          <iframe
-            src="https://my.spline.design/shiny3dcoinlogoanimation-gvvr6acDhxWFycMGciYw3Ty0/"
-            className="absolute inset-0 h-full w-full border-none"
-            style={{ pointerEvents: 'none', background: 'transparent' }}
-            loading="eager"
-            title="Estimate Hero Animation"
-          />
-          {/* 하단 페이드 — 콘텐츠와 자연스럽게 연결 */}
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#fafafa] via-[#fafafa]/85 to-transparent" />
-          {/* 상단/좌우 코너 소프트닝 */}
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#fafafa]/60 to-transparent" />
-        </div>
-
-        {/* 텍스트 영역 — 애니메이션 위로 자연스럽게 올라옴 */}
-        <div className="relative z-10 mx-auto -mt-20 max-w-[1320px] px-6 pb-10 md:-mt-24">
-          <p className="text-[12px] font-semibold text-[#2979FF]">{c.heroEyebrow}</p>
-          <h1 className="mt-2 text-[38px] font-bold leading-[1.05] tracking-tight text-slate-900 md:text-[48px]">
-            {c.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-[640px] text-[14px] leading-relaxed text-slate-500">
-            {c.heroDescTemplate(totalItems, PACKAGES.length)}
-          </p>
-        </div>
-      </section>
 
       {/* PACKAGES CAROUSEL */}
-      <section ref={presetSectionRef} className="relative border-b border-slate-200/70 bg-white py-12">
+      <section ref={presetSectionRef} className={`relative border-b border-slate-200/70 bg-white pb-12 pt-[92px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[12px] font-semibold text-[#2979FF]">{c.quickStartEyebrow}</p>
+              <p className="text-[12px] font-semibold text-[#3180F7]">{c.quickStartEyebrow}</p>
               <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
               <p className="mt-2 text-[13px] text-slate-500">{c.packageDesc}</p>
             </div>
@@ -1048,7 +1010,7 @@ export default function EstimatePage() {
             {pill && (
               <span
                 aria-hidden
-                className="pointer-events-none absolute z-0 rounded-full bg-slate-900 shadow-[0_4px_16px_rgba(15,23,42,0.25)] transition-all duration-[450ms]"
+                className="pointer-events-none absolute z-0 rounded-full bg-[#3180F7] shadow-[0_4px_16px_rgba(49,128,247,0.28)] transition-all duration-[450ms]"
                 style={{
                   left: pill.left, top: pill.top, width: pill.width, height: pill.height,
                   transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1118,7 +1080,7 @@ export default function EstimatePage() {
                 <span className={`rounded-[5px] px-1.5 py-[2px] text-[10px] font-medium ${meta.soft}`}>{meta.label}</span>
                 <span className="text-[11px] text-slate-500">{meta.desc}</span>
               </div>
-              <span className="text-[11px] font-bold text-[#2979FF]">{priceOf(tierIds).toLocaleString()}{c.manwonSuffix}</span>
+              <span className="text-[11px] font-bold text-[#3180F7]">{priceOf(tierIds).toLocaleString()}{c.manwonSuffix}</span>
             </div>
             <p className="mt-2 text-[12px] font-bold text-slate-900">{pkg.label}</p>
             <div className="mt-3">
@@ -1156,7 +1118,6 @@ export default function EstimatePage() {
               const isActive = activePkg === p.id
               const tier = isActive && activeTier ? activeTier : 'basic'
               const price = priceOf(p.tiers[tier])
-              const Icon = ICON_LUCIDE[p.iconKey] ?? FileText
               return (
                 <button
                   key={p.id}
@@ -1164,15 +1125,15 @@ export default function EstimatePage() {
                   onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
                   className={`group flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
                     isActive
-                      ? 'border-slate-900 bg-slate-900 text-white shadow-[0_4px_14px_rgba(15,23,42,0.2)]'
+                      ? 'border-[#3180F7] bg-[#EAF2FF] text-[#3180F7] shadow-[0_4px_14px_rgba(49,128,247,0.18)]'
                       : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
                   }`}
                 >
-                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white/15' : 'bg-slate-100'}`}>
-                    <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-slate-700'}`} strokeWidth={2} />
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-slate-50'}`}>
+                    <EstimateIcon name={p.iconKey} className="h-4 w-4" />
                   </div>
                   <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
-                  <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-white/75' : 'text-[#2979FF]'}`}>
+                  <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-[#3180F7]' : 'text-[#3180F7]'}`}>
                     {price.toLocaleString()}{c.manwonSuffix}
                   </span>
                 </button>
@@ -1190,13 +1151,13 @@ export default function EstimatePage() {
           <div className="space-y-4">
 
             {/* 프로젝트 조건 */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
+            <div className="rounded-[18px] border border-slate-200 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)]">
               <p className="text-[12px] font-semibold text-slate-400">{c.projectCondition}</p>
 
               <div className="mt-4 space-y-4">
                 <div>
                   <p className="mb-2 text-[11px] font-medium text-slate-500">{c.devModeLabel}</p>
-                  <div className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'border-[#2979FF]/40 bg-[#2979FF]/5' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'border-[#3180F7]/40 bg-[#3180F7]/5' : 'border-slate-200 bg-slate-50'}`}>
                     <div>
                       <p className="text-[13px] font-bold text-slate-900">{nativeMode.id === 'both-native' ? c.devModeBothNative : nativeMode.id === 'single-native' ? c.devModeSingleNative : c.devModeCross}</p>
                       <p className="mt-0.5 text-[11px] text-slate-500">
@@ -1205,7 +1166,7 @@ export default function EstimatePage() {
                         {nativeMode.id === 'cross' && c.devModeCrossDesc}
                       </p>
                     </div>
-                    <span className="text-[14px] font-bold text-[#2979FF]">×{nativeMode.mult.toFixed(2)}</span>
+                    <span className="text-[14px] font-bold text-[#3180F7]">×{nativeMode.mult.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -1217,7 +1178,7 @@ export default function EstimatePage() {
                         const dl = d.id === 'template' ? c.designs.template : d.id === 'custom' ? c.designs.custom : c.designs.premium
                         return (
                         <button key={d.id} type="button" onClick={() => setDesign(d.id)}
-                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
+                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'border-[#3180F7] bg-[#3180F7]/10 text-[#3180F7]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
                           {dl}
                           <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
                         </button>
@@ -1232,7 +1193,7 @@ export default function EstimatePage() {
                         const tl = t.id === 'normal' ? c.timelines.normal : t.id === 'fast' ? c.timelines.fast : c.timelines.urgent
                         return (
                         <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
-                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'border-[#2979FF] bg-[#2979FF]/10 text-[#2979FF]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
+                          className={`flex-1 rounded-lg border px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'border-[#3180F7] bg-[#3180F7]/10 text-[#3180F7]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}>
                           {tl}
                           <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
                         </button>
@@ -1251,7 +1212,7 @@ export default function EstimatePage() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={c.searchPlaceholder}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all placeholder-slate-400 focus:border-[#2979FF] focus:shadow-[0_4px_16px_rgba(41,121,255,0.1)]"
+                className="h-12 w-full rounded-[18px] border border-slate-200 bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition-all placeholder-slate-400 focus:border-[#3180F7] focus:shadow-[0_4px_16px_rgba(41,121,255,0.1)]"
               />
               {query && (
                 <button type="button" onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
@@ -1273,10 +1234,12 @@ export default function EstimatePage() {
               const catTotal = cat.items.filter(i => selected.has(i.id)).reduce((a, b) => a + b.price, 0)
               const visibleItems = searchMatches ? cat.items.filter(i => searchMatches[cat.id].has(i.id)) : cat.items
               return (
-                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300 hover:shadow-[0_6px_24px_rgba(15,23,42,0.04)]">
+                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300 hover:shadow-[0_10px_34px_-8px_rgba(15,23,42,0.10)]">
                   <div className="flex items-center justify-between px-5 py-4">
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2979FF]/10 text-[#2979FF] transition-transform duration-300 hover:scale-110">{cat.icon}</div>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-slate-50 transition-transform duration-300 hover:scale-110">
+                        <EstimateIcon name={`cat-${cat.id}`} className="h-6 w-6" />
+                      </div>
                       <div>
                         <p className="text-[11px] font-medium text-slate-400">{c.categoryTitles[cat.id]?.tag ?? cat.tag}</p>
                         <p className="text-[15px] font-bold text-slate-900">{c.categoryTitles[cat.id]?.title ?? cat.title}</p>
@@ -1284,7 +1247,7 @@ export default function EstimatePage() {
                     </button>
                     <div className="flex items-center gap-3">
                       <span className="text-[11px] text-slate-400">{selCount}/{cat.items.length}</span>
-                      {catTotal > 0 && <span className="text-[12px] font-bold text-[#2979FF]">+{catTotal.toLocaleString()}{c.manwonSuffix}</span>}
+                      {catTotal > 0 && <span className="text-[12px] font-bold text-[#3180F7]">+{catTotal.toLocaleString()}{c.manwonSuffix}</span>}
                       {!searchMatches && (
                         <button type="button" onClick={() => toggleCat(cat.id)} className="text-slate-400 hover:text-slate-700">
                           <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -1308,12 +1271,12 @@ export default function EstimatePage() {
                           return (
                             <li key={item.id}>
                               <button type="button" onClick={() => toggle(item.id)}
-                                className={`group flex w-full items-center gap-3 border-t border-slate-100 px-5 py-3 text-left transition-all duration-200 ${active ? 'bg-[#2979FF]/[0.06]' : 'hover:bg-slate-50'}`}>
-                                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 ${active ? 'border-[#2979FF] bg-[#2979FF]' : 'border-slate-300 bg-white group-hover:border-slate-500'}`}>
+                                className={`group flex w-full items-center gap-3 border-t border-slate-100 px-5 py-3 text-left transition-all duration-200 ${active ? 'bg-[#3180F7]/[0.06]' : 'hover:bg-slate-50'}`}>
+                                <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 ${active ? 'border-[#3180F7] bg-[#3180F7]' : 'border-slate-300 bg-white group-hover:border-slate-500'}`}>
                                   {active && <Check className="h-3.5 w-3.5 animate-[checkIn_0.25s_ease-out] text-white" />}
                                 </div>
                                 <span className={`flex-1 text-[13px] ${active ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'}`}>{item.label}</span>
-                                <span className={`text-[12px] ${active ? 'font-bold text-[#2979FF]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
+                                <span className={`text-[12px] ${active ? 'font-bold text-[#3180F7]' : 'text-slate-400'}`}>+{item.price.toLocaleString()}{c.manwonSuffix}</span>
                               </button>
                             </li>
                           )
@@ -1326,18 +1289,18 @@ export default function EstimatePage() {
             })}
 
             {/* 견적서 요청 */}
-            <div className="mt-12 rounded-2xl border border-slate-200 bg-white p-7">
-              <p className="text-[12px] font-semibold text-[#2979FF]">{c.requestEyebrow}</p>
+            <div className="mt-12 rounded-[18px] border border-slate-200 bg-white p-7">
+              <p className="text-[12px] font-semibold text-[#3180F7]">{c.requestEyebrow}</p>
               <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.requestTitle}</h2>
               <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#2979FF] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <textarea className="h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:border-[#3180F7] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
                   <Send className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
@@ -1349,12 +1312,11 @@ export default function EstimatePage() {
           {/* RIGHT */}
           <aside>
             <div className="sticky top-[80px] space-y-4">
-              <div className="relative overflow-hidden rounded-2xl border-2 border-[#2979FF] bg-gradient-to-br from-white to-[#f0f7ff] p-6 shadow-[0_12px_40px_rgba(41,121,255,0.12)] transition-all duration-300 hover:shadow-[0_16px_56px_rgba(41,121,255,0.18)]">
-                <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#2979FF]/10 blur-3xl" />
+              <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_12px_40px_-8px_rgba(15,23,42,0.12)] transition-all duration-300 hover:shadow-[0_16px_50px_-10px_rgba(15,23,42,0.16)]">
                 <div className="relative">
-                  <p className="text-[12px] font-semibold text-[#2979FF]">{c.totalEstimate}</p>
+                  <p className="text-[12px] font-semibold text-[#3180F7]">{c.totalEstimate}</p>
                   <p className="mt-3 text-[11px] text-slate-500">{c.supplyPrice} <span className="text-slate-400">{c.vatExcluded}</span></p>
-                  <p key={calc.subtotal} className="mt-1 animate-[priceBump_0.35s_ease-out] bg-gradient-to-r from-slate-900 to-[#2979FF] bg-clip-text text-[42px] font-bold leading-tight tracking-tight text-transparent">
+                  <p key={calc.subtotal} className="mt-1 animate-[priceBump_0.35s_ease-out] text-[42px] font-bold leading-tight tracking-tight text-[#3180F7]">
                     {fmt(calc.subtotal)}<span className="ml-1 text-[14px] font-medium text-slate-400">{c.wonSuffix}</span>
                   </p>
 
@@ -1369,23 +1331,23 @@ export default function EstimatePage() {
                     {calc.timeAdd > 0 && (
                       <div className="flex justify-between text-slate-500"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
                     )}
-                    <div className="flex justify-between border-t border-slate-100 pt-2 text-[13px]"><span className="font-bold text-slate-900">{c.supplyPriceBold}</span><span className="font-bold text-[#2979FF]">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
+                    <div className="flex justify-between border-t border-slate-100 pt-2 text-[13px]"><span className="font-bold text-slate-900">{c.supplyPriceBold}</span><span className="font-bold text-[#3180F7]">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
                     <div className="flex justify-between text-slate-500"><span>{c.vatLine}</span><span className="text-slate-900">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
                     <div className="flex justify-between text-slate-500"><span>{c.vatIncludedFinal}</span><span className="text-slate-700">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span></div>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
+              <div className="rounded-[18px] border border-slate-200 bg-white p-6 shadow-[0_8px_30px_-6px_rgba(15,23,42,0.08)]">
                 <p className="text-[12px] font-semibold text-slate-400">{c.teamAllocation}</p>
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-[11px] text-slate-500">{c.totalMM}</p>
-                    <p className="mt-1 text-[24px] font-bold text-[#2979FF]">{calc.totalMM.toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">MM</span></p>
+                    <p className="mt-1 text-[24px] font-bold text-[#3180F7]">{calc.totalMM.toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">MM</span></p>
                   </div>
                   <div>
                     <p className="text-[11px] text-slate-500">{c.estDuration}</p>
-                    <p className="mt-1 text-[24px] font-bold text-[#2979FF]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">{c.monthsUnit}</span></p>
+                    <p className="mt-1 text-[24px] font-bold text-[#3180F7]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">{c.monthsUnit}</span></p>
                   </div>
                 </div>
 
@@ -1410,7 +1372,7 @@ export default function EstimatePage() {
 
               <div className="space-y-2">
                 <button type="button" onClick={() => setQuickOpen(true)}
-                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#2979FF] to-[#1E6AE1] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:shadow-[0_10px_28px_rgba(41,121,255,0.4)] active:scale-[0.98]">
+                  className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-all duration-200 hover:bg-[#2470E6] active:scale-[0.98]">
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <span className="relative">{c.ctaGetDiscount}</span>
                   <ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -1537,7 +1499,7 @@ export default function EstimatePage() {
                         htmlFor={`quick-${f.key}`}
                         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[13px] font-medium text-slate-500 transition-all duration-300 peer-focus:top-[10px] peer-focus:translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-slate-700 peer-[:not(:placeholder-shown)]:top-[10px] peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-slate-700"
                       >
-                        {f.label}{f.required && <span className="ml-0.5 text-[#2979FF]">*</span>}
+                        {f.label}{f.required && <span className="ml-0.5 text-[#3180F7]">*</span>}
                       </label>
                       {/* 포커스 시 하단 언더라인 스트로크 */}
                       <span
