@@ -16,6 +16,7 @@ import { MedinitySectionIcon } from '@/components/medinity/MedinitySectionIcon'
 import { InteractionPreview } from '@/components/medinity/InteractionPreview'
 import { AnimatedWon } from '@/components/medinity/AnimatedWon'
 import { GoogleIcon } from '@/components/medinity/GoogleIcon'
+import { PrintableSpec, type SpecGroup } from './PrintableSpec'
 
 type Line = { key: string; label: string; sub?: string; price: number }
 
@@ -107,9 +108,46 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
     return out
   }, [sections, picked, includedIds, totalPages, steppers])
 
+  // 견적서 PDF — 섹션별 기능명세 + 맨먼스/투입인원(홈페이지 제작 기준)
+  const specGroups: SpecGroup[] = useMemo(() => {
+    const out: SpecGroup[] = []
+    for (const s of sections) {
+      const items: { label: string; sub?: string; price: number }[] = []
+      for (const ch of s.choices ?? []) {
+        if (!picked.has(ch.id)) continue
+        items.push({ label: ch.name, sub: ch.desc, price: includedIds.has(ch.id) ? 0 : priceOfChoice(ch, totalPages) })
+        for (const child of ch.children ?? []) if (picked.has(child.id)) items.push({ label: `└ ${child.name}`, price: child.price })
+      }
+      if (s.id === 'integration' && !picked.has('int-navermap')) items.push({ label: '구글 지도 연동', sub: '기본 무료', price: 0 })
+      if (s.stepper) {
+        const st = s.stepper
+        const qty = Math.max(st.min, Math.min(st.max, Math.floor(Number(steppers[st.id] ?? 0))))
+        if (qty > 0) items.push({ label: `${st.name} ${qty}${st.unit}`, price: stepperPrice(st, qty) })
+      }
+      if (items.length) out.push({ title: s.title, items })
+    }
+    return out
+  }, [sections, picked, includedIds, totalPages, steppers])
+
   const subtotal = lines.reduce((sum, l) => sum + l.price, 0)
   const vat = Math.round(subtotal * VAT_RATE)
   const total = subtotal + vat
+
+  // 맨먼스: 공급가 / 600만원. 홈페이지 제작 표준 롤 배분.
+  const MM_RATE = 6_000_000
+  const totalMM = subtotal / MM_RATE
+  const team = useMemo(() => {
+    const w: Record<string, number> = { '프로덕트 디자이너': 0.34, '프론트엔드 개발자': 0.4, '백엔드 개발자': 0.14, '프로젝트 매니저 (PM)': 0.12 }
+    return Object.entries(w).map(([role, ratio]) => ({ role, mm: totalMM * ratio })).filter(t => t.mm > 0)
+  }, [totalMM])
+  const months = Math.max(0.5, totalMM / 1.8)
+
+  const [printDate, setPrintDate] = useState('')
+  function printSpec() {
+    const d = new Date()
+    setPrintDate(`${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`)
+    setTimeout(() => window.print(), 80)
+  }
 
   return (
     <div className="mx-auto grid max-w-[1320px] gap-8 px-6 lg:grid-cols-[1fr_400px]">
@@ -293,14 +331,39 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
 
             <button
               type="button"
+              onClick={printSpec}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#F2F3F5] py-3 text-[13px] font-bold text-[#51535C] transition-colors hover:bg-[#E3E6EB] active:scale-[0.98]"
+            >
+              <MedinitySectionIcon name="printer" className="size-4" /> 견적서 PDF 출력
+            </button>
+
+            <button
+              type="button"
               onClick={() => onSubmit?.(total)}
-              className="mt-4 flex w-full items-center justify-center rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-colors duration-200 hover:bg-[#2470E6] active:scale-[0.98]"
+              className="mt-2 flex w-full items-center justify-center rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-colors duration-200 hover:bg-[#2470E6] active:scale-[0.98]"
             >
               제출하기
             </button>
           </div>
         </div>
       </aside>
+
+      {/* 견적서 PDF (인쇄 전용) */}
+      <div className="print-doc hidden print:fixed print:inset-0 print:z-[999] print:block print:bg-white">
+        <PrintableSpec
+          title="홈페이지 제작 견적서 · 기능명세서"
+          date={printDate}
+          groups={specGroups}
+          subtotal={subtotal}
+          vat={vat}
+          total={total}
+          unit="원"
+          totalMM={totalMM}
+          months={months}
+          team={team}
+          mmRateLabel="맨먼스 단가 평균 600만원 (혼합 인력 기준) 적용."
+        />
+      </div>
     </div>
   )
 }

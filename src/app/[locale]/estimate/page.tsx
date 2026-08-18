@@ -22,6 +22,7 @@ import { UiIcon } from '@/components/estimate/UiIcon'
 import { WebQuotePanel } from '@/components/estimate/WebQuotePanel'
 import { MedinitySectionIcon } from '@/components/medinity/MedinitySectionIcon'
 import { AnimatedWon } from '@/components/medinity/AnimatedWon'
+import { PrintableSpec, type SpecGroup } from '@/components/estimate/PrintableSpec'
 import { motion } from 'framer-motion'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -804,6 +805,27 @@ export default function EstimatePage() {
     return out
   }, [selected, c])
 
+  // 견적서 PDF — 카테고리별 기능명세 그룹
+  const specGroups: SpecGroup[] = useMemo(() => {
+    const out: SpecGroup[] = []
+    for (const cat of CATEGORIES) {
+      const items = cat.items.filter(it => selected.has(it.id))
+      if (items.length === 0) continue
+      out.push({
+        title: c.categoryTitles[cat.id]?.title ?? cat.title,
+        items: items.map(it => ({ label: it.label, price: it.price })),
+      })
+    }
+    return out
+  }, [selected, c])
+
+  const [printDate, setPrintDate] = useState('')
+  function printSpec() {
+    const d = new Date()
+    setPrintDate(`${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`)
+    setTimeout(() => window.print(), 80)
+  }
+
   const calc = useMemo(() => {
     let baseSum = 0, appSum = 0
     const catSum: Record<string, number> = {}
@@ -946,7 +968,8 @@ export default function EstimatePage() {
   const totalItems = CATEGORIES.reduce((a, c) => a + c.items.length, 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-[#2B313D]">
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-[#2B313D] print:bg-white">
+      <style dangerouslySetInnerHTML={{ __html: '@media print{body>*{visibility:hidden}.print-doc,.print-doc *{visibility:visible}}' }} />
       <Script
         src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.1.6/dist/unicornStudio.umd.js"
         strategy="afterInteractive"
@@ -1335,6 +1358,10 @@ export default function EstimatePage() {
               </div>
 
               <div className="space-y-2">
+                <button type="button" onClick={printSpec}
+                  className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#F2F3F5] py-3 text-[13px] font-bold text-[#51535C] transition-colors hover:bg-[#E3E6EB] active:scale-[0.98]">
+                  <MedinitySectionIcon name="printer" className="size-4" /> {c.printQuote}
+                </button>
                 <button type="button" onClick={() => setQuickOpen(true)}
                   className="flex w-full items-center justify-center rounded-[14px] bg-[#3180F7] py-3.5 text-[14px] font-bold text-white transition-colors duration-200 hover:bg-[#2470E6] active:scale-[0.98]">
                   {c.ctaSubmit}
@@ -1353,6 +1380,23 @@ export default function EstimatePage() {
       </section>
       </>
       )}
+
+      {/* 견적서 PDF (인쇄 전용) — 요약 + 맨먼스/투입인원 + 기능명세서 */}
+      <div className="print-doc hidden print:fixed print:inset-0 print:z-[999] print:block print:bg-white">
+        <PrintableSpec
+          title={c.quoteDocTitle}
+          date={printDate}
+          groups={specGroups}
+          subtotal={calc.subtotal}
+          vat={calc.vat}
+          total={calc.subtotal + calc.vat}
+          unit={c.manwonSuffix}
+          totalMM={calc.totalMM}
+          months={Math.max(0.5, calc.calMonths)}
+          team={calc.team.map(({ role, mm }) => ({ role: c.roleLabels[role] || role, mm }))}
+          mmRateLabel={c.mmFootnote(MM_RATE.toLocaleString())}
+        />
+      </div>
 
       {/* Quick Inquiry Modal — 글래스모피즘 + 전체 Spline 배경 */}
       {quickOpen && (

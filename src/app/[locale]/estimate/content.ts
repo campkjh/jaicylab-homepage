@@ -34,6 +34,8 @@ type UI = {
   ctaSubmit: string
   tabApp: string
   tabWeb: string
+  printQuote: string
+  quoteDocTitle: string
   basicReference: string
   monthsSuffix: string
   similarService: string
@@ -187,6 +189,8 @@ const ko: UI = {
   ctaSubmit: '제출하기',
   tabApp: '앱 견적',
   tabWeb: '홈페이지 견적',
+  printQuote: '견적서 PDF 출력',
+  quoteDocTitle: '앱 개발 견적서 · 기능명세서',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
   similarService: '비슷한 서비스',
@@ -357,6 +361,8 @@ const en: UI = {
   ctaSubmit: 'Submit',
   tabApp: 'App',
   tabWeb: 'Website',
+  printQuote: 'Export PDF',
+  quoteDocTitle: 'App Development Quote & Spec',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
   similarService: 'Similar services',
@@ -527,6 +533,8 @@ const ja: UI = {
   ctaSubmit: '送信する',
   tabApp: 'アプリ',
   tabWeb: 'ホームページ',
+  printQuote: '見積書PDF出力',
+  quoteDocTitle: 'アプリ開発 見積書・機能仕様書',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
   similarService: '類似サービス',
@@ -697,6 +705,8 @@ const zh: UI = {
   ctaSubmit: '提交',
   tabApp: 'App',
   tabWeb: '网站',
+  printQuote: '导出报价单 PDF',
+  quoteDocTitle: 'App 开发报价单 · 功能规格书',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',
   similarService: '类似服务',
