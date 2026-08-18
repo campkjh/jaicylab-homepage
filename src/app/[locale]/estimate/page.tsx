@@ -662,6 +662,8 @@ export default function EstimatePage() {
   const [pkgCategory, setPkgCategory] = useState<string>('all')
   // 프리셋 전체 펼치기 — 캐러셀(가로 스크롤) ↔ 그리드(한눈에 보기) 전환
   const [presetsExpanded, setPresetsExpanded] = useState(false)
+  // 프리셋 검색어 (분류탭 옆 검색창)
+  const [presetQuery, setPresetQuery] = useState('')
   const [hoverPkgTier, setHoverPkgTier] = useState<{ pkg: string; tier: TierId } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
   const [query, setQuery] = useState('')
@@ -748,10 +750,12 @@ export default function EstimatePage() {
     el.scrollBy({ left: dir === 'right' ? w : -w, behavior: 'smooth' })
   }
 
-  const filteredPackages = useMemo(
-    () => pkgCategory === 'all' ? PACKAGES : PACKAGES.filter(p => p.category === pkgCategory),
-    [pkgCategory],
-  )
+  const filteredPackages = useMemo(() => {
+    const base = pkgCategory === 'all' ? PACKAGES : PACKAGES.filter(p => p.category === pkgCategory)
+    const q = presetQuery.trim().toLowerCase()
+    if (!q) return base
+    return base.filter(p => `${p.label} ${p.sub}`.toLowerCase().includes(q))
+  }, [pkgCategory, presetQuery])
 
   // 검색 필터
   const q = query.trim().toLowerCase()
@@ -940,7 +944,7 @@ export default function EstimatePage() {
       />
 
       {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/70 backdrop-blur-2xl shadow-[0_6px_28px_-10px_rgba(15,23,42,0.14)]' : 'bg-transparent'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 || presetStuck ? 'bg-white/80 backdrop-blur-2xl shadow-[0_8px_32px_-12px_rgba(15,23,42,0.16)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-slate-900" />
@@ -954,6 +958,48 @@ export default function EstimatePage() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link href="/about#문의" className="rounded-xl bg-slate-900 px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-slate-800 active:scale-95">{c.ctaProject}</Link>
+          </div>
+        </div>
+
+        {/* 프리셋 바 — 헤더와 같은 표면 위에서 높이가 접히듯 펼쳐진다 (경계 없음) */}
+        <div
+          aria-hidden={!presetStuck}
+          className={`grid transition-all duration-[420ms] ease-out ${
+            presetStuck ? 'pointer-events-auto grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0'
+          }`}
+          style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
+        >
+          <div className="overflow-hidden">
+            <div className="mx-auto max-w-[1320px] px-4">
+              <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-2.5">
+            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">{c.presets}</span>
+            {filteredPackages.map(p => {
+              const isActive = activePkg === p.id
+              const tier = isActive && activeTier ? activeTier : 'basic'
+              const price = priceOf(p.tiers[tier])
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
+                  className={`group flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
+                    isActive
+                      ? 'bg-[#EAF2FF] text-[#3180F7]'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-slate-50'}`}>
+                    <EstimateIcon name={p.iconKey} className="h-4 w-4" />
+                  </div>
+                  <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
+                  <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-[#3180F7]' : 'text-[#3180F7]'}`}>
+                    {price.toLocaleString()}{c.manwonSuffix}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+            </div>
           </div>
         </div>
       </header>
@@ -978,7 +1024,8 @@ export default function EstimatePage() {
           </div>
 
           {/* 카테고리 분류탭 — 아이콘 위 / 라벨 아래 (stady 모의고사 분류탭 스타일) */}
-          <div ref={tabsRef} className="scrollbar-hide mt-3.5 flex gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="mt-3.5 flex items-center gap-3">
+          <div ref={tabsRef} className="scrollbar-hide flex min-w-0 flex-1 gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {PACKAGE_CATEGORIES.map(cat => {
               const active = pkgCategory === cat.id
               return (
@@ -1000,6 +1047,24 @@ export default function EstimatePage() {
                 </button>
               )
             })}
+            </div>
+
+            {/* 프리셋 검색 — 탭과 같은 딤드 회색 배경 */}
+            <div className="relative w-[190px] shrink-0">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A4ABBA]"><UiIcon name="search" className="h-4 w-4" /></span>
+              <input
+                value={presetQuery}
+                onChange={e => setPresetQuery(e.target.value)}
+                placeholder={c.presetSearchPlaceholder}
+                className="h-10 w-full rounded-full bg-[#F2F3F5] pl-10 pr-9 text-[13px] text-slate-900 outline-none transition-colors placeholder:text-[#A4ABBA] focus:bg-[#E9EBEF]"
+              />
+              {presetQuery && (
+                <button type="button" onClick={() => setPresetQuery('')} aria-label="검색어 지우기"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4ABBA] transition-colors hover:text-slate-700">
+                  <UiIcon name="x" className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Carousel / 펼침 그리드 */}
@@ -1014,6 +1079,14 @@ export default function EstimatePage() {
               style={{ width: 48, height: 48 }}>
               <UiIcon name="chevron-right" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>}
+
+            {/* 접힌(캐러셀) 상태에서 좌우 끝을 그라데이션으로 페이드 — 잘린 느낌 제거 */}
+            {!presetsExpanded && (
+              <>
+                <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#f7f9fb] to-transparent" />
+                <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#f2f6f9] to-transparent" />
+              </>
+            )}
 
             <div ref={carouselRef} key={`${pkgCategory}-${presetsExpanded}`}
               className={presetsExpanded
@@ -1077,127 +1150,12 @@ export default function EstimatePage() {
         )
       })()}
 
-      {/* Sticky Compact Preset Bar — 프리셋 섹션 스크롤 아웃 시 헤더 아래 부착 */}
-      <div
-        aria-hidden={!presetStuck}
-        className={`fixed inset-x-0 top-[60px] z-40 bg-white/85 shadow-[0_8px_28px_-12px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-all duration-300 ease-out ${
-          presetStuck ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none -translate-y-4 opacity-0'
-        }`}
-      >
-        <div className="mx-auto max-w-[1320px] px-4">
-          <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto py-2.5">
-            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-wide text-slate-400">{c.presets}</span>
-            {filteredPackages.map(p => {
-              const isActive = activePkg === p.id
-              const tier = isActive && activeTier ? activeTier : 'basic'
-              const price = priceOf(p.tiers[tier])
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
-                  className={`group flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
-                    isActive
-                      ? 'bg-[#EAF2FF] text-[#3180F7]'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  <div className={`flex h-6 w-6 items-center justify-center rounded-md ${isActive ? 'bg-white' : 'bg-slate-50'}`}>
-                    <EstimateIcon name={p.iconKey} className="h-4 w-4" />
-                  </div>
-                  <span className="whitespace-nowrap text-[12px] font-semibold">{p.label}</span>
-                  <span className={`whitespace-nowrap text-[11px] font-bold ${isActive ? 'text-[#3180F7]' : 'text-[#3180F7]'}`}>
-                    {price.toLocaleString()}{c.manwonSuffix}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Body */}
       <section className="pb-12 pt-2" id="categories-section">
         <div className="mx-auto grid max-w-[1320px] gap-8 px-6 lg:grid-cols-[1fr_400px]">
 
           {/* LEFT */}
           <div className="space-y-4">
-
-            {/* 프로젝트 조건 */}
-            <div className="rounded-[18px] bg-white p-6 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
-              <p className="text-[12px] font-semibold text-slate-400">{c.projectCondition}</p>
-
-              <div className="mt-4 space-y-4">
-                <div>
-                  <p className="mb-2 text-[11px] font-medium text-slate-500">{c.devModeLabel}</p>
-                  <div className={`flex items-center justify-between rounded-xl px-4 py-3 transition-colors ${nativeMode.id === 'both-native' ? 'bg-[#EAF2FF]' : 'bg-slate-50'}`}>
-                    <div>
-                      <p className="text-[13px] font-bold text-slate-900">{nativeMode.id === 'both-native' ? c.devModeBothNative : nativeMode.id === 'single-native' ? c.devModeSingleNative : c.devModeCross}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-500">
-                        {nativeMode.id === 'both-native' && c.devModeBothNativeDesc}
-                        {nativeMode.id === 'single-native' && c.devModeSingleNativeDesc}
-                        {nativeMode.id === 'cross' && c.devModeCrossDesc}
-                      </p>
-                    </div>
-                    <span className="text-[14px] font-bold text-[#3180F7]">×{nativeMode.mult.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-2 text-[11px] font-medium text-slate-500">{c.designLevel}</p>
-                    <div className="flex gap-2">
-                      {DESIGNS.map(d => {
-                        const dl = d.id === 'template' ? c.designs.template : d.id === 'custom' ? c.designs.custom : c.designs.premium
-                        return (
-                        <button key={d.id} type="button" onClick={() => setDesign(d.id)}
-                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'bg-[#EAF2FF] text-[#3180F7]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                          {dl}
-                          <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
-                        </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-[11px] font-medium text-slate-500">{c.timeline}</p>
-                    <div className="flex gap-2">
-                      {TIMELINES.map(t => {
-                        const tl = t.id === 'normal' ? c.timelines.normal : t.id === 'fast' ? c.timelines.fast : c.timelines.urgent
-                        return (
-                        <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
-                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'bg-[#EAF2FF] text-[#3180F7]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                          {tl}
-                          <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
-                        </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 검색 */}
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><UiIcon name="search" className="h-4 w-4" /></span>
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={c.searchPlaceholder}
-                className="h-12 w-full rounded-[18px] bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_8px_28px_-8px_rgba(15,23,42,0.10)] transition-all placeholder-slate-400"
-              />
-              {query && (
-                <button type="button" onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
-                  <UiIcon name="x" className="h-4 w-4" />
-                </button>
-              )}
-              {q && (
-                <p className="mt-2 pl-2 text-[11px] text-slate-500">
-                  {c.searchMatchesTemplate(Object.values(searchMatches ?? {}).reduce((a, s) => a + s.size, 0), query)}
-                </p>
-              )}
-            </div>
 
             {/* 카테고리 */}
             {CATEGORIES.map((cat, catIdx) => {
@@ -1284,7 +1242,7 @@ export default function EstimatePage() {
 
           {/* RIGHT */}
           <aside>
-            <div className="sticky top-[80px] space-y-4">
+            <div className="scrollbar-hide sticky top-[80px] max-h-[calc(100vh-96px)] space-y-4 overflow-y-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
               <div className="rounded-[24px] bg-white p-5 shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)]">
                 <div className="flex items-center gap-2">
@@ -1295,7 +1253,7 @@ export default function EstimatePage() {
                 </div>
 
                 {selectedLines.length > 0 ? (
-                  <ul className="mt-3 flex max-h-[34vh] flex-col gap-1 overflow-y-auto lg:max-h-[calc(100vh-460px)]">
+                  <ul className="mt-3 flex max-h-[34vh] flex-col gap-1 overflow-y-auto lg:max-h-[38vh]">
                     {selectedLines.map(l => (
                       <li key={l.id} className="group/li flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-slate-50">
                         <span className="min-w-0 flex-1">
@@ -1331,38 +1289,6 @@ export default function EstimatePage() {
                     <span key={calc.subtotal} className="animate-[priceBump_0.35s_ease-out] tabular-nums text-[#3180F7]">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="rounded-[18px] bg-white p-6 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
-                <p className="text-[12px] font-semibold text-slate-400">{c.teamAllocation}</p>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[11px] text-slate-500">{c.totalMM}</p>
-                    <p className="mt-1 text-[24px] font-bold text-[#3180F7]">{calc.totalMM.toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">MM</span></p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-slate-500">{c.estDuration}</p>
-                    <p className="mt-1 text-[24px] font-bold text-[#3180F7]">{Math.max(0.5, calc.calMonths).toFixed(1)}<span className="ml-1 text-[12px] font-normal text-slate-400">{c.monthsUnit}</span></p>
-                  </div>
-                </div>
-
-                {calc.team.length > 0 ? (
-                  <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4">
-                    {calc.team.map(({ role, mm }, i) => (
-                      <li key={role} style={{ animationDelay: `${i * 40}ms` }} className="flex animate-[fadeUp_0.4s_ease-out_both] items-center justify-between text-[12px]">
-                        <span className="text-slate-600">{c.roleLabels[role] || role}</span>
-                        <span className="font-mono text-slate-900">{mm.toFixed(1)} MM</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-700">
-                    <UiIcon name="alert-circle" className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{c.selectItemsNotice}</span>
-                  </div>
-                )}
-
-                <p className="mt-4 text-[10px] leading-relaxed text-slate-400">{c.mmFootnote(MM_RATE.toLocaleString())}</p>
               </div>
 
               <div className="space-y-2">
