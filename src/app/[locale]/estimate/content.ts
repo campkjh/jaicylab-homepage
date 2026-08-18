@@ -35,6 +35,8 @@ type UI = {
   tabApp: string
   tabWeb: string
   printQuote: string
+  toastNeedContact: string
+  toastBadEmail: string
   quoteDocTitle: string
   basicReference: string
   monthsSuffix: string
@@ -190,6 +192,8 @@ const ko: UI = {
   tabApp: '앱 견적',
   tabWeb: '홈페이지 견적',
   printQuote: '견적서 PDF 출력',
+  toastNeedContact: '연락처와 이메일을 입력해 주세요.',
+  toastBadEmail: '이메일 형식을 확인해 주세요.',
   quoteDocTitle: '앱 개발 견적서 · 기능명세서',
   basicReference: '(Basic 기준)',
   monthsSuffix: '개월',
@@ -362,6 +366,8 @@ const en: UI = {
   tabApp: 'App',
   tabWeb: 'Website',
   printQuote: 'Export PDF',
+  toastNeedContact: 'Please enter your phone and email.',
+  toastBadEmail: 'Please check the email format.',
   quoteDocTitle: 'App Development Quote & Spec',
   basicReference: '(Basic tier)',
   monthsSuffix: ' mo',
@@ -534,6 +540,8 @@ const ja: UI = {
   tabApp: 'アプリ',
   tabWeb: 'ホームページ',
   printQuote: '見積書PDF出力',
+  toastNeedContact: '電話番号とメールアドレスを入力してください。',
+  toastBadEmail: 'メール形式をご確認ください。',
   quoteDocTitle: 'アプリ開発 見積書・機能仕様書',
   basicReference: '(Basic 基準)',
   monthsSuffix: 'ヶ月',
@@ -706,6 +714,8 @@ const zh: UI = {
   tabApp: 'App',
   tabWeb: '网站',
   printQuote: '导出报价单 PDF',
+  toastNeedContact: '请输入电话与邮箱。',
+  toastBadEmail: '请检查邮箱格式。',
   quoteDocTitle: 'App 开发报价单 · 功能规格书',
   basicReference: '(以 Basic 档为准)',
   monthsSuffix: '个月',

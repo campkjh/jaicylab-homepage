@@ -145,6 +145,52 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '전송에 실패했어요. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
     }
 
+    // 고객에게도 같은 견적서를 보낸다. (실패해도 접수 자체는 성공 처리)
+    if (replyTo) {
+      const itemsHtml = (items ?? [])
+        .map(i => `<tr><td style="padding:5px 0;color:#334155;font-size:13px;border-bottom:1px solid #EEF1F5">${escapeHtml(i)}</td></tr>`)
+        .join('')
+      const customerHtml = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:640px;margin:0 auto;padding:28px;background:#F7F9FB;color:#2B313D">
+          <div style="font-size:11px;font-weight:700;color:#3180F7;letter-spacing:.15em">JAICYLAB · 견적서</div>
+          <h1 style="margin:10px 0 4px;font-size:22px;font-weight:800">요청하신 견적서입니다</h1>
+          <p style="margin:0 0 22px;font-size:13px;color:#51535C">아래 내용으로 접수되었습니다. 담당자가 곧 연락드리겠습니다.</p>
+          <div style="background:#fff;border-radius:16px;padding:20px">
+            ${summary ? `
+              <div style="font-size:11px;font-weight:700;color:#3180F7;margin-bottom:10px">견적 요약</div>
+              <div style="font-size:13px;color:#51535C;line-height:2">
+                ${typeof summary.subtotal === 'number' ? `<div style="display:flex;justify-content:space-between"><span>공급가</span><b style="color:#2B313D">${summary.subtotal.toLocaleString()}만원</b></div>` : ''}
+                ${typeof summary.vat === 'number' ? `<div style="display:flex;justify-content:space-between"><span>부가세 (10%)</span><b style="color:#2B313D">${summary.vat.toLocaleString()}만원</b></div>` : ''}
+                ${typeof summary.total === 'number' ? `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:16px"><span><b>합계 (VAT 포함)</b></span><b style="color:#3180F7">${summary.total.toLocaleString()}만원</b></div>` : ''}
+              </div>
+              ${typeof summary.totalMM === 'number' ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid #EEF1F5;font-size:13px;color:#51535C">총 맨먼스 <b style="color:#2B313D">${summary.totalMM.toFixed(1)} MM</b>${typeof summary.calMonths === 'number' ? ` · 예상 기간 <b style="color:#2B313D">${summary.calMonths.toFixed(1)}개월</b>` : ''}</div>` : ''}
+            ` : ''}
+            ${itemsHtml ? `
+              <div style="margin-top:18px;padding-top:16px;border-top:1px solid #EEF1F5">
+                <div style="font-size:11px;font-weight:700;color:#3180F7;margin-bottom:8px">기능 명세 (${items!.length}개)</div>
+                <table style="width:100%;border-collapse:collapse"><tbody>${itemsHtml}</tbody></table>
+              </div>
+            ` : ''}
+          </div>
+          <p style="margin-top:20px;font-size:11px;line-height:1.8;color:#A4ABBA">
+            본 견적서는 선택하신 항목을 기준으로 자동 산출된 참고용 금액입니다. 실제 계약 금액은 상세 요구사항 확정 후 조정될 수 있습니다.<br />
+            문의 jaicylab2009@gmail.com · jaicylab.com
+          </p>
+        </div>`
+      try {
+        await resend.emails.send({
+          from,
+          to: replyTo,
+          subject: `[제이씨랩] 요청하신 견적서${summary?.total ? ` · ${summary.total.toLocaleString()}만원` : ''}`,
+          text,
+          html: customerHtml,
+          replyTo: to,
+        })
+      } catch (e) {
+        console.error('[inquiry] customer copy failed', e)
+      }
+    }
+
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('[inquiry] error', e)

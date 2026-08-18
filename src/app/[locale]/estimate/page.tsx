@@ -918,11 +918,12 @@ export default function EstimatePage() {
 
   async function handleQuickSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!quick.name || !quick.phone) { toast.error(c.toastNeedName); return }
+    if (!quick.phone || !quick.email) { toast.error(c.toastNeedContact); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quick.email)) { toast.error(c.toastBadEmail); return }
     if (selected.size === 0) { toast.error(c.toastNeedItem); return }
     setQuickSending(true)
     try {
-      await sendInquiry({ name: quick.name, phone: quick.phone, email: quick.email, memo: quick.memo })
+      await sendInquiry({ name: quick.email.split('@')[0], phone: quick.phone, email: quick.email, memo: quick.memo })
       toast.success(c.toastQuickOk)
       setQuick({ name: '', phone: '', email: '', memo: '' })
       setQuickOpen(false)
@@ -1283,26 +1284,6 @@ export default function EstimatePage() {
                 </div>
               )
             })}
-
-            {/* 견적서 요청 */}
-            <div className="mt-12 rounded-[18px] bg-white p-7">
-              <p className="text-[12px] font-semibold text-[#3180F7]">{c.requestEyebrow}</p>
-              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-[#2B313D]">{c.requestTitle}</h2>
-              <p className="mt-2 text-[13px] text-[#51535C]">{c.requestDesc}</p>
-              <form onSubmit={handleSubmit} className="mt-6 space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-[#F2F3F5] px-4 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
-                </div>
-                <textarea className="h-28 w-full resize-none rounded-xl bg-[#F2F3F5] px-4 py-3 text-[14px] text-[#2B313D] outline-none transition-all placeholder-[#A4ABBA] focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
-                <FileDropzone theme="light" files={files} onChange={setFiles} />
-                <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2B313D] py-3.5 text-[15px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-[0.98] disabled:opacity-50">
-                  <UiIcon name="send" className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
-                </button>
-              </form>
-            </div>
           </div>
 
           {/* RIGHT */}
@@ -1489,9 +1470,8 @@ export default function EstimatePage() {
               <form onSubmit={handleQuickSubmit} className="px-7 pb-7 pt-2">
                 <div className="space-y-3">
                   {[
-                    { key: 'name',  label: c.quickName,   required: true,  value: quick.name,  placeholder: c.quickNamePh },
-                    { key: 'phone', label: c.quickPhone, required: true,  value: quick.phone, placeholder: c.quickPhonePh },
-                    { key: 'email', label: c.quickEmail, required: false, value: quick.email, placeholder: c.quickEmailPh },
+                    { key: 'phone', label: c.quickPhone, required: true, value: quick.phone, placeholder: c.quickPhonePh },
+                    { key: 'email', label: c.quickEmail, required: true, value: quick.email, placeholder: c.quickEmailPh },
                   ].map((f, i) => (
                     <div key={f.key} className="group relative animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: `${260 + i * 70}ms` }}>
                       <input
