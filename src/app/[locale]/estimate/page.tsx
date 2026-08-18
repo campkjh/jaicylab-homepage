@@ -944,7 +944,7 @@ export default function EstimatePage() {
       />
 
       {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 || presetStuck ? 'bg-white/80 backdrop-blur-2xl shadow-[0_8px_32px_-12px_rgba(15,23,42,0.16)]' : 'bg-transparent'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 || presetStuck ? 'bg-white/80 backdrop-blur-2xl shadow-[0_2px_12px_-6px_rgba(15,23,42,0.08)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1320px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-slate-900" />
@@ -1080,19 +1080,15 @@ export default function EstimatePage() {
               <UiIcon name="chevron-right" className="h-5 w-5 text-slate-800 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>}
 
-            {/* 접힌(캐러셀) 상태에서 좌우 끝을 그라데이션으로 페이드 — 잘린 느낌 제거 */}
-            {!presetsExpanded && (
-              <>
-                <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#f7f9fb] to-transparent" />
-                <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#f2f6f9] to-transparent" />
-              </>
-            )}
-
             <div ref={carouselRef} key={`${pkgCategory}-${presetsExpanded}`}
               className={presetsExpanded
                 ? 'grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 px-1 py-3'
                 : 'scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-smooth px-1 py-3'}
-              style={{ scrollbarWidth: 'none' }}>
+              style={presetsExpanded ? { scrollbarWidth: 'none' } : {
+                scrollbarWidth: 'none',
+                maskImage: 'linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 56px), transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 56px), transparent 100%)',
+              }}>
               {filteredPackages.map((p, idx) => (
                 <PackageCard key={p.id} p={p} idx={idx} c={c} expanded={presetsExpanded}
                   isActivePkg={activePkg === p.id}
@@ -1165,7 +1161,7 @@ export default function EstimatePage() {
               const catTotal = cat.items.filter(i => selected.has(i.id)).reduce((a, b) => a + b.price, 0)
               const visibleItems = searchMatches ? cat.items.filter(i => searchMatches[cat.id].has(i.id)) : cat.items
               return (
-                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] bg-white shadow-[0_10px_40px_-10px_rgba(15,23,42,0.10)] transition-all duration-300 hover:shadow-[0_18px_56px_-12px_rgba(15,23,42,0.16)]">
+                <div key={cat.id} style={{ animationDelay: `${catIdx * 30}ms` }} className="animate-[fadeUp_0.5s_ease-out_both] rounded-[18px] bg-white transition-all duration-300">
                   <div className="flex items-center justify-between px-5 py-4">
                     <button type="button" onClick={() => toggleCat(cat.id)} className="flex flex-1 items-center gap-3 text-left">
                       <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-slate-50 transition-transform duration-300 hover:scale-110">
@@ -1220,7 +1216,7 @@ export default function EstimatePage() {
             })}
 
             {/* 견적서 요청 */}
-            <div className="mt-12 rounded-[18px] bg-white p-7 shadow-[0_12px_44px_-10px_rgba(15,23,42,0.12)]">
+            <div className="mt-12 rounded-[18px] bg-white p-7">
               <p className="text-[12px] font-semibold text-[#3180F7]">{c.requestEyebrow}</p>
               <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.requestTitle}</h2>
               <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
@@ -1242,9 +1238,9 @@ export default function EstimatePage() {
 
           {/* RIGHT */}
           <aside>
-            <div className="scrollbar-hide sticky top-[80px] max-h-[calc(100vh-96px)] space-y-4 overflow-y-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            <div className={`scrollbar-hide sticky space-y-4 overflow-y-auto pb-1 transition-all duration-300 ${presetStuck ? 'top-[136px] max-h-[calc(100vh-152px)]' : 'top-[80px] max-h-[calc(100vh-96px)]'}`} style={{ scrollbarWidth: 'none' }}>
               {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
-              <div className="rounded-[24px] bg-white p-5 shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)]">
+              <div className="rounded-[24px] bg-white p-5">
                 <div className="flex items-center gap-2">
                   <h2 className="text-[15px] font-bold text-slate-900">{c.totalEstimate}</h2>
                   <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
