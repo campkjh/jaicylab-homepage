@@ -548,25 +548,6 @@ function PackageCard({
   onHoverLeave: (tier: TierId) => void;
   c: typeof ESTIMATE_CONTENT['ko'];
 }) {
-  const gridRef = useRef<HTMLDivElement>(null)
-  const [pill, setPill] = useState<{ left: number; width: number; color: string } | null>(null)
-
-  useLayoutEffect(() => {
-    function measure() {
-      if (!isActivePkg || !activeTier) { setPill(null); return }
-      const grid = gridRef.current
-      if (!grid) return
-      const btn = grid.querySelector<HTMLElement>(`[data-tier="${activeTier}"]`)
-      if (!btn) return
-      const gr = grid.getBoundingClientRect()
-      const br = btn.getBoundingClientRect()
-      setPill({ left: br.left - gr.left, width: br.width, color: TIER_HEX[activeTier] })
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [isActivePkg, activeTier])
-
   // 카드 하단 키워드 태그 (sub를 '·'로 분리)
   const keywords = p.sub.split(/\s*[·•,]\s*/).filter(Boolean)
 
@@ -576,8 +557,12 @@ function PackageCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={() => applyTier(p, 'basic')}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyTier(p, 'basic') } }}
       style={{ animationDelay: `${idx * 40}ms` }}
-      className={`group relative flex animate-[fadeUp_0.5s_ease-out_both] flex-col rounded-[18px] bg-white p-5 shadow-[0_10px_40px_-8px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_64px_-12px_rgba(15,23,42,0.18)] ${expanded ? 'w-full' : 'w-[300px] shrink-0 snap-start'}`}
+      className={`group relative flex animate-[fadeUp_0.5s_ease-out_both] flex-col cursor-pointer rounded-[18px] bg-white p-5 transition-all duration-300 hover:-translate-y-1 ${expanded ? 'w-full' : 'w-[300px] shrink-0 snap-start'}`}
     >
       <div className="flex items-start gap-3">
         <div
@@ -608,35 +593,6 @@ function PackageCard({
         <span className="text-slate-300">·</span>
         <span className="font-semibold text-slate-700">{avgMonths.toFixed(1)}{c.monthsSuffix}</span>
         <span className="text-slate-400">{c.basicReference}</span>
-      </div>
-
-      {/* 알약 티어 버튼 + 슬라이딩 인디케이터 (색 변화·라디얼 펄스 없음) */}
-      <div ref={gridRef} className="relative mt-3 grid grid-cols-5 gap-1.5">
-        {pill && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute top-0 z-0 h-[44px] rounded-full bg-slate-200 transition-all duration-[550ms]"
-            style={{
-              left: pill.left,
-              width: pill.width,
-              transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-            }}
-          />
-        )}
-        {TIER_ORDER.map(t => {
-          const meta = TIER_META[t]
-          const tierActive = isActivePkg && activeTier === t
-          return (
-            <div key={t} data-tier={t} className="relative z-10"
-              onMouseEnter={e => onHoverEnter(t, (e.currentTarget as HTMLElement).getBoundingClientRect())}
-              onMouseLeave={() => onHoverLeave(t)}>
-              <button type="button" onClick={() => applyTier(p, t)}
-                className={`relative flex h-[44px] w-full items-center justify-center rounded-full text-[12px] font-semibold text-slate-700 outline-none transition-colors duration-300 active:scale-95 focus-visible:ring-2 focus-visible:ring-slate-300 ${tierActive ? '' : 'bg-slate-50 hover:bg-slate-100'}`}>
-                {meta.label.charAt(0)}
-              </button>
-            </div>
-          )
-        })}
       </div>
 
       {isActivePkg && activeTier && (
@@ -997,7 +953,7 @@ export default function EstimatePage() {
 
 
       {/* PACKAGES CAROUSEL */}
-      <section ref={presetSectionRef} className={`relative bg-white pb-12 pt-[92px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
+      <section ref={presetSectionRef} className={`relative pb-2 pt-[84px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -1023,7 +979,7 @@ export default function EstimatePage() {
             {pill && (
               <span
                 aria-hidden
-                className="pointer-events-none absolute z-0 rounded-full bg-[#3180F7] shadow-[0_4px_16px_rgba(49,128,247,0.28)] transition-all duration-[450ms]"
+                className="pointer-events-none absolute z-0 rounded-full bg-[#3180F7] transition-all duration-[450ms]"
                 style={{
                   left: pill.left, top: pill.top, width: pill.width, height: pill.height,
                   transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1140,7 +1096,7 @@ export default function EstimatePage() {
                   onClick={() => applyTier(p, isActive && activeTier ? activeTier : 'basic')}
                   className={`group flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px ${
                     isActive
-                      ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_20px_-6px_rgba(49,128,247,0.45)]'
+                      ? 'bg-[#EAF2FF] text-[#3180F7]'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -1159,7 +1115,7 @@ export default function EstimatePage() {
       </div>
 
       {/* Body */}
-      <section className="py-12" id="categories-section">
+      <section className="pb-12 pt-2" id="categories-section">
         <div className="mx-auto grid max-w-[1320px] gap-8 px-6 lg:grid-cols-[1fr_400px]">
 
           {/* LEFT */}
@@ -1193,7 +1149,7 @@ export default function EstimatePage() {
                         const dl = d.id === 'template' ? c.designs.template : d.id === 'custom' ? c.designs.custom : c.designs.premium
                         return (
                         <button key={d.id} type="button" onClick={() => setDesign(d.id)}
-                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_18px_-6px_rgba(49,128,247,0.45)]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${design === d.id ? 'bg-[#EAF2FF] text-[#3180F7]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                           {dl}
                           <span className="ml-1 text-[10px] opacity-60">×{d.mult.toFixed(2)}</span>
                         </button>
@@ -1208,7 +1164,7 @@ export default function EstimatePage() {
                         const tl = t.id === 'normal' ? c.timelines.normal : t.id === 'fast' ? c.timelines.fast : c.timelines.urgent
                         return (
                         <button key={t.id} type="button" onClick={() => setTimeline(t.id)}
-                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'bg-[#EAF2FF] text-[#3180F7] shadow-[0_6px_18px_-6px_rgba(49,128,247,0.45)]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                          className={`flex-1 rounded-lg px-3 py-2 text-[11px] font-bold transition-all duration-200 hover:scale-[1.02] ${timeline === t.id ? 'bg-[#EAF2FF] text-[#3180F7]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                           {tl}
                           <span className="ml-1 text-[10px] opacity-60">×{t.mult.toFixed(2)}</span>
                         </button>
@@ -1227,7 +1183,7 @@ export default function EstimatePage() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={c.searchPlaceholder}
-                className="h-12 w-full rounded-[18px] bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_8px_28px_-8px_rgba(15,23,42,0.10)] transition-all placeholder-slate-400 focus:shadow-[0_10px_34px_-8px_rgba(49,128,247,0.28)]"
+                className="h-12 w-full rounded-[18px] bg-white pl-11 pr-11 text-[14px] text-slate-900 outline-none shadow-[0_8px_28px_-8px_rgba(15,23,42,0.10)] transition-all placeholder-slate-400"
               />
               {query && (
                 <button type="button" onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
@@ -1310,12 +1266,12 @@ export default function EstimatePage() {
               <p className="mt-2 text-[13px] text-slate-500">{c.requestDesc}</p>
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
-                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.company} value={contact.company} onChange={e => setContact({ ...contact, company: e.target.value })} />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.manager} value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.phone} value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} required />
+                  <input className="h-12 w-full rounded-xl bg-slate-50 px-4 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.email} type="email" value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} />
                 </div>
-                <textarea className="h-28 w-full resize-none rounded-xl bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white focus:shadow-[0_8px_28px_-10px_rgba(49,128,247,0.35)]" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
+                <textarea className="h-28 w-full resize-none rounded-xl bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-all placeholder-slate-400 focus:bg-white" placeholder={c.extraMemo} value={contact.memo} onChange={e => setContact({ ...contact, memo: e.target.value })} />
                 <FileDropzone theme="light" files={files} onChange={setFiles} />
                 <button type="submit" disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-50">
                   <UiIcon name="send" className="h-4 w-4" /> {sending ? c.sending : c.submitDiscountCta}
