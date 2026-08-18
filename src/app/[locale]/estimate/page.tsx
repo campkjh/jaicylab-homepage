@@ -20,6 +20,8 @@ import { Logo } from '@/components/Logo'
 import { EstimateIcon } from '@/components/estimate/EstimateIcon'
 import { UiIcon } from '@/components/estimate/UiIcon'
 import { WebQuotePanel } from '@/components/estimate/WebQuotePanel'
+import { MedinitySectionIcon } from '@/components/medinity/MedinitySectionIcon'
+import { AnimatedWon } from '@/components/medinity/AnimatedWon'
 import { motion } from 'framer-motion'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -668,6 +670,13 @@ export default function EstimatePage() {
   const [presetQuery, setPresetQuery] = useState('')
   // 견적 종류 탭 — 앱 / 홈페이지(메디니티 카탈로그)
   const [quoteKind, setQuoteKind] = useState<'app' | 'web'>('app')
+  // 탭 전환 시 이전 탭의 스크롤 상태(프리셋 바 부착)가 남지 않도록 초기화
+  function switchQuoteKind(kind: 'app' | 'web') {
+    if (kind === quoteKind) return
+    setPresetStuck(false)
+    setQuoteKind(kind)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
   const [hoverPkgTier, setHoverPkgTier] = useState<{ pkg: string; tier: TierId } | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
   const [query, setQuery] = useState('')
@@ -694,7 +703,7 @@ export default function EstimatePage() {
       window.removeEventListener('scroll', check)
       window.removeEventListener('resize', check)
     }
-  }, [])
+  }, [quoteKind])
   const [pill, setPill] = useState<{ left: number; top: number; width: number; height: number } | null>(null)
 
   useLayoutEffect(() => {
@@ -1017,7 +1026,7 @@ export default function EstimatePage() {
               <button
                 key={id}
                 type="button"
-                onClick={() => setQuoteKind(id)}
+                onClick={() => switchQuoteKind(id)}
                 className={`relative flex-1 rounded-[13px] px-3 py-2 text-[13px] font-semibold transition-colors ${on ? 'text-[#2B313D]' : 'text-[#A4ABBA] hover:text-[#51535C]'}`}
               >
                 {on && (
@@ -1139,8 +1148,6 @@ export default function EstimatePage() {
         </div>
       </section>
 
-      </>
-      )}
 
       {/* Floating Tooltip (fixed — carousel overflow 바깥) */}
       {hoverPkgTier && tooltipPos && (() => {
@@ -1281,6 +1288,7 @@ export default function EstimatePage() {
               {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
               <div className="rounded-[24px] bg-white p-5">
                 <div className="flex items-center gap-2">
+                  <MedinitySectionIcon name="summary" className="size-5" />
                   <h2 className="text-[15px] font-bold text-[#2B313D]">{c.totalEstimate}</h2>
                   <span className="ml-auto rounded-full bg-[#F2F3F5] px-2 py-0.5 text-[11px] font-semibold text-[#51535C]">
                     {c.selectedCount(selectedLines.length)}
@@ -1321,7 +1329,7 @@ export default function EstimatePage() {
                   <div className="flex justify-between text-[#51535C]"><span>{c.vatLine}</span><span className="tabular-nums">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
                   <div className="flex items-center justify-between pt-1 text-base font-bold">
                     <span className="text-[#2B313D]">{c.vatIncludedFinal}</span>
-                    <span key={calc.subtotal} className="animate-[priceBump_0.35s_ease-out] tabular-nums text-[#3180F7]">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span>
+                    <span className="tabular-nums text-[#3180F7]"><AnimatedWon value={calc.subtotal + calc.vat} format={v => `${Math.round(v).toLocaleString()}${c.manwonSuffix}`} /></span>
                   </div>
                 </div>
               </div>
@@ -1343,6 +1351,8 @@ export default function EstimatePage() {
           </aside>
         </div>
       </section>
+      </>
+      )}
 
       {/* Quick Inquiry Modal — 글래스모피즘 + 전체 Spline 배경 */}
       {quickOpen && (

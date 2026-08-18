@@ -8,13 +8,13 @@ import { formatWon } from '@/data/medinity'
  * 값이 바뀔 때 숫자가 촤라락 굴러 올라가며 살짝 블러가 걸렸다 선명해지는 카운팅 애니메이션.
  * 오르면 아래에서 위로, 내리면 위에서 아래로 흐른다.
  */
-export function AnimatedWon({ value, className }: { value: number; className?: string }) {
+export function AnimatedWon({ value, className, format }: { value: number; className?: string; /** 기본은 원 단위(formatWon). 만원 단위 등 다른 표기는 이 함수로 주입한다. */ format?: (v: number) => string }) {
   const mv = useMotionValue(value)
   const blur = useMotionValue(0)
   const y = useMotionValue(0)
   const prev = useRef(value)
 
-  const text = useTransform(mv, v => formatWon(v))
+  const text = useTransform(mv, v => (format ? format(v) : formatWon(v)))
   const filter = useTransform(blur, b => `blur(${b}px)`)
 
   useEffect(() => {
