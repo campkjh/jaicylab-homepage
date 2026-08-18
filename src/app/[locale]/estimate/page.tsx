@@ -774,6 +774,19 @@ export default function EstimatePage() {
     return { id: 'cross', mult: 1.0, label: '크로스플랫폼 / 단일 OS' }
   }, [selected])
 
+  // 선택 항목 목록 (견적 요약 카드용) — 카테고리 표시 순서 유지
+  const selectedLines = useMemo(() => {
+    const out: { id: string; label: string; price: number; catTitle: string }[] = []
+    for (const cat of CATEGORIES) {
+      for (const it of cat.items) {
+        if (selected.has(it.id)) {
+          out.push({ id: it.id, label: it.label, price: it.price, catTitle: c.categoryTitles[cat.id]?.title ?? cat.title })
+        }
+      }
+    }
+    return out
+  }, [selected, c])
+
   const calc = useMemo(() => {
     let baseSum = 0, appSum = 0
     const catSum: Record<string, number> = {}
@@ -947,14 +960,10 @@ export default function EstimatePage() {
 
 
       {/* PACKAGES CAROUSEL */}
-      <section ref={presetSectionRef} className={`relative pb-2 pt-[84px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
+      <section ref={presetSectionRef} className={`relative pb-1 pt-[76px] transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
           <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[12px] font-semibold text-[#3180F7]">{c.quickStartEyebrow}</p>
-              <h2 className="mt-1 text-[22px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
-              <p className="mt-2 text-[13px] text-slate-500">{c.packageDesc}</p>
-            </div>
+            <h2 className="text-[20px] font-bold tracking-tight text-slate-900">{c.packageCountTitle(PACKAGES.length)}</h2>
             <div className="flex shrink-0 items-center gap-3">
               {activePkg && <button onClick={clearAll} className="text-[12px] text-slate-400 hover:text-slate-700">{c.resetSelection}</button>}
               <button
@@ -968,27 +977,26 @@ export default function EstimatePage() {
             </div>
           </div>
 
-          {/* 카테고리 필터 — 슬라이딩 알약 인디케이터 */}
-          <div ref={tabsRef} className="relative mt-5 flex flex-wrap gap-2">
-            {pill && (
-              <span
-                aria-hidden
-                className="pointer-events-none absolute z-0 rounded-full bg-[#3180F7] transition-all duration-[450ms]"
-                style={{
-                  left: pill.left, top: pill.top, width: pill.width, height: pill.height,
-                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                }}
-              />
-            )}
-            {PACKAGE_CATEGORIES.map(c => {
-              const active = pkgCategory === c.id
+          {/* 카테고리 분류탭 — 아이콘 위 / 라벨 아래 (stady 모의고사 분류탭 스타일) */}
+          <div ref={tabsRef} className="scrollbar-hide mt-3.5 flex gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {PACKAGE_CATEGORIES.map(cat => {
+              const active = pkgCategory === cat.id
               return (
                 <button
-                  key={c.id} type="button" data-tab-id={c.id}
-                  onClick={() => setPkgCategory(c.id)}
-                  className={`relative z-10 rounded-full px-4 py-2 text-[12px] font-semibold transition-colors duration-300 active:scale-95 ${active ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
+                  key={cat.id} type="button" data-tab-id={cat.id}
+                  onClick={() => setPkgCategory(cat.id)}
+                  className="group flex w-[76px] shrink-0 flex-col items-center gap-1 px-0.5 pb-1.5 pt-1"
                 >
-                  {c.label}
+                  <span
+                    className={`grid h-11 w-11 place-items-center rounded-[14px] transition-all duration-150 group-active:scale-[0.94] ${
+                      active ? 'bg-[#F2F3F5]' : 'group-hover:bg-[#F2F3F5]/70'
+                    }`}
+                  >
+                    <UiIcon name={`pkg-${cat.id}`} className={`h-6 w-6 transition-colors duration-150 ${active ? 'text-[#2B313D]' : 'text-[#A4ABBA]'}`} />
+                  </span>
+                  <span className={`whitespace-nowrap text-[11px] font-bold leading-tight tracking-tight transition-colors duration-150 ${active ? 'text-[#2B313D]' : 'text-[#A4ABBA]'}`}>
+                    {cat.label}
+                  </span>
                 </button>
               )
             })}
@@ -1277,28 +1285,50 @@ export default function EstimatePage() {
           {/* RIGHT */}
           <aside>
             <div className="sticky top-[80px] space-y-4">
-              <div className="relative overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_18px_60px_-12px_rgba(15,23,42,0.18)] transition-all duration-300 hover:shadow-[0_26px_78px_-14px_rgba(15,23,42,0.24)]">
-                <div className="relative">
-                  <p className="text-[12px] font-semibold text-[#3180F7]">{c.totalEstimate}</p>
-                  <p className="mt-3 text-[11px] text-slate-500">{c.supplyPrice} <span className="text-slate-400">{c.vatExcluded}</span></p>
-                  <p key={calc.subtotal} className="mt-1 animate-[priceBump_0.35s_ease-out] text-[42px] font-bold leading-tight tracking-tight text-[#3180F7]">
-                    {fmt(calc.subtotal)}<span className="ml-1 text-[14px] font-medium text-slate-400">{c.wonSuffix}</span>
-                  </p>
+              {/* 견적 요약 — 메디니티 장바구니 구성 (헤더 + 선택 항목 + 컴팩트 합계) */}
+              <div className="rounded-[24px] bg-white p-5 shadow-[0_10px_40px_-4px_rgba(15,23,42,0.08)]">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[15px] font-bold text-slate-900">{c.totalEstimate}</h2>
+                  <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                    {c.selectedCount(selectedLines.length)}
+                  </span>
+                </div>
 
-                  <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-[12px]">
-                    <div className="flex justify-between text-slate-500"><span>{c.itemsTotal}</span><span className="text-slate-900">{calc.baseSum.toLocaleString()}{c.manwonSuffix}</span></div>
-                    {calc.nativeAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>{c.nativeAdjust} (×{nativeMode.mult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.nativeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
-                    )}
-                    {calc.designAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>{c.designAdjust} (×{calc.designMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.designAdd).toLocaleString()}{c.manwonSuffix}</span></div>
-                    )}
-                    {calc.timeAdd > 0 && (
-                      <div className="flex justify-between text-slate-500"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="text-slate-900">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
-                    )}
-                    <div className="flex justify-between border-t border-slate-100 pt-2 text-[13px]"><span className="font-bold text-slate-900">{c.supplyPriceBold}</span><span className="font-bold text-[#3180F7]">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
-                    <div className="flex justify-between text-slate-500"><span>{c.vatLine}</span><span className="text-slate-900">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
-                    <div className="flex justify-between text-slate-500"><span>{c.vatIncludedFinal}</span><span className="text-slate-700">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span></div>
+                {selectedLines.length > 0 ? (
+                  <ul className="mt-3 flex max-h-[34vh] flex-col gap-1 overflow-y-auto lg:max-h-[calc(100vh-460px)]">
+                    {selectedLines.map(l => (
+                      <li key={l.id} className="group/li flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] hover:bg-slate-50">
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-slate-800">{l.label}</span>
+                          <span className="block truncate text-[11px] text-slate-400">{l.catTitle}</span>
+                        </span>
+                        <span className="shrink-0 tabular-nums text-slate-700">{l.price.toLocaleString()}{c.manwonSuffix}</span>
+                        <button onClick={() => toggle(l.id)} aria-label="제거" className="shrink-0 text-slate-300 transition hover:text-red-500">
+                          <UiIcon name="x" className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 rounded-lg bg-slate-50 px-3 py-6 text-center text-[12px] text-slate-400">{c.selectItemsNotice}</p>
+                )}
+
+                <div className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-[13px]">
+                  <div className="flex justify-between text-slate-500"><span>{c.itemsTotal}</span><span className="tabular-nums">{calc.baseSum.toLocaleString()}{c.manwonSuffix}</span></div>
+                  {calc.nativeAdd > 0 && (
+                    <div className="flex justify-between text-slate-500"><span>{c.nativeAdjust} (×{nativeMode.mult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.nativeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                  )}
+                  {calc.designAdd > 0 && (
+                    <div className="flex justify-between text-slate-500"><span>{c.designAdjust} (×{calc.designMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.designAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                  )}
+                  {calc.timeAdd > 0 && (
+                    <div className="flex justify-between text-slate-500"><span>{c.timelineAdjust} (×{calc.timeMult.toFixed(2)})</span><span className="tabular-nums">+{Math.round(calc.timeAdd).toLocaleString()}{c.manwonSuffix}</span></div>
+                  )}
+                  <div className="flex justify-between text-slate-500"><span>{c.supplyPriceBold}</span><span className="tabular-nums">{calc.subtotal.toLocaleString()}{c.manwonSuffix}</span></div>
+                  <div className="flex justify-between text-slate-500"><span>{c.vatLine}</span><span className="tabular-nums">+{calc.vat.toLocaleString()}{c.manwonSuffix}</span></div>
+                  <div className="flex items-center justify-between pt-1 text-base font-bold">
+                    <span className="text-slate-900">{c.vatIncludedFinal}</span>
+                    <span key={calc.subtotal} className="animate-[priceBump_0.35s_ease-out] tabular-nums text-[#3180F7]">{(calc.subtotal + calc.vat).toLocaleString()}{c.manwonSuffix}</span>
                   </div>
                 </div>
               </div>
