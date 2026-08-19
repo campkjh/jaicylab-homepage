@@ -191,7 +191,7 @@ export default function GuidesIndexPage() {
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-[#2B313D]" />
           </Link>
-          <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
+          <nav className="hidden items-center gap-1 rounded-[14px] bg-[#F2F3F5] p-1 md:flex">
             <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.about}</Link>
             <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.estimate}</Link>
             <Link href="/guides" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{h.nav.guides}</Link>
@@ -199,33 +199,13 @@ export default function GuidesIndexPage() {
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <Link href="/about#contact" className="rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{h.nav.cta}</Link>
+            <Link href="/about#contact" className="rounded-[14px] bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{h.nav.cta}</Link>
           </div>
         </div>
       </header>
 
-      <section className="relative border-b border-[#F2F3F5] pt-[140px] pb-20">
-        <div className="mx-auto max-w-[1100px] px-6">
-          <Reveal>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#F2F3F5] px-4 py-1.5 backdrop-blur-md">
-              <ChevronRight className="h-3.5 w-3.5 text-[#51535C]" />
-              <span className="text-[11px] font-semibold tracking-wide text-[#51535C]">{h.badge}</span>
-            </div>
-          </Reveal>
-          <Reveal delay={120}>
-            <h1 className="mt-6 text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
-              <span className="bg-gradient-to-r from-[#2B313D] to-[#51535C] bg-clip-text text-transparent">{h.title1}</span><br />
-              <span className="bg-gradient-to-r from-[#3180F7] to-[#5B9BFF] bg-clip-text text-transparent">{h.title2}</span>
-            </h1>
-          </Reveal>
-          <Reveal delay={240}>
-            <p className="mt-6 max-w-[620px] text-[15px] leading-relaxed text-[#A4ABBA]">{h.desc(total)}</p>
-          </Reveal>
-        </div>
-      </section>
-
       {groups.map((g, gi) => (
-        <section key={g.label} className={`border-b border-[#F2F3F5] py-20 ${gi % 2 === 1 ? 'bg-white' : ''}`}>
+        <section key={g.label} className={`py-20 ${gi === 0 ? 'pt-[130px]' : ''}`}>
           <div className="mx-auto max-w-[1100px] px-6">
             <Reveal><p className="text-[11px] font-bold tracking-wider text-[#82b1ff]">{String(gi + 1).padStart(2, '0')} · {g.label.toUpperCase()}</p></Reveal>
             <Reveal delay={80}><h2 className="mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
@@ -237,7 +217,7 @@ export default function GuidesIndexPage() {
                     transition={{ type: 'spring', stiffness: 380, damping: 24 }}
                     className="h-full"
                   >
-                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#F2F3F5] bg-white p-6 transition-colors duration-300 hover:border-[#C8CEDA] hover:shadow-[0_18px_54px_-12px_rgba(49,128,247,0.28)]">
+                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-[#F2F3F5] bg-white p-6 transition-colors duration-300 hover:border-[#C8CEDA] hover:shadow-[0_18px_54px_-12px_rgba(49,128,247,0.28)]">
                       {c.preview && (
                         <>
                           <div
@@ -251,7 +231,7 @@ export default function GuidesIndexPage() {
                         <motion.div
                           whileHover={{ scale: 1.08, rotate: -4 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 14 }}
-                          className="flex h-11 w-11 items-center justify-center rounded-xl shadow-[0_6px_18px_rgba(15,23,42,0.3)]"
+                          className="flex h-11 w-11 items-center justify-center rounded-[14px] shadow-[0_6px_18px_-6px_rgba(15,23,42,0.25)]"
                           style={{ backgroundColor: c.iconBg ?? '#ffffff' }}
                         >
                           <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
@@ -279,30 +259,6 @@ export default function GuidesIndexPage() {
           </div>
         </section>
       ))}
-
-      <section className="bg-gradient-to-b from-transparent to-white/[0.02] py-28">
-        <div className="mx-auto max-w-[720px] px-6 text-center">
-          <Reveal>
-            <h2 className="whitespace-pre-line text-[34px] font-bold leading-tight tracking-tight md:text-[44px]">{h.ctaTitle}</h2>
-          </Reveal>
-          <Reveal delay={120}><p className="mt-4 text-[15px] text-[#A4ABBA]">{h.ctaDesc}</p></Reveal>
-          <Reveal delay={240}>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <PressableMotion>
-                <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-[#3180F7] px-8 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#2470E6]">
-                  {h.ctaAsk}
-                  <motion.span whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.span>
-                </Link>
-              </PressableMotion>
-              <PressableMotion>
-                <Link href="/estimate" className="rounded-xl border border-[#C8CEDA] px-8 py-4 text-[15px] font-bold text-[#51535C] hover:bg-[#F2F3F5] hover:text-[#2B313D]">{h.ctaSelf}</Link>
-              </PressableMotion>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       <footer className="border-t border-[#F2F3F5] py-12">
         <div className="mx-auto max-w-[1200px] px-6">
