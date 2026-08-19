@@ -147,22 +147,22 @@ const CARDS_ZH: Group[] = [
 
 const HERO: Record<Locale, { brand: string; badge: string; title1: string; title2: string; desc: (n: number) => React.ReactNode; nav: { about: string; estimate: string; guides: string; contact: string; cta: string }; ctaTitle: string; ctaDesc: string; ctaAsk: string; ctaSelf: string; footerHome: string; footerAbout: string; footerEstimate: string }> = {
   ko: { brand: '제이씨랩', badge: 'DEVELOPER GUIDES', title1: '앱 만들 때 필요한', title2: '계정·키·가이드 모음',
-    desc: (n) => <>앱 개발에서 매번 반복되는 계정 생성과 API 키 발급 절차를 한곳에 모았습니다.<br />총 <b className="text-white">{n}개 가이드</b>, 각각 단계별 체크리스트·자주 막히는 부분·공식 링크를 포함합니다.</>,
+    desc: (n) => <>앱 개발에서 매번 반복되는 계정 생성과 API 키 발급 절차를 한곳에 모았습니다.<br />총 <b className="text-[#2B313D]">{n}개 가이드</b>, 각각 단계별 체크리스트·자주 막히는 부분·공식 링크를 포함합니다.</>,
     nav: { about: '회사소개', estimate: '자가견적', guides: '가이드', contact: '문의', cta: '프로젝트 의뢰' },
     ctaTitle: '등록이 복잡하면\n전부 대행해 드릴게요', ctaDesc: '개발자 계정·API 키·PG 가맹점 계약까지 앱 출시에 필요한 셋업 전부를 한 번에 진행합니다.',
     ctaAsk: '대행 문의하기', ctaSelf: '자가견적 받기', footerHome: '홈', footerAbout: '회사소개', footerEstimate: '자가견적' },
   en: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: 'Accounts, keys, and guides', title2: 'you\'ll need to ship an app',
-    desc: (n) => <>Every app release repeats the same account and API-key procedures. We collected them in one place.<br /><b className="text-white">{n} guides</b>, each with a step-by-step checklist, common blockers, and official links.</>,
+    desc: (n) => <>Every app release repeats the same account and API-key procedures. We collected them in one place.<br /><b className="text-[#2B313D]">{n} guides</b>, each with a step-by-step checklist, common blockers, and official links.</>,
     nav: { about: 'About', estimate: 'Estimate', guides: 'Guides', contact: 'Contact', cta: 'Start a Project' },
     ctaTitle: 'If setup is a headache,\nwe\'ll handle it all', ctaDesc: 'Developer accounts, API keys, PG merchant contracts — every setup step needed to launch, done at once.',
     ctaAsk: 'Ask us to handle it', ctaSelf: 'Get a self-estimate', footerHome: 'Home', footerAbout: 'About', footerEstimate: 'Estimate' },
   ja: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: 'アプリ開発に必要な', title2: 'アカウント・キー・ガイド',
-    desc: (n) => <>アプリ開発で毎回繰り返すアカウント作成とAPIキー発行の手順を一箇所にまとめました。<br />全<b className="text-white">{n}ガイド</b>、それぞれにステップ別チェックリスト・詰まりやすいポイント・公式リンクを収録。</>,
+    desc: (n) => <>アプリ開発で毎回繰り返すアカウント作成とAPIキー発行の手順を一箇所にまとめました。<br />全<b className="text-[#2B313D]">{n}ガイド</b>、それぞれにステップ別チェックリスト・詰まりやすいポイント・公式リンクを収録。</>,
     nav: { about: '会社紹介', estimate: '見積もり', guides: 'ガイド', contact: 'お問い合わせ', cta: 'プロジェクト依頼' },
     ctaTitle: '登録が面倒なら\nすべて代行します', ctaDesc: '開発者アカウント・APIキー・PG加盟店契約までアプリ公開に必要な一連のセットアップを一気に進めます。',
     ctaAsk: '代行を依頼する', ctaSelf: '見積もりを取る', footerHome: 'ホーム', footerAbout: '会社紹介', footerEstimate: '見積もり' },
   zh: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: '开发应用所需的', title2: '账号 · 密钥 · 指南合集',
-    desc: (n) => <>开发中重复出现的账号创建与 API 密钥申请流程,我们整理在了一处。<br />共 <b className="text-white">{n} 份指南</b>,每份包含分步清单、常见卡点与官方链接。</>,
+    desc: (n) => <>开发中重复出现的账号创建与 API 密钥申请流程,我们整理在了一处。<br />共 <b className="text-[#2B313D]">{n} 份指南</b>,每份包含分步清单、常见卡点与官方链接。</>,
     nav: { about: '公司介绍', estimate: '在线报价', guides: '指南', contact: '联系', cta: '委托项目' },
     ctaTitle: '配置太麻烦?\n我们可以全权代办', ctaDesc: '开发者账号、API 密钥、PG 商户签约 —— 上线所需的一切配置,一次到位。',
     ctaAsk: '委托代办', ctaSelf: '在线报价', footerHome: '首页', footerAbout: '公司介绍', footerEstimate: '在线报价' },
@@ -185,48 +185,47 @@ export default function GuidesIndexPage() {
   const total = groups.reduce((a, g) => a + g.items.length, 0)
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-black/60 backdrop-blur-2xl border-b border-white/5' : 'bg-transparent'}`}>
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-[#2B313D] overflow-x-hidden">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/80 backdrop-blur-2xl shadow-[0_2px_12px_-6px_rgba(15,23,42,0.08)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Logo height={22} className="text-white" />
-            <span className="text-[12px] font-normal text-white/30">{h.brand}</span>
+            <Logo height={22} className="text-[#2B313D]" />
           </Link>
-          <nav className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 md:flex">
-            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{h.nav.about}</Link>
-            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{h.nav.estimate}</Link>
-            <Link href="/guides" className="rounded-[13px] bg-white/95 px-4 py-1.5 text-[13px] font-bold text-[#0b0b0b] transition-colors">{h.nav.guides}</Link>
-            <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{h.nav.contact}</Link>
+          <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
+            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.about}</Link>
+            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.estimate}</Link>
+            <Link href="/guides" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{h.nav.guides}</Link>
+            <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.contact}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <Link href="/about#contact" className="rounded-xl bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">{h.nav.cta}</Link>
+            <Link href="/about#contact" className="rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{h.nav.cta}</Link>
           </div>
         </div>
       </header>
 
-      <section className="relative border-b border-white/5 pt-[140px] pb-20">
+      <section className="relative border-b border-[#F2F3F5] pt-[140px] pb-20">
         <div className="mx-auto max-w-[1100px] px-6">
           <Reveal>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-md">
-              <ChevronRight className="h-3.5 w-3.5 text-white/60" />
-              <span className="text-[11px] font-semibold tracking-wide text-white/70">{h.badge}</span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#F2F3F5] px-4 py-1.5 backdrop-blur-md">
+              <ChevronRight className="h-3.5 w-3.5 text-[#51535C]" />
+              <span className="text-[11px] font-semibold tracking-wide text-[#51535C]">{h.badge}</span>
             </div>
           </Reveal>
           <Reveal delay={120}>
             <h1 className="mt-6 text-[44px] font-bold leading-[1.05] tracking-tight md:text-[64px]">
-              <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{h.title1}</span><br />
-              <span className="bg-gradient-to-r from-[#82b1ff] to-white bg-clip-text text-transparent">{h.title2}</span>
+              <span className="bg-gradient-to-r from-[#2B313D] to-[#51535C] bg-clip-text text-transparent">{h.title1}</span><br />
+              <span className="bg-gradient-to-r from-[#3180F7] to-[#5B9BFF] bg-clip-text text-transparent">{h.title2}</span>
             </h1>
           </Reveal>
           <Reveal delay={240}>
-            <p className="mt-6 max-w-[620px] text-[15px] leading-relaxed text-white/50">{h.desc(total)}</p>
+            <p className="mt-6 max-w-[620px] text-[15px] leading-relaxed text-[#A4ABBA]">{h.desc(total)}</p>
           </Reveal>
         </div>
       </section>
 
       {groups.map((g, gi) => (
-        <section key={g.label} className={`border-b border-white/5 py-20 ${gi % 2 === 1 ? 'bg-white/[0.01]' : ''}`}>
+        <section key={g.label} className={`border-b border-[#F2F3F5] py-20 ${gi % 2 === 1 ? 'bg-white' : ''}`}>
           <div className="mx-auto max-w-[1100px] px-6">
             <Reveal><p className="text-[11px] font-bold tracking-wider text-[#82b1ff]">{String(gi + 1).padStart(2, '0')} · {g.label.toUpperCase()}</p></Reveal>
             <Reveal delay={80}><h2 className="mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
@@ -238,14 +237,14 @@ export default function GuidesIndexPage() {
                     transition={{ type: 'spring', stiffness: 380, damping: 24 }}
                     className="h-full"
                   >
-                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.05] hover:shadow-[0_18px_54px_rgba(41,121,255,0.16)]">
+                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#F2F3F5] bg-white p-6 transition-colors duration-300 hover:border-[#C8CEDA] hover:shadow-[0_18px_54px_-12px_rgba(49,128,247,0.28)]">
                       {c.preview && (
                         <>
                           <div
-                            className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-25 transition-all duration-700 ease-out group-hover:scale-100 group-hover:opacity-70"
+                            className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-20 transition-all duration-700 ease-out group-hover:scale-100 group-hover:opacity-60"
                             style={{ backgroundImage: `url(${c.preview})` }}
                           />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-[#050505]/70 transition-all duration-500 group-hover:from-[#050505]/85 group-hover:via-[#050505]/55 group-hover:to-[#050505]/20" />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white via-white/92 to-white/75 transition-all duration-500 group-hover:from-white/88 group-hover:via-white/60 group-hover:to-white/25" />
                         </>
                       )}
                       <div className="relative flex items-start justify-between">
@@ -262,13 +261,13 @@ export default function GuidesIndexPage() {
                           whileHover={{ x: 4 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                         >
-                          <ArrowRight className="h-4 w-4 text-white/25 group-hover:text-white" />
+                          <ArrowRight className="h-4 w-4 text-[#C8CEDA] group-hover:text-[#2B313D]" />
                         </motion.div>
                       </div>
-                      <p className="relative mt-5 text-[10px] font-bold tracking-wider text-white/30">{c.category}</p>
+                      <p className="relative mt-5 text-[10px] font-bold tracking-wider text-[#A4ABBA]">{c.category}</p>
                       <h3 className="relative mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
-                      <p className="relative mt-2 flex-1 text-[13px] leading-relaxed text-white/45">{c.desc}</p>
-                      <div className="relative mt-5 flex items-center gap-2 text-[11px] font-medium text-white/40">
+                      <p className="relative mt-2 flex-1 text-[13px] leading-relaxed text-[#A4ABBA]">{c.desc}</p>
+                      <div className="relative mt-5 flex items-center gap-2 text-[11px] font-medium text-[#A4ABBA]">
                         <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#82b1ff]" />
                         {c.meta}
                       </div>
@@ -286,11 +285,11 @@ export default function GuidesIndexPage() {
           <Reveal>
             <h2 className="whitespace-pre-line text-[34px] font-bold leading-tight tracking-tight md:text-[44px]">{h.ctaTitle}</h2>
           </Reveal>
-          <Reveal delay={120}><p className="mt-4 text-[15px] text-white/50">{h.ctaDesc}</p></Reveal>
+          <Reveal delay={120}><p className="mt-4 text-[15px] text-[#A4ABBA]">{h.ctaDesc}</p></Reveal>
           <Reveal delay={240}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <PressableMotion>
-                <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black shadow-[0_10px_40px_rgba(255,255,255,0.12)]">
+                <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-[#3180F7] px-8 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#2470E6]">
                   {h.ctaAsk}
                   <motion.span whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
                     <ArrowRight className="h-4 w-4" />
@@ -298,28 +297,28 @@ export default function GuidesIndexPage() {
                 </Link>
               </PressableMotion>
               <PressableMotion>
-                <Link href="/estimate" className="rounded-xl border border-white/20 px-8 py-4 text-[15px] font-bold text-white/80 hover:bg-white/5 hover:text-white">{h.ctaSelf}</Link>
+                <Link href="/estimate" className="rounded-xl border border-[#C8CEDA] px-8 py-4 text-[15px] font-bold text-[#51535C] hover:bg-[#F2F3F5] hover:text-[#2B313D]">{h.ctaSelf}</Link>
               </PressableMotion>
             </div>
           </Reveal>
         </div>
       </section>
 
-      <footer className="border-t border-white/5 py-12">
+      <footer className="border-t border-[#F2F3F5] py-12">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <Logo height={20} className="text-white" />
-                <span className="text-[13px] text-white/30">{h.brand}</span>
+                <Logo height={20} className="text-[#2B313D]" />
+                <span className="text-[13px] text-[#A4ABBA]">{h.brand}</span>
               </div>
-              <p className="mt-2 text-[11px] text-white/15">App Development Studio · jaicylab2009@gmail.com</p>
-              <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
+              <p className="mt-2 text-[11px] text-[#C8CEDA]">App Development Studio · jaicylab2009@gmail.com</p>
+              <p className="text-[10px] text-[#2B313D]/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
-            <div className="flex gap-4 text-[12px] text-white/25">
-              <Link href="/" className="transition-colors hover:text-white/50">{h.footerHome}</Link>
-              <Link href="/about" className="transition-colors hover:text-white/50">{h.footerAbout}</Link>
-              <Link href="/estimate" className="transition-colors hover:text-white/50">{h.footerEstimate}</Link>
+            <div className="flex gap-4 text-[12px] text-[#C8CEDA]">
+              <Link href="/" className="transition-colors hover:text-[#A4ABBA]">{h.footerHome}</Link>
+              <Link href="/about" className="transition-colors hover:text-[#A4ABBA]">{h.footerAbout}</Link>
+              <Link href="/estimate" className="transition-colors hover:text-[#A4ABBA]">{h.footerEstimate}</Link>
             </div>
           </div>
         </div>

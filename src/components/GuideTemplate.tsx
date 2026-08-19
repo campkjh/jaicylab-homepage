@@ -119,22 +119,21 @@ export function GuideTemplate(p: GuideProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-black/60 backdrop-blur-2xl border-b border-white/5' : 'bg-transparent'}`}>
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-[#f0f4f9] text-[#2B313D] overflow-x-hidden">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrollY > 50 ? 'bg-white/80 backdrop-blur-2xl shadow-[0_2px_12px_-6px_rgba(15,23,42,0.08)]' : 'bg-transparent'}`}>
         <div className="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Logo height={22} className="text-white" />
-            <span className="text-[12px] font-normal text-white/30">{cm.brand}</span>
+            <Logo height={22} className="text-[#2B313D]" />
           </Link>
-          <nav className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 md:flex">
-            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.about}</Link>
-            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.estimate}</Link>
-            <Link href="/guides" className="rounded-[13px] bg-white/95 px-4 py-1.5 text-[13px] font-bold text-[#0b0b0b] transition-colors">{cm.nav.guides}</Link>
-            <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.contact}</Link>
+          <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
+            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{cm.nav.about}</Link>
+            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{cm.nav.estimate}</Link>
+            <Link href="/guides" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{cm.nav.guides}</Link>
+            <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{cm.nav.contact}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <Link href="/about#contact" className="rounded-xl bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">{cm.nav.cta}</Link>
+            <Link href="/about#contact" className="rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{cm.nav.cta}</Link>
           </div>
         </div>
       </header>
@@ -150,35 +149,35 @@ export function GuideTemplate(p: GuideProps) {
             <img src={p.heroImage} alt="" className="h-full w-full object-cover" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-transparent to-[#050505]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_30%,rgba(0,0,0,0.5)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/70 to-[#f0f4f9]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0)_25%,rgba(255,255,255,0.85)_100%)]" />
 
         <div className="relative z-10 mx-auto max-w-[960px] px-6 text-center">
           <Reveal>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#F2F3F5] px-4 py-1.5">
               {p.badge.icon}
-              <span className="text-[11px] font-semibold tracking-wide text-white/70">{p.badge.text}</span>
+              <span className="text-[11px] font-semibold tracking-wide text-[#51535C]">{p.badge.text}</span>
             </div>
           </Reveal>
           <Reveal delay={180}>
             <h1 className="mt-6 text-[40px] font-bold leading-[1.05] tracking-tight md:text-[60px]">
-              <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">{p.titleTop}</span><br />
-              <span className="bg-gradient-to-r from-[#82b1ff] via-white to-[#82b1ff] bg-clip-text text-transparent">{p.titleBottom}</span>
+              <span className="bg-gradient-to-r from-[#2B313D] via-[#2B313D] to-[#51535C] bg-clip-text text-transparent">{p.titleTop}</span><br />
+              <span className="bg-gradient-to-r from-[#3180F7] via-[#5B9BFF] to-[#3180F7] bg-clip-text text-transparent">{p.titleBottom}</span>
             </h1>
           </Reveal>
           <Reveal delay={360}>
-            <p className="mx-auto mt-6 max-w-[600px] text-[15px] leading-relaxed text-white/55 whitespace-pre-line">{p.description}</p>
+            <p className="mx-auto mt-6 max-w-[600px] text-[15px] leading-relaxed text-[#51535C] whitespace-pre-line">{p.description}</p>
           </Reveal>
           <Reveal delay={540}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               {p.primaryCta && (
                 <a href={p.primaryCta.href} target={p.primaryCta.external === false ? undefined : '_blank'} rel="noreferrer"
-                   className="group flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
+                   className="group flex items-center gap-2 rounded-xl bg-[#3180F7] px-7 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-[#2470E6] active:scale-95">
                   {p.primaryCta.label}
                   <ExternalLink className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </a>
               )}
-              <a href="#steps" className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-[15px] font-bold text-white/80 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white">
+              <a href="#steps" className="rounded-xl border border-[#C8CEDA] bg-[#F2F3F5] px-7 py-3.5 text-[15px] font-bold text-[#51535C] transition-colors hover:bg-[#E3E6EB] hover:text-[#2B313D]">
                 {cm.viewSteps}
               </a>
             </div>
@@ -188,8 +187,8 @@ export function GuideTemplate(p: GuideProps) {
             <Reveal delay={720}>
               <div className="mt-12 grid grid-cols-3 gap-3 md:gap-6">
                 {p.stats.map(s => (
-                  <div key={s.label} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-4 backdrop-blur-md">
-                    <p className="text-[11px] text-white/40">{s.label}</p>
+                  <div key={s.label} className="rounded-2xl border border-[#F2F3F5] bg-[#F2F3F5] px-4 py-4 backdrop-blur-md">
+                    <p className="text-[11px] text-[#A4ABBA]">{s.label}</p>
                     <p className="mt-1 text-[18px] font-bold md:text-[22px]">{s.value}</p>
                   </div>
                 ))}
@@ -199,12 +198,12 @@ export function GuideTemplate(p: GuideProps) {
         </div>
 
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronRight className="h-5 w-5 rotate-90 text-white/20" />
+          <ChevronRight className="h-5 w-5 rotate-90 text-[#2B313D]/20" />
         </div>
       </section>
 
       {p.overviewItems && p.overviewItems.length > 0 && (
-        <section className="border-t border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent py-24">
+        <section className="border-t border-[#F2F3F5] bg-white py-24">
           <div className="mx-auto max-w-[1000px] px-6">
             <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">Overview</p></Reveal>
             <Reveal delay={80}>
@@ -212,17 +211,17 @@ export function GuideTemplate(p: GuideProps) {
             </Reveal>
             {p.overviewDesc && (
               <Reveal delay={160}>
-                <p className="mt-4 max-w-[620px] text-[15px] leading-relaxed text-white/50 whitespace-pre-line">{p.overviewDesc}</p>
+                <p className="mt-4 max-w-[620px] text-[15px] leading-relaxed text-[#A4ABBA] whitespace-pre-line">{p.overviewDesc}</p>
               </Reveal>
             )}
             <div className="mt-10 grid gap-3 md:grid-cols-2">
               {p.overviewItems.map((c, i) => (
                 <Reveal key={i} delay={i * 80}>
-                  <div className="group flex items-start gap-4 rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-all hover:border-white/20 hover:bg-white/[0.04]">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/80 transition-transform group-hover:scale-110">{c.icon}</div>
+                  <div className="group flex items-start gap-4 rounded-2xl border border-[#F2F3F5] bg-white p-5 transition-all hover:border-[#C8CEDA] hover:bg-white/[0.04]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F2F3F5] text-[#51535C] transition-transform group-hover:scale-110">{c.icon}</div>
                     <div>
                       <p className="text-[14px] font-bold">{c.title}</p>
-                      <p className="mt-1 text-[13px] text-white/40">{c.desc}</p>
+                      <p className="mt-1 text-[13px] text-[#A4ABBA]">{c.desc}</p>
                     </div>
                   </div>
                 </Reveal>
@@ -232,7 +231,7 @@ export function GuideTemplate(p: GuideProps) {
         </section>
       )}
 
-      <section id="steps" className="border-t border-white/5 py-24">
+      <section id="steps" className="border-t border-[#F2F3F5] py-24">
         <div className="mx-auto max-w-[1000px] px-6">
           <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">{p.stepsLabel ?? cm.stepByStep}</p></Reveal>
           <Reveal delay={80}>
@@ -242,22 +241,22 @@ export function GuideTemplate(p: GuideProps) {
           <div className="mt-14 space-y-4">
             {p.steps.map((s, i) => (
               <Reveal key={s.no} delay={i * 60}>
-                <div className="group relative flex flex-col gap-4 rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-all hover:border-white/15 hover:bg-white/[0.04] md:flex-row md:gap-6">
+                <div className="group relative flex flex-col gap-4 rounded-2xl border border-[#F2F3F5] bg-white p-6 transition-all hover:border-white/15 hover:bg-white/[0.04] md:flex-row md:gap-6">
                   <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm">
-                      <span className="bg-gradient-to-br from-white to-[#82b1ff] bg-clip-text text-[22px] font-bold text-transparent">{s.no}</span>
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F2F3F5]">
+                      <span className="bg-gradient-to-br from-[#3180F7] to-[#5B9BFF] bg-clip-text text-[22px] font-bold text-transparent">{s.no}</span>
                     </div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2979FF]/15 text-[#82b1ff] transition-transform group-hover:scale-110">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3180F7]/15 text-[#82b1ff] transition-transform group-hover:scale-110">
                       {s.icon}
                     </div>
                   </div>
                   <div className="flex-1">
-                    {s.tag && <p className="text-[10px] font-semibold tracking-wide text-white/30">{s.tag}</p>}
+                    {s.tag && <p className="text-[10px] font-semibold tracking-wide text-[#A4ABBA]">{s.tag}</p>}
                     <h3 className="mt-1 text-[20px] font-bold tracking-tight">{s.title}</h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-white/55 whitespace-pre-line">{s.desc}</p>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[#2B313D]/55 whitespace-pre-line">{s.desc}</p>
                     <ul className="mt-4 grid gap-2">
                       {s.details.map((d, j) => (
-                        <li key={j} className="flex items-start gap-2 text-[13px] text-white/45">
+                        <li key={j} className="flex items-start gap-2 text-[13px] text-[#A4ABBA]">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#82b1ff]" />
                           <span>{d}</span>
                         </li>
@@ -272,7 +271,7 @@ export function GuideTemplate(p: GuideProps) {
       </section>
 
       {p.pitfalls && p.pitfalls.length > 0 && (
-        <section className="border-t border-white/5 bg-white/[0.01] py-24">
+        <section className="border-t border-[#F2F3F5] bg-white py-24">
           <div className="mx-auto max-w-[1000px] px-6">
             <Reveal><p className="text-[12px] font-semibold text-amber-400/80">{cm.pitfallsLabel}</p></Reveal>
             <Reveal delay={80}>
@@ -285,8 +284,8 @@ export function GuideTemplate(p: GuideProps) {
                   <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-5 transition-all hover:border-amber-500/30">
                     <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400/80" />
                     <div>
-                      <p className="text-[14px] font-bold text-white/90">{pf.title}</p>
-                      <p className="mt-1 text-[13px] leading-relaxed text-white/50">{pf.desc}</p>
+                      <p className="text-[14px] font-bold text-[#2B313D]/90">{pf.title}</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-[#A4ABBA]">{pf.desc}</p>
                     </div>
                   </div>
                 </Reveal>
@@ -297,7 +296,7 @@ export function GuideTemplate(p: GuideProps) {
       )}
 
       {p.resources && p.resources.length > 0 && (
-        <section className="border-t border-white/5 py-24">
+        <section className="border-t border-[#F2F3F5] py-24">
           <div className="mx-auto max-w-[1000px] px-6">
             <Reveal><p className="text-[12px] font-semibold text-[#82b1ff]">{cm.resourcesLabel}</p></Reveal>
             <Reveal delay={80}>
@@ -308,12 +307,12 @@ export function GuideTemplate(p: GuideProps) {
               {p.resources.map((l, i) => (
                 <Reveal key={i} delay={i * 50}>
                   <a href={l.href} target="_blank" rel="noreferrer"
-                    className="group flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-all hover:border-white/20 hover:bg-white/[0.05]">
+                    className="group flex items-center justify-between rounded-2xl border border-[#F2F3F5] bg-white p-5 transition-all hover:border-[#C8CEDA] hover:bg-white/[0.05]">
                     <div>
                       <p className="text-[14px] font-bold">{l.title}</p>
-                      <p className="mt-0.5 text-[12px] text-white/40">{l.desc}</p>
+                      <p className="mt-0.5 text-[12px] text-[#A4ABBA]">{l.desc}</p>
                     </div>
-                    <ExternalLink className="h-4 w-4 shrink-0 text-white/30 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
+                    <ExternalLink className="h-4 w-4 shrink-0 text-[#A4ABBA] transition-all group-hover:translate-x-0.5 group-hover:text-[#2B313D]" />
                   </a>
                 </Reveal>
               ))}
@@ -322,7 +321,7 @@ export function GuideTemplate(p: GuideProps) {
         </section>
       )}
 
-      <section className="border-t border-white/5 bg-gradient-to-b from-transparent to-white/[0.02] py-28">
+      <section className="border-t border-[#F2F3F5] bg-gradient-to-b from-transparent to-white/[0.02] py-28">
         <div className="mx-auto max-w-[720px] px-6 text-center">
           <Reveal>
             <h2 className="whitespace-pre-line text-[34px] font-bold leading-tight tracking-tight md:text-[44px]">
@@ -330,16 +329,16 @@ export function GuideTemplate(p: GuideProps) {
             </h2>
           </Reveal>
           <Reveal delay={120}>
-            <p className="mt-4 whitespace-pre-line text-[15px] text-white/50">
+            <p className="mt-4 whitespace-pre-line text-[15px] text-[#A4ABBA]">
               {p.ctaDesc ?? cm.ctaDescDefault}
             </p>
           </Reveal>
           <Reveal delay={240}>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-[15px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">
+              <Link href="/about#contact" className="group flex items-center gap-2 rounded-xl bg-[#3180F7] px-8 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#2470E6] active:scale-95">
                 {cm.ctaAsk} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link href="/guides" className="rounded-xl border border-white/20 px-8 py-4 text-[15px] font-bold text-white/80 transition-all hover:bg-white/5 hover:text-white">
+              <Link href="/guides" className="rounded-xl border border-[#C8CEDA] px-8 py-4 text-[15px] font-bold text-[#51535C] transition-all hover:bg-[#F2F3F5] hover:text-[#2B313D]">
                 {cm.ctaOther}
               </Link>
             </div>
@@ -347,22 +346,22 @@ export function GuideTemplate(p: GuideProps) {
         </div>
       </section>
 
-      <footer className="border-t border-white/5 py-12">
+      <footer className="border-t border-[#F2F3F5] py-12">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <Logo height={20} className="text-white" />
-                <span className="text-[13px] text-white/30">{cm.brand}</span>
+                <Logo height={20} className="text-[#2B313D]" />
+                <span className="text-[13px] text-[#A4ABBA]">{cm.brand}</span>
               </div>
-              <p className="mt-2 text-[11px] text-white/15">App Development Studio · jaicylab2009@gmail.com</p>
-              <p className="text-[10px] text-white/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
+              <p className="mt-2 text-[11px] text-[#C8CEDA]">App Development Studio · jaicylab2009@gmail.com</p>
+              <p className="text-[10px] text-[#2B313D]/10">Copyright &copy; JAICYLAB. All rights reserved.</p>
             </div>
-            <div className="flex gap-4 text-[12px] text-white/25">
-              <Link href="/" className="transition-colors hover:text-white/50">{cm.footerHome}</Link>
-              <Link href="/about" className="transition-colors hover:text-white/50">{cm.footerAbout}</Link>
-              <Link href="/estimate" className="transition-colors hover:text-white/50">{cm.footerEstimate}</Link>
-              <Link href="/guides" className="transition-colors hover:text-white/50">{cm.footerGuides}</Link>
+            <div className="flex gap-4 text-[12px] text-[#C8CEDA]">
+              <Link href="/" className="transition-colors hover:text-[#A4ABBA]">{cm.footerHome}</Link>
+              <Link href="/about" className="transition-colors hover:text-[#A4ABBA]">{cm.footerAbout}</Link>
+              <Link href="/estimate" className="transition-colors hover:text-[#A4ABBA]">{cm.footerEstimate}</Link>
+              <Link href="/guides" className="transition-colors hover:text-[#A4ABBA]">{cm.footerGuides}</Link>
             </div>
           </div>
         </div>
