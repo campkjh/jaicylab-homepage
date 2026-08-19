@@ -38,6 +38,7 @@ type Content = {
   brandSub: string
   nav: Record<NavKey, string>
   extraSelfEstimate: string
+  extraGuides: string
   ctaInquiry: string
   heroKicker: string
   heroTitle1: string
@@ -129,6 +130,7 @@ const CONTENT: Record<Locale, Content> = {
     brandSub: '제이씨랩',
     nav: { about: '회사소개', tech: '기술스택', services: '서비스', portfolio: '포트폴리오', process: '프로세스', vision: '비전', resources: '자료실', contact: '문의' },
     extraSelfEstimate: '자가견적',
+    extraGuides: '가이드',
     ctaInquiry: '프로젝트 의뢰',
     heroKicker: 'APP DEVELOPMENT STUDIO',
     heroTitle1: '아이디어를 제품으로,',
@@ -238,6 +240,7 @@ const CONTENT: Record<Locale, Content> = {
     brandSub: 'JAICYLAB',
     nav: { about: 'About', tech: 'Tech Stack', services: 'Services', portfolio: 'Work', process: 'Process', vision: 'Vision', resources: 'Resources', contact: 'Contact' },
     extraSelfEstimate: 'Self Estimate',
+    extraGuides: 'Guides',
     ctaInquiry: 'Start a Project',
     heroKicker: 'APP DEVELOPMENT STUDIO',
     heroTitle1: 'From idea to product,',
@@ -347,6 +350,7 @@ const CONTENT: Record<Locale, Content> = {
     brandSub: 'JAICYLAB',
     nav: { about: '会社紹介', tech: '技術スタック', services: 'サービス', portfolio: '実績', process: 'プロセス', vision: 'ビジョン', resources: '資料室', contact: 'お問い合わせ' },
     extraSelfEstimate: 'セルフ見積',
+    extraGuides: 'ガイド',
     ctaInquiry: 'プロジェクト依頼',
     heroKicker: 'APP DEVELOPMENT STUDIO',
     heroTitle1: 'アイデアをプロダクトへ、',
@@ -456,6 +460,7 @@ const CONTENT: Record<Locale, Content> = {
     brandSub: 'JAICYLAB',
     nav: { about: '公司介绍', tech: '技术栈', services: '服务', portfolio: '案例', process: '流程', vision: '愿景', resources: '资料中心', contact: '联系我们' },
     extraSelfEstimate: '自助报价',
+    extraGuides: '指南',
     ctaInquiry: '项目咨询',
     heroKicker: 'APP DEVELOPMENT STUDIO',
     heroTitle1: '从创意到产品,',
@@ -638,10 +643,11 @@ export default function AboutPage() {
           <Link href="/" className="flex items-center gap-3">
             <Logo height={22} className="text-white" />
           </Link>
-          {/* 3개 메뉴 — 회사소개 · 자가견적 · 문의 (메디니티식 세그먼트 탭) */}
+          {/* 메뉴 — 회사소개 · 자가견적 · 가이드 · 문의 (메디니티식 세그먼트 탭) */}
           <nav className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 md:flex">
             <button onClick={() => scrollTo('about')} className="rounded-[13px] bg-white/95 px-4 py-1.5 text-[13px] font-bold text-[#0b0b0b] transition-colors">{c.nav.about}</button>
             <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.extraSelfEstimate}</Link>
+            <Link href="/guides" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.extraGuides}</Link>
             <button onClick={() => scrollTo('contact')} className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.nav.contact}</button>
           </nav>
           <div className="flex items-center gap-3">

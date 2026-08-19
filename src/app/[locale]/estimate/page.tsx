@@ -542,6 +542,34 @@ const TIER_HEX: Record<TierId, string> = {
   mvp: '#334155', basic: '#334155', premium: '#334155', deluxe: '#334155', enterprise: '#334155',
 }
 
+/** 비슷한 서비스 파비콘. 파비콘이 없는 사이트는 mono 지구본 아이콘으로 대체한다. */
+function ServiceFavicon({ domain, name }: { domain: string; name: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-[#F2F3F5] text-[#A4ABBA]">
+        <UiIcon name="globe" className="h-3 w-3" />
+      </span>
+    )
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+      alt={name}
+      width={16}
+      height={16}
+      className="h-4 w-4 shrink-0 rounded-sm bg-[#F2F3F5] object-contain"
+      onError={() => setFailed(true)}
+      onLoad={e => {
+        // 구글이 주는 기본(지구본) 파비콘 = 16px 원본 → 실제 파비콘이 없는 사이트
+        const img = e.currentTarget
+        if (img.naturalWidth > 0 && img.naturalWidth <= 16) setFailed(true)
+      }}
+    />
+  )
+}
+
 // ───────────────────────────── PackageCard ─────────────────────────────
 
 function PackageCard({
@@ -608,14 +636,7 @@ function PackageCard({
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             {PACKAGE_EXAMPLES[p.id].map(ex => (
               <div key={ex.domain} className="flex items-center gap-1.5 transition-transform duration-200 group-hover:-translate-y-px">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${ex.domain}&sz=64`}
-                  alt={ex.name}
-                  width={16} height={16}
-                  className="h-4 w-4 rounded-sm bg-[#F2F3F5] object-contain"
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                />
+                <ServiceFavicon domain={ex.domain} name={ex.name} />
                 <span className="text-[11px] font-medium text-[#51535C]">{ex.name}</span>
               </div>
             ))}
@@ -992,6 +1013,7 @@ export default function EstimatePage() {
           <nav className="hidden items-center gap-1 rounded-2xl bg-[#F2F3F5] p-1 md:flex">
             <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navAbout}</Link>
             <Link href="/estimate" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{c.navEstimate}</Link>
+            <Link href="/guides" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navGuides}</Link>
             <Link href="/about#문의" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navContact}</Link>
           </nav>
           <div className="flex items-center gap-3">

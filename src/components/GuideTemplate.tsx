@@ -126,11 +126,11 @@ export function GuideTemplate(p: GuideProps) {
             <Logo height={22} className="text-white" />
             <span className="text-[12px] font-normal text-white/30">{cm.brand}</span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/about" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.about}</Link>
-            <Link href="/estimate" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.estimate}</Link>
-            <Link href="/guides" className="text-[13px] font-bold text-white transition-all">{cm.nav.guides}</Link>
-            <Link href="/about#contact" className="text-[13px] font-medium text-white/40 transition-all hover:text-white">{cm.nav.contact}</Link>
+          <nav className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 md:flex">
+            <Link href="/about" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.about}</Link>
+            <Link href="/estimate" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.estimate}</Link>
+            <Link href="/guides" className="rounded-[13px] bg-white/95 px-4 py-1.5 text-[13px] font-bold text-[#0b0b0b] transition-colors">{cm.nav.guides}</Link>
+            <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{cm.nav.contact}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />

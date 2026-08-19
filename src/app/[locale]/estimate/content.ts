@@ -9,6 +9,7 @@ type UI = {
   navAbout: string
   navEstimate: string
   navContact: string
+  navGuides: string
   ctaProject: string
 
   // Hero
@@ -169,6 +170,7 @@ const ko: UI = {
   navAbout: '회사소개',
   navEstimate: '자가견적',
   navContact: '문의',
+  navGuides: '가이드',
   ctaProject: '프로젝트 의뢰',
 
   heroEyebrow: 'Self Estimate',
@@ -344,6 +346,7 @@ const en: UI = {
   navAbout: 'About',
   navEstimate: 'Estimate',
   navContact: 'Contact',
+  navGuides: 'Guides',
   ctaProject: 'Start a Project',
 
   heroEyebrow: 'Self Estimate',
@@ -519,6 +522,7 @@ const ja: UI = {
   navAbout: '会社紹介',
   navEstimate: '自動見積り',
   navContact: 'お問い合わせ',
+  navGuides: 'ガイド',
   ctaProject: 'プロジェクト依頼',
 
   heroEyebrow: 'Self Estimate',
