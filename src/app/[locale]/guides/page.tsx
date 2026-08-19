@@ -9,6 +9,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { Reveal, Stagger, StaggerItem, PressableMotion } from '@/components/Reveal'
+import { UiIcon } from '@/components/estimate/UiIcon'
 import AppleIcon from './apple-developer.svg'
 import PlayIcon from './google-play.svg'
 import KakaoIcon from './kakao.svg'
@@ -145,23 +146,23 @@ const CARDS_ZH: Group[] = [
   ]},
 ]
 
-const HERO: Record<Locale, { brand: string; badge: string; title1: string; title2: string; desc: (n: number) => React.ReactNode; nav: { about: string; estimate: string; guides: string; contact: string; cta: string }; ctaTitle: string; ctaDesc: string; ctaAsk: string; ctaSelf: string; footerHome: string; footerAbout: string; footerEstimate: string }> = {
-  ko: { brand: '제이씨랩', badge: 'DEVELOPER GUIDES', title1: '앱 만들 때 필요한', title2: '계정·키·가이드 모음',
+const HERO: Record<Locale, { brand: string; badge: string; title1: string; title2: string; desc: (n: number) => React.ReactNode; nav: { about: string; estimate: string; guides: string; contact: string; cta: string }; searchPlaceholder: string; ctaTitle: string; ctaDesc: string; ctaAsk: string; ctaSelf: string; footerHome: string; footerAbout: string; footerEstimate: string }> = {
+  ko: { brand: '제이씨랩', badge: 'DEVELOPER GUIDES', searchPlaceholder: '가이드 검색', title1: '앱 만들 때 필요한', title2: '계정·키·가이드 모음',
     desc: (n) => <>앱 개발에서 매번 반복되는 계정 생성과 API 키 발급 절차를 한곳에 모았습니다.<br />총 <b className="text-[#2B313D]">{n}개 가이드</b>, 각각 단계별 체크리스트·자주 막히는 부분·공식 링크를 포함합니다.</>,
     nav: { about: '회사소개', estimate: '자가견적', guides: '가이드', contact: '문의', cta: '프로젝트 의뢰' },
     ctaTitle: '등록이 복잡하면\n전부 대행해 드릴게요', ctaDesc: '개발자 계정·API 키·PG 가맹점 계약까지 앱 출시에 필요한 셋업 전부를 한 번에 진행합니다.',
     ctaAsk: '대행 문의하기', ctaSelf: '자가견적 받기', footerHome: '홈', footerAbout: '회사소개', footerEstimate: '자가견적' },
-  en: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: 'Accounts, keys, and guides', title2: 'you\'ll need to ship an app',
+  en: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', searchPlaceholder: 'Search guides', title1: 'Accounts, keys, and guides', title2: 'you\'ll need to ship an app',
     desc: (n) => <>Every app release repeats the same account and API-key procedures. We collected them in one place.<br /><b className="text-[#2B313D]">{n} guides</b>, each with a step-by-step checklist, common blockers, and official links.</>,
     nav: { about: 'About', estimate: 'Estimate', guides: 'Guides', contact: 'Contact', cta: 'Start a Project' },
     ctaTitle: 'If setup is a headache,\nwe\'ll handle it all', ctaDesc: 'Developer accounts, API keys, PG merchant contracts — every setup step needed to launch, done at once.',
     ctaAsk: 'Ask us to handle it', ctaSelf: 'Get a self-estimate', footerHome: 'Home', footerAbout: 'About', footerEstimate: 'Estimate' },
-  ja: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: 'アプリ開発に必要な', title2: 'アカウント・キー・ガイド',
+  ja: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', searchPlaceholder: 'ガイド検索', title1: 'アプリ開発に必要な', title2: 'アカウント・キー・ガイド',
     desc: (n) => <>アプリ開発で毎回繰り返すアカウント作成とAPIキー発行の手順を一箇所にまとめました。<br />全<b className="text-[#2B313D]">{n}ガイド</b>、それぞれにステップ別チェックリスト・詰まりやすいポイント・公式リンクを収録。</>,
     nav: { about: '会社紹介', estimate: '見積もり', guides: 'ガイド', contact: 'お問い合わせ', cta: 'プロジェクト依頼' },
     ctaTitle: '登録が面倒なら\nすべて代行します', ctaDesc: '開発者アカウント・APIキー・PG加盟店契約までアプリ公開に必要な一連のセットアップを一気に進めます。',
     ctaAsk: '代行を依頼する', ctaSelf: '見積もりを取る', footerHome: 'ホーム', footerAbout: '会社紹介', footerEstimate: '見積もり' },
-  zh: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', title1: '开发应用所需的', title2: '账号 · 密钥 · 指南合集',
+  zh: { brand: 'JAICYLAB', badge: 'DEVELOPER GUIDES', searchPlaceholder: '搜索指南', title1: '开发应用所需的', title2: '账号 · 密钥 · 指南合集',
     desc: (n) => <>开发中重复出现的账号创建与 API 密钥申请流程,我们整理在了一处。<br />共 <b className="text-[#2B313D]">{n} 份指南</b>,每份包含分步清单、常见卡点与官方链接。</>,
     nav: { about: '公司介绍', estimate: '在线报价', guides: '指南', contact: '联系', cta: '委托项目' },
     ctaTitle: '配置太麻烦?\n我们可以全权代办', ctaDesc: '开发者账号、API 密钥、PG 商户签约 —— 上线所需的一切配置,一次到位。',
@@ -174,7 +175,15 @@ export default function GuidesIndexPage() {
   const [scrollY, setScrollY] = useState(0)
   const locale = useLocale() as Locale
   const h = HERO[locale] ?? HERO.ko
-  const groups = CARDS[locale] ?? CARDS.ko
+  const allGroups = CARDS[locale] ?? CARDS.ko
+  const [query, setQuery] = useState('')
+  const groups = (() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return allGroups
+    return allGroups
+      .map(g => ({ ...g, items: g.items.filter(i => `${i.title} ${i.desc} ${i.category} ${g.label}`.toLowerCase().includes(q)) }))
+      .filter(g => g.items.length > 0)
+  })()
 
   useEffect(() => {
     const fn = () => setScrollY(window.scrollY)
@@ -204,8 +213,29 @@ export default function GuidesIndexPage() {
         </div>
       </header>
 
+      {/* 알약형 검색 — 자가견적 프리셋 검색과 동일한 톤 */}
+      <div className="mx-auto max-w-[1100px] px-6 pt-[116px]">
+        <div className="relative w-full max-w-[420px]">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#A4ABBA]">
+            <UiIcon name="search" className="h-4 w-4" />
+          </span>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={h.searchPlaceholder}
+            className="h-11 w-full rounded-full bg-[#F2F3F5] pl-11 pr-10 text-[13.5px] text-[#2B313D] outline-none transition-colors placeholder:text-[#A4ABBA] focus:bg-[#E9EBEF]"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} aria-label="검색어 지우기"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#A4ABBA] transition-colors hover:text-[#51535C]">
+              <UiIcon name="x" className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {groups.map((g, gi) => (
-        <section key={g.label} className={`py-20 ${gi === 0 ? 'pt-[130px]' : ''}`}>
+        <section key={g.label} className="py-14">
           <div className="mx-auto max-w-[1100px] px-6">
             <Reveal><p className="text-[11px] font-bold tracking-wider text-[#82b1ff]">{String(gi + 1).padStart(2, '0')} · {g.label.toUpperCase()}</p></Reveal>
             <Reveal delay={80}><h2 className="mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
@@ -217,39 +247,39 @@ export default function GuidesIndexPage() {
                     transition={{ type: 'spring', stiffness: 380, damping: 24 }}
                     className="h-full"
                   >
-                    <Link href={c.href} className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-[#F2F3F5] bg-white p-6 transition-colors duration-300 hover:border-[#C8CEDA] hover:shadow-[0_18px_54px_-12px_rgba(49,128,247,0.28)]">
-                      {c.preview && (
-                        <>
-                          <div
-                            className="pointer-events-none absolute inset-0 scale-110 bg-cover bg-center opacity-20 transition-all duration-700 ease-out group-hover:scale-100 group-hover:opacity-60"
-                            style={{ backgroundImage: `url(${c.preview})` }}
-                          />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white via-white/92 to-white/75 transition-all duration-500 group-hover:from-white/88 group-hover:via-white/60 group-hover:to-white/25" />
-                        </>
+                    <Link href={c.href} className="group relative block aspect-[4/3] overflow-hidden rounded-[18px] bg-[#F2F3F5]">
+                      {/* 배경 이미지 — 카드 전면 */}
+                      {c.preview ? (
+                        <div
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                          style={{ backgroundImage: `url(${c.preview})` }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#F2F3F5] to-[#C8CEDA]" />
                       )}
-                      <div className="relative flex items-start justify-between">
-                        <motion.div
-                          whileHover={{ scale: 1.08, rotate: -4 }}
-                          transition={{ type: 'spring', stiffness: 420, damping: 14 }}
-                          className="flex h-11 w-11 items-center justify-center rounded-[14px] shadow-[0_6px_18px_-6px_rgba(15,23,42,0.25)]"
+
+                      {/* 좌상단 배지 */}
+                      <span className="absolute left-4 top-4 z-10 rounded-[10px] bg-[#2B313D]/70 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur-md">
+                        {c.category}
+                      </span>
+
+                      {/* 하단 바 — 아이콘 + 제목 */}
+                      <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-3 rounded-[14px] bg-white/85 px-4 py-3 backdrop-blur-xl transition-colors duration-300 group-hover:bg-white">
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
                           style={{ backgroundColor: c.iconBg ?? '#ffffff' }}
                         >
-                          <Image src={c.icon} alt={c.title} className="h-7 w-7 object-contain" />
-                        </motion.div>
-                        <motion.div
+                          <Image src={c.icon} alt={c.title} className="h-5 w-5 object-contain" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[15px] font-bold tracking-tight text-[#2B313D]">{c.title}</span>
+                        <motion.span
                           initial={{ x: 0 }}
                           whileHover={{ x: 4 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                          className="shrink-0"
                         >
-                          <ArrowRight className="h-4 w-4 text-[#C8CEDA] group-hover:text-[#2B313D]" />
-                        </motion.div>
-                      </div>
-                      <p className="relative mt-5 text-[10px] font-bold tracking-wider text-[#A4ABBA]">{c.category}</p>
-                      <h3 className="relative mt-1 text-[18px] font-bold tracking-tight">{c.title}</h3>
-                      <p className="relative mt-2 flex-1 text-[13px] leading-relaxed text-[#A4ABBA]">{c.desc}</p>
-                      <div className="relative mt-5 flex items-center gap-2 text-[11px] font-medium text-[#A4ABBA]">
-                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#82b1ff]" />
-                        {c.meta}
+                          <ArrowRight className="h-4 w-4 text-[#A4ABBA] group-hover:text-[#2B313D]" />
+                        </motion.span>
                       </div>
                     </Link>
                   </motion.div>
