@@ -55,19 +55,9 @@ const CARDS_KO: Group[] = [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: '카카오 로그인·지도·공유하기·알림톡. 앱 등록, 키 해시, 동의 항목 심사까지.', meta: '무료 · 일부 항목 심사 필요', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: '네이버 로그인·검색·Papago 번역. Client ID/Secret 발급, Callback URL 설정.', meta: '무료 · 즉시 발급', accent: '' },
   ]},
-  { label: '클라우드 · 인프라', items: [
-    { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM 푸시·Auth·Firestore. iOS APNs 키 업로드, Android google-services.json, 서비스 계정.', meta: 'Spark 무료 · Blaze 종량', accent: '' },
-    { href: '/guides/naver-cloud', icon: ICON.ncp, category: 'NCP', title: 'Naver Cloud Platform', desc: '네이버 지도·CLOVA OCR·SENS SMS. 계정 생성, Access Key, 상품별 이용 신청.', meta: '첫 가입 크레딧 · 한국 카드 OK', accent: '' },
-    { href: '/guides/aws', icon: ICON.aws, category: 'AWS', title: 'Amazon Web Services', desc: '루트 계정 보호, IAM·MFA, 액세스 키, 예산 알림, 서울 리전 선택까지 안전한 초기 셋업.', meta: '12개월 프리티어 · 카드 필수', accent: '' },
-    { href: '/guides/supabase', icon: ICON.supabase, category: 'SUPABASE', title: 'Supabase', desc: 'PostgreSQL·Auth·Storage·Realtime. 프로젝트 생성, RLS 정책, 키 분리.', meta: '무료 2개 · Pro $25/월', accent: '' },
-    { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel 배포', desc: 'GitHub 연동, 환경변수, 커스텀 도메인 DNS, Preview 배포, Functions 리전.', meta: 'Hobby 무료 · Pro $20/월', accent: '' },
-  ]},
   { label: '결제 · PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: '토스페이먼츠 가맹점', desc: 'PG 연동. 테스트 키 → 가맹점 계약 → 실서비스 키 → 웹훅·정산 자동화.', meta: '2–5일 심사 · 수수료 2.5~3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: '포트원 (구 아임포트)', desc: '여러 PG를 하나의 API로. V2 채널 등록, 결제 검증, 웹훅 서명까지.', meta: '포트원 무료 · PG 수수료만', accent: '' },
-  ]},
-  { label: '고객 응대 · 운영', items: [
-    { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: '채널톡 (ChannelTalk)', desc: '국내 대표 라이브 챗. 채널 개설·웹/앱 SDK·memberHash·웹훅 자동화.', meta: '무료 3인 · Pro ₩39,000~', accent: '' },
   ]},
 ]
 
@@ -80,19 +70,9 @@ const CARDS_EN: Group[] = [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao Login, Maps, Share, AlimTalk. App registration, key hash, consent-item review.', meta: 'Free · some items reviewed', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver Login, Search, Papago Translate. Client ID/Secret issuance, callback URL setup.', meta: 'Free · instant issuance', accent: '' },
   ]},
-  { label: 'Cloud & Infrastructure', items: [
-    { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM push, Auth, Firestore. iOS APNs key upload, Android google-services.json, service accounts.', meta: 'Spark free · Blaze metered', accent: '' },
-    { href: '/guides/naver-cloud', icon: ICON.ncp, category: 'NCP', title: 'Naver Cloud Platform', desc: 'Naver Maps, CLOVA OCR, SENS SMS. Account creation, access keys, per-product activation.', meta: 'Sign-up credit · KR cards OK', accent: '' },
-    { href: '/guides/aws', icon: ICON.aws, category: 'AWS', title: 'Amazon Web Services', desc: 'Root account hardening, IAM & MFA, access keys, budget alerts, Seoul region — a safe baseline.', meta: '12-month free tier · card required', accent: '' },
-    { href: '/guides/supabase', icon: ICON.supabase, category: 'SUPABASE', title: 'Supabase', desc: 'PostgreSQL, Auth, Storage, Realtime. Project setup, RLS policies, key separation.', meta: '2 free · Pro $25/mo', accent: '' },
-    { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel Deployment', desc: 'GitHub integration, env vars, custom domain DNS, preview deploys, function regions.', meta: 'Hobby free · Pro $20/mo', accent: '' },
-  ]},
   { label: 'Payments & PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments Merchant', desc: 'PG integration: test keys → merchant contract → live keys → webhook & settlement automation.', meta: '2–5 day review · 2.5–3.5% fee', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne (formerly Iamport)', desc: 'Multiple PGs behind one API. V2 channel registration, payment verification, webhook signatures.', meta: 'PortOne free · PG fees only', accent: '' },
-  ]},
-  { label: 'Customer Support & Ops', items: [
-    { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: 'Korea\'s leading live chat. Channel setup, web/app SDK, memberHash, webhook automation.', meta: '3 agents free · Pro from ₩39,000', accent: '' },
   ]},
 ]
 
@@ -105,19 +85,9 @@ const CARDS_JA: Group[] = [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakaoログイン・地図・シェア・アラームトーク。アプリ登録、キーハッシュ、同意項目の審査まで。', meta: '無料 · 一部審査あり', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naverログイン・検索・Papago翻訳。Client ID/Secret発行、Callback URL設定。', meta: '無料 · 即時発行', accent: '' },
   ]},
-  { label: 'クラウド・インフラ', items: [
-    { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCMプッシュ・Auth・Firestore。iOS APNsキーのアップロード、Android google-services.json、サービスアカウント。', meta: 'Spark無料 · Blaze従量', accent: '' },
-    { href: '/guides/naver-cloud', icon: ICON.ncp, category: 'NCP', title: 'Naver Cloud Platform', desc: 'Naver地図・CLOVA OCR・SENS SMS。アカウント作成、Access Key、商品別の利用申請。', meta: '初回クレジット · 韓国カード可', accent: '' },
-    { href: '/guides/aws', icon: ICON.aws, category: 'AWS', title: 'Amazon Web Services', desc: 'ルートアカウント保護、IAM・MFA、アクセスキー、予算アラート、ソウルリージョンまで安全な初期設定。', meta: '12ヶ月無料枠 · カード必須', accent: '' },
-    { href: '/guides/supabase', icon: ICON.supabase, category: 'SUPABASE', title: 'Supabase', desc: 'PostgreSQL・Auth・Storage・Realtime。プロジェクト作成、RLSポリシー、キー分離。', meta: '無料2個 · Pro $25/月', accent: '' },
-    { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercelデプロイ', desc: 'GitHub連携、環境変数、カスタムドメインDNS、Previewデプロイ、Functionsリージョン。', meta: 'Hobby無料 · Pro $20/月', accent: '' },
-  ]},
   { label: '決済・PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'トスペイメンツ加盟店', desc: 'PG連携。テストキー → 加盟店契約 → 本番キー → Webhook・精算の自動化。', meta: '2〜5日審査 · 手数料2.5〜3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne(旧Iamport)', desc: '複数のPGを1つのAPIで。V2チャンネル登録、決済検証、Webhook署名まで。', meta: 'PortOne無料 · PG手数料のみ', accent: '' },
-  ]},
-  { label: 'カスタマーサポート・運営', items: [
-    { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: '韓国の代表的ライブチャット。チャンネル開設、Web/App SDK、memberHash、Webhook自動化。', meta: '無料3名 · Pro ₩39,000〜', accent: '' },
   ]},
 ]
 
@@ -130,19 +100,9 @@ const CARDS_ZH: Group[] = [
     { href: '/guides/kakao-developers', icon: ICON.kakao, iconBg: '#FFCA2C', preview: '/f4ee65f8331b2f59809a66f17f4f6f83.gif', category: 'KAKAO', title: 'Kakao Developers', desc: 'Kakao 登录、地图、分享、AlimTalk。应用注册、Key Hash、同意项审核。', meta: '免费 · 部分审核', accent: '' },
     { href: '/guides/naver-developers', icon: ICON.naverdev, iconBg: '#00E261', preview: '/8f53dc8db08bf3d52825846e9825cf9d.jpg', category: 'NAVER', title: 'Naver Developers', desc: 'Naver 登录、搜索、Papago 翻译。Client ID/Secret 申请、回调 URL 设置。', meta: '免费 · 即时发放', accent: '' },
   ]},
-  { label: '云 · 基础设施', items: [
-    { href: '/guides/firebase', icon: ICON.firebase, category: 'FIREBASE', title: 'Firebase / GCP', desc: 'FCM 推送、Auth、Firestore。iOS APNs 密钥上传、Android google-services.json、服务账号。', meta: 'Spark 免费 · Blaze 按量', accent: '' },
-    { href: '/guides/naver-cloud', icon: ICON.ncp, category: 'NCP', title: 'Naver Cloud Platform', desc: 'Naver 地图、CLOVA OCR、SENS SMS。账号创建、Access Key、按产品申请。', meta: '新用户赠金 · 支持韩国卡', accent: '' },
-    { href: '/guides/aws', icon: ICON.aws, category: 'AWS', title: 'Amazon Web Services', desc: '根账号加固、IAM·MFA、Access Key、预算告警、首尔区域 —— 安全的初始配置。', meta: '12 个月免费套餐 · 需信用卡', accent: '' },
-    { href: '/guides/supabase', icon: ICON.supabase, category: 'SUPABASE', title: 'Supabase', desc: 'PostgreSQL、Auth、Storage、Realtime。项目创建、RLS 策略、密钥分离。', meta: '免费 2 个 · Pro $25/月', accent: '' },
-    { href: '/guides/vercel', icon: ICON.vercel, iconBg: '#000000', category: 'VERCEL', title: 'Vercel 部署', desc: 'GitHub 接入、环境变量、自定义域名 DNS、Preview 部署、Functions 区域。', meta: 'Hobby 免费 · Pro $20/月', accent: '' },
-  ]},
   { label: '支付 · PG', items: [
     { href: '/guides/toss-payments', icon: ICON.toss, preview: '/tds-kv-text-hero.png', category: 'TOSS PAYMENTS', title: 'Toss Payments 商户', desc: 'PG 对接:测试密钥 → 商户签约 → 生产密钥 → Webhook 与清算自动化。', meta: '2–5 天审核 · 费率 2.5~3.5%', accent: '' },
     { href: '/guides/portone', icon: ICON.portone, preview: '/cb.png', category: 'PORTONE', title: 'PortOne(原 Iamport)', desc: '多家 PG 统一到一个 API。V2 Channel 注册、支付校验、Webhook 签名。', meta: 'PortOne 免费 · 仅 PG 费率', accent: '' },
-  ]},
-  { label: '客服 · 运营', items: [
-    { href: '/guides/channeltalk', icon: ICON.channel, iconBg: '#572DFF', category: 'CHANNEL TALK', title: 'ChannelTalk', desc: '韩国主流在线客服。频道开通、Web/App SDK、memberHash、Webhook 自动化。', meta: '3 人免费 · Pro ₩39,000 起', accent: '' },
   ]},
 ]
 
@@ -234,11 +194,10 @@ export default function GuidesIndexPage() {
         </div>
       </div>
 
-      {groups.map((g, gi) => (
+      {groups.map(g => (
         <section key={g.label} className="py-14">
           <div className="mx-auto max-w-[1100px] px-6">
-            <Reveal><p className="text-[11px] font-bold tracking-wider text-[#82b1ff]">{String(gi + 1).padStart(2, '0')} · {g.label.toUpperCase()}</p></Reveal>
-            <Reveal delay={80}><h2 className="mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
+            <Reveal><h2 className="text-[26px] font-bold tracking-tight md:text-[32px]">{g.label}</h2></Reveal>
             <Stagger stagger={0.07} className="mt-10 grid gap-4 md:grid-cols-2">
               {g.items.map((c) => (
                 <StaggerItem key={c.href}>
