@@ -131,6 +131,16 @@ const HERO: Record<Locale, { brand: string; badge: string; title1: string; title
 
 const CARDS: Record<Locale, Group[]> = { ko: CARDS_KO, en: CARDS_EN, ja: CARDS_JA, zh: CARDS_ZH }
 
+/** 가이드 검색 별칭 — 한글/영문 어느 쪽으로 검색해도 걸리도록 href 기준으로 키워드를 더한다. */
+const SEARCH_ALIAS: Record<string, string> = {
+  '/guides/apple-developer': '애플 애플개발자 아이폰 아이오에스 앱스토어 앱 스토어 apple ios iphone appstore app store developer 개발자계정',
+  '/guides/google-play': '구글 구글플레이 안드로이드 플레이스토어 플레이 콘솔 google play android playstore console 개발자계정',
+  '/guides/kakao-developers': '카카오 카톡 카카오톡 카카오로그인 카카오지도 알림톡 kakao kakaotalk 소셜로그인 로그인',
+  '/guides/naver-developers': '네이버 네이버로그인 네이버검색 파파고 naver papago 소셜로그인 로그인 오픈api',
+  '/guides/toss-payments': '토스 토스페이먼츠 토스결제 결제 피지 가맹점 toss tosspayments payment pg',
+  '/guides/portone': '포트원 아임포트 결제 피지 pg portone iamport payment 결제연동',
+}
+
 export default function GuidesIndexPage() {
   const [scrollY, setScrollY] = useState(0)
   const locale = useLocale() as Locale
@@ -141,7 +151,7 @@ export default function GuidesIndexPage() {
     const q = query.trim().toLowerCase()
     if (!q) return allGroups
     return allGroups
-      .map(g => ({ ...g, items: g.items.filter(i => `${i.title} ${i.desc} ${i.category} ${g.label}`.toLowerCase().includes(q)) }))
+      .map(g => ({ ...g, items: g.items.filter(i => `${i.title} ${i.desc} ${i.category} ${g.label} ${SEARCH_ALIAS[i.href] ?? ''}`.toLowerCase().includes(q)) }))
       .filter(g => g.items.length > 0)
   })()
 
