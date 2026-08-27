@@ -10,6 +10,8 @@ export type MedinityChoice = {
   perPage?: number
   /** 이 기본 패키지가 포함하는 페이지 수 (총 페이지 수 계산에 쓰인다) */
   pages?: number
+  /** 다국어(언어 추가) 옵션 표식. price 대신 총 페이지 수 구간별 languageUnitPrice() 로 언어당 과금한다. */
+  perLang?: boolean
   /** 부모 옵션이 켜졌을 때만 고를 수 있는 하위 옵션 (예: 예약 알림 개발 → 알림 채널) */
   children?: MedinityChoice[]
   /** 이 옵션을 고르면 무료로 기본 포함되는 다른 옵션 id */
@@ -165,9 +167,30 @@ export const MEDINITY_SECTIONS: MedinitySection[] = [
   },
 ]
 
-/** 모든 옵션(하위 포함)을 id 로 찾기 위한 인덱스. */
+/**
+ * 다국어(언어 추가) 섹션 — 자가견적 '홈페이지 견적' 탭에서만 노출한다.
+ * (/medinity 치과 견적 빌더에는 넣지 않는다: 그 화면은 MEDINITY_SECTIONS 만 렌더한다.)
+ * 언어당 요금은 총 페이지 수 구간에 따라 priceOfChoice → languageUnitPrice() 로 계산된다.
+ */
+export const WEB_LANGUAGE_SECTION: MedinitySection = {
+  id: 'i18n',
+  title: '다국어 (언어 추가)',
+  desc: '홈페이지를 여러 언어로 함께 제공합니다. 언어당 요금은 총 페이지 수에 따라 달라집니다. (선택)',
+  icon: 'globe',
+  mode: 'multi',
+  choices: [
+    { id: 'lang-en', name: '영어', desc: 'English', price: 0, perLang: true },
+    { id: 'lang-zh', name: '중국어', desc: '简体中文', price: 0, perLang: true },
+    { id: 'lang-ja', name: '일본어', desc: '日本語', price: 0, perLang: true },
+    { id: 'lang-ru', name: '러시아어', desc: 'Русский', price: 0, perLang: true },
+    { id: 'lang-es', name: '스페인어', desc: 'Español', price: 0, perLang: true },
+    { id: 'lang-vi', name: '베트남어', desc: 'Tiếng Việt', price: 0, perLang: true },
+  ],
+}
+
+/** 모든 옵션(하위 포함)을 id 로 찾기 위한 인덱스. 다국어 섹션도 조회가 되도록 함께 등록한다. */
 export const MEDINITY_CHOICE_INDEX: Record<string, MedinityChoice & { sectionId: string; parentId?: string }> = {}
-for (const section of MEDINITY_SECTIONS) {
+for (const section of [...MEDINITY_SECTIONS, WEB_LANGUAGE_SECTION]) {
   for (const choice of section.choices ?? []) {
     MEDINITY_CHOICE_INDEX[choice.id] = { ...choice, sectionId: section.id }
     for (const child of choice.children ?? []) {
@@ -186,8 +209,20 @@ export function totalPageCount(selectedIds: Iterable<string>, extraPages: number
   return base + Math.max(0, Math.floor(extraPages || 0))
 }
 
-/** 옵션의 실제 단가. perPage 가 있으면 페이지 수에 따라 계산한다. */
-export function priceOfChoice(choice: { price: number; perPage?: number }, totalPages: number): number {
+/**
+ * 다국어(언어 추가) 언어당 단가 — 총 페이지 수 구간별.
+ * 5페이지 이하 10만원 · 10페이지 초과 20만원 · 20페이지 초과 30만원.
+ * (6~10페이지는 기본 구간과 동일하게 10만원으로 본다.)
+ */
+export function languageUnitPrice(totalPages: number): number {
+  if (totalPages > 20) return 300_000
+  if (totalPages > 10) return 200_000
+  return 100_000
+}
+
+/** 옵션의 실제 단가. perLang 이면 총 페이지 수 구간별, perPage 가 있으면 페이지 수 비례로 계산한다. */
+export function priceOfChoice(choice: { price: number; perPage?: number; perLang?: boolean }, totalPages: number): number {
+  if (choice.perLang) return languageUnitPrice(totalPages)
   return choice.perPage != null ? choice.perPage * totalPages : choice.price
 }
 

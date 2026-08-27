@@ -4,10 +4,12 @@ import { useMemo, useState } from 'react'
 import { Check, Plus, Minus } from 'lucide-react'
 import {
   MEDINITY_SECTIONS,
+  WEB_LANGUAGE_SECTION,
   MEDINITY_CHOICE_INDEX,
   includedChoiceIds,
   totalPageCount,
   priceOfChoice,
+  languageUnitPrice,
   stepperPrice,
   VAT_RATE,
   formatWon,
@@ -25,7 +27,13 @@ type Line = { key: string; label: string; sub?: string; price: number }
  * 자가견적 페이지의 '홈페이지 견적' 탭에서 렌더된다.
  */
 export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void }) {
-  const sections = MEDINITY_SECTIONS
+  // 다국어(언어 추가) 섹션은 자가견적 홈페이지 견적에서만 노출한다. '수정 횟수' 앞에 끼워 넣는다.
+  const sections = useMemo(() => {
+    const arr = [...MEDINITY_SECTIONS]
+    const revIdx = arr.findIndex(s => s.id === 'revision')
+    arr.splice(revIdx < 0 ? arr.length : revIdx, 0, WEB_LANGUAGE_SECTION)
+    return arr
+  }, [])
 
   const [singles, setSingles] = useState<Record<string, string>>(() => {
     const o: Record<string, string> = {}
@@ -86,7 +94,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
         out.push({
           key: ch.id,
           label: ch.name,
-          sub: inc ? `${s.title} · 기본 포함` : ch.perPage != null ? `${s.title} · ${totalPages}페이지 기준` : s.title,
+          sub: inc ? `${s.title} · 기본 포함` : (ch.perPage != null || ch.perLang) ? `${s.title} · ${totalPages}페이지 기준` : s.title,
           price: inc ? 0 : priceOfChoice(ch, totalPages),
         })
         for (const child of ch.children ?? []) {
@@ -203,6 +211,14 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
             {/* 다중 선택 (토글 + 하위 옵션) */}
             {section.mode === 'multi' && (
               <div className="flex flex-col gap-2">
+                {section.id === 'i18n' && (
+                  <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-[#F2F3F5] px-3 py-2.5 text-[12px] text-[#51535C]">
+                    <span>총 <b className="text-[#2B313D]">{totalPages}페이지</b> 기준</span>
+                    <span className="text-[#C8CEDA]">·</span>
+                    <span>언어당 <b className="text-[#3180F7]">{formatWon(languageUnitPrice(totalPages))}</b></span>
+                    <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-[#A4ABBA]">5p↓ 10만 · 10p↑ 20만 · 20p↑ 30만</span>
+                  </div>
+                )}
                 {section.choices!.map(ch => {
                   const on = multi.has(ch.id)
                   const childIds = (ch.children ?? []).map(x => x.id)
@@ -217,7 +233,13 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                           {ch.desc && <span className="mt-0.5 block text-[12px] leading-snug text-[#A4ABBA]">{ch.desc}</span>}
                         </span>
                         <span className="shrink-0 text-sm font-bold text-[#2B313D]">
-                          {includedIds.has(ch.id) ? '포함' : ch.price === 0 ? '기본 0원' : `+${formatWon(ch.price)}`}
+                          {includedIds.has(ch.id)
+                            ? '포함'
+                            : ch.perLang
+                              ? `+${formatWon(priceOfChoice(ch, totalPages))}`
+                              : ch.price === 0
+                                ? '기본 0원'
+                                : `+${formatWon(ch.price)}`}
                         </span>
                       </button>
 
