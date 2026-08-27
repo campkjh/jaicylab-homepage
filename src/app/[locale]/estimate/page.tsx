@@ -26,6 +26,7 @@ import { PrintableSpec, type SpecGroup } from '@/components/estimate/PrintableSp
 import { motion } from 'framer-motion'
 import { FileDropzone } from '@/components/FileDropzone'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { MobileMenu } from '@/components/MobileMenu'
 import { useLocale } from 'next-intl'
 import { PACKAGES, PACKAGE_CATEGORIES, PACKAGE_EXAMPLES, TIER_ORDER, TIER_META, type TierId, type Pkg } from '@/data/packages'
 import { ESTIMATE_CONTENT, type Locale } from './content'
@@ -1016,9 +1017,18 @@ export default function EstimatePage() {
             <Link href="/guides" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navGuides}</Link>
             <Link href="/about#문의" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#51535C]">{c.navContact}</Link>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
-            <Link href="/about#문의" className="rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{c.ctaProject}</Link>
+            <Link href="/about#문의" className="hidden rounded-xl bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95 md:inline-block">{c.ctaProject}</Link>
+            <MobileMenu
+              items={[
+                { label: c.navAbout, href: '/about' },
+                { label: c.navEstimate, href: '/estimate', active: true },
+                { label: c.navGuides, href: '/guides' },
+                { label: c.navContact, href: '/about#문의' },
+              ]}
+              cta={{ label: c.ctaProject, href: '/about#문의' }}
+            />
           </div>
         </div>
 
@@ -1101,8 +1111,8 @@ export default function EstimatePage() {
       {/* PACKAGES CAROUSEL */}
       <section ref={presetSectionRef} className={`relative pb-1 transition-all duration-700 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
         <div className="mx-auto max-w-[1320px] px-6">
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="text-[20px] font-bold tracking-tight text-[#2B313D]">{c.packageCountTitle(PACKAGES.length)}</h2>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+            <h2 className="text-[18px] font-bold tracking-tight text-[#2B313D] sm:text-[20px]">{c.packageCountTitle(PACKAGES.length)}</h2>
             <div className="flex shrink-0 items-center gap-3">
               {activePkg && <button onClick={clearAll} className="text-[12px] text-[#A4ABBA] hover:text-[#51535C]">{c.resetSelection}</button>}
               {!presetsExpanded && (

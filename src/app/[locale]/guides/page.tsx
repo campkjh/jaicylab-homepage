@@ -8,6 +8,7 @@ import Image, { type StaticImageData } from 'next/image'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { MobileMenu } from '@/components/MobileMenu'
 import { Reveal, Stagger, StaggerItem, PressableMotion } from '@/components/Reveal'
 import { UiIcon } from '@/components/estimate/UiIcon'
 import AppleIcon from './apple-developer.svg'
@@ -176,9 +177,18 @@ export default function GuidesIndexPage() {
             <Link href="/guides" className="rounded-[13px] bg-white px-4 py-1.5 text-[13px] font-bold text-[#2B313D] shadow-sm transition-colors">{h.nav.guides}</Link>
             <Link href="/about#contact" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-[#A4ABBA] transition-colors hover:text-[#2B313D]">{h.nav.contact}</Link>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
-            <Link href="/about#contact" className="rounded-[14px] bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95">{h.nav.cta}</Link>
+            <Link href="/about#contact" className="hidden rounded-[14px] bg-[#2B313D] px-5 py-2 text-[13px] font-bold text-white transition-all hover:bg-[#3A414F] active:scale-95 md:inline-block">{h.nav.cta}</Link>
+            <MobileMenu
+              items={[
+                { label: h.nav.about, href: '/about' },
+                { label: h.nav.estimate, href: '/estimate' },
+                { label: h.nav.guides, href: '/guides', active: true },
+                { label: h.nav.contact, href: '/about#contact' },
+              ]}
+              cta={{ label: h.nav.cta, href: '/about#contact' }}
+            />
           </div>
         </div>
       </header>

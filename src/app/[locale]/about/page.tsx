@@ -11,6 +11,7 @@ import { Logo } from '@/components/Logo'
 import { FileDropzone } from '@/components/FileDropzone'
 import { TechMarquee } from '@/components/TechMarquee'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { MobileMenu } from '@/components/MobileMenu'
 import { Reveal } from '@/components/Reveal'
 
 type Locale = 'ko' | 'en' | 'ja' | 'zh'
@@ -650,9 +651,19 @@ export default function AboutPage() {
             <Link href="/guides" className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.extraGuides}</Link>
             <button onClick={() => scrollTo('contact')} className="rounded-[13px] px-4 py-1.5 text-[13px] font-semibold text-white/45 transition-colors hover:text-white">{c.nav.contact}</button>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
-            <button onClick={() => scrollTo('contact')} className="bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95">{c.ctaInquiry}</button>
+            <button onClick={() => scrollTo('contact')} className="hidden bg-white px-5 py-2 text-[13px] font-bold text-black transition-all hover:bg-white/90 active:scale-95 md:inline-block">{c.ctaInquiry}</button>
+            <MobileMenu
+              theme="dark"
+              items={[
+                { label: c.nav.about, onClick: () => scrollTo('about'), active: true },
+                { label: c.extraSelfEstimate, href: '/estimate' },
+                { label: c.extraGuides, href: '/guides' },
+                { label: c.nav.contact, onClick: () => scrollTo('contact') },
+              ]}
+              cta={{ label: c.ctaInquiry, onClick: () => scrollTo('contact') }}
+            />
           </div>
         </div>
       </header>
