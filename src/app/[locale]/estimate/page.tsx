@@ -1129,8 +1129,9 @@ export default function EstimatePage() {
           </div>
 
           {/* 카테고리 분류탭 — 아이콘 위 / 라벨 아래 (stady 모의고사 분류탭 스타일) */}
-          <div className="mt-3.5 flex items-center gap-3">
-          <div ref={tabsRef} className="scrollbar-hide flex min-w-0 flex-1 gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          {/* 모바일: 검색창을 아래 한 줄로 내려 카테고리 스크롤과 겹치지 않게. sm+: 좌우 배치 */}
+          <div className="mt-3.5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+          <div ref={tabsRef} className="scrollbar-hide flex w-full min-w-0 gap-0.5 overflow-x-auto sm:flex-1" style={{ scrollbarWidth: 'none' }}>
             {PACKAGE_CATEGORIES.map(cat => {
               const active = pkgCategory === cat.id
               return (
@@ -1155,7 +1156,7 @@ export default function EstimatePage() {
             </div>
 
             {/* 프리셋 검색 — 탭과 같은 딤드 회색 배경 */}
-            <div className="relative w-[190px] shrink-0">
+            <div className="relative w-full shrink-0 sm:w-[190px]">
               <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A4ABBA]"><UiIcon name="search" className="h-4 w-4" /></span>
               <input
                 value={presetQuery}
