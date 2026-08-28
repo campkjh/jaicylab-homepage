@@ -21,7 +21,7 @@ export default async function ContractEditorPage({ params }: { params: Promise<{
     const nid = Number(id)
     if (!Number.isInteger(nid)) notFound()
     const rows = (await sql`
-      SELECT id, client_id, kind, payment_type, payment_schedule, title, gap_company, gap_address, gap_biz_no, gap_phone, gap_ceo,
+      SELECT id, client_id, kind, payment_type, payment_schedule, manmonth_rate, roles, tech_stack, title, gap_company, gap_address, gap_biz_no, gap_phone, gap_ceo,
              dev_amount, deposit, deposit_type, payment_terms, penalty_rate, period, warranty, account,
              to_char(contract_date, 'YYYY-MM-DD') AS contract_date,
              special_terms, status,

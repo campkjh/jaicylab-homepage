@@ -254,6 +254,10 @@ const DDL = [
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'homepage'`,
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_type text NOT NULL DEFAULT 'lump'`,
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_schedule jsonb NOT NULL DEFAULT '[]'::jsonb`,
+  // 맨먼스(투입 인력) 자동 산출.
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS manmonth_rate integer NOT NULL DEFAULT 4000000`,
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS roles jsonb NOT NULL DEFAULT '[]'::jsonb`,
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS tech_stack jsonb NOT NULL DEFAULT '[]'::jsonb`,
 
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (

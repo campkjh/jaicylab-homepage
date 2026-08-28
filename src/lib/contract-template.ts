@@ -43,6 +43,36 @@ export const DEFAULT_SCHEDULE: PaymentStage[] = [
   { label: '잔금', percent: 30 },
 ]
 
+// 맨먼스(투입 인력) — 개발비를 역할별 비중으로 나눠 인건비/맨먼스를 자동 산출.
+export type ContractRole = { role: string; grade: string; headcount: number; participation: number; weight: number }
+export const DEFAULT_MM_RATE = 4_000_000 // 맨먼스 단가(원/M·M)
+export const DEFAULT_ROLES: ContractRole[] = [
+  { role: '풀스택 개발자(Front/backend)', grade: '고급', headcount: 1, participation: 100, weight: 67 },
+  { role: 'IT, UI/UX 디자이너/기획', grade: '고급', headcount: 1, participation: 100, weight: 33 },
+]
+export const DEFAULT_TECH_STACK = ['React.js(frontend)', 'typescript', 'Next.js']
+
+export function formatMM(mm: number): string {
+  return `${(Math.round((mm || 0) * 100) / 100).toLocaleString('ko-KR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} MM`
+}
+
+/** 개발비 + 맨먼스 단가 + 역할 비중 → 역할별 인건비/맨먼스. 인건비 합 = 개발비(반올림은 마지막 역할 흡수). */
+export function computeManMonth(devAmount: number, rate: number, roles: ContractRole[]) {
+  const dev = Math.max(0, Math.round(devAmount || 0))
+  const r = Math.max(1, Math.round(rate || DEFAULT_MM_RATE))
+  const rows = (roles ?? []).map(role => {
+    const laborCost = Math.round((dev * (Number(role.weight) || 0)) / 100)
+    return { ...role, laborCost, mm: laborCost / r }
+  })
+  if (rows.length) {
+    const sum = rows.reduce((a, b) => a + b.laborCost, 0)
+    rows[rows.length - 1].laborCost += dev - sum
+    rows[rows.length - 1].mm = rows[rows.length - 1].laborCost / r
+  }
+  const totalMM = rows.reduce((a, b) => a + b.mm, 0)
+  return { rows, totalMM, totalLabor: dev }
+}
+
 export const VAT_RATE = 0.1
 
 export function formatWon(n: number): string {
@@ -94,6 +124,9 @@ export function emptyDraft(): ContractDraft {
     kind: 'homepage',
     payment_type: 'lump',
     payment_schedule: DEFAULT_SCHEDULE,
+    manmonth_rate: DEFAULT_MM_RATE,
+    roles: DEFAULT_ROLES,
+    tech_stack: DEFAULT_TECH_STACK,
     title: CONTRACT_DEFAULTS.title,
     gap_company: '',
     gap_address: '',

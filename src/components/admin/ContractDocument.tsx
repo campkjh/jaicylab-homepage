@@ -1,5 +1,9 @@
 import { CONTRACT_CHAPTERS, STATEMENT_PARAGRAPHS } from '@/lib/contract-content'
-import { PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, kindSubject, computeSchedule, type ContractDraft } from '@/lib/contract-template'
+import {
+  PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, kindSubject,
+  computeSchedule, computeManMonth, formatMM, DEFAULT_MM_RATE, type ContractDraft,
+} from '@/lib/contract-template'
+import { JaicyWordmark } from '@/components/JaicyWordmark'
 
 /**
  * 표준계약서 문서 렌더러 — 화면 미리보기와 인쇄(PDF) 양쪽에 동일하게 쓰인다.
@@ -25,6 +29,30 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
       ))}
     </div>
   ) : null
+
+  const mm = computeManMonth(data.dev_amount, data.manmonth_rate ?? DEFAULT_MM_RATE, data.roles ?? [])
+  const techStack = (data.tech_stack ?? []).filter(t => t.trim())
+
+  const ProviderBlock = (
+    <dl className="space-y-1.5 text-[12.5px]">
+      <PartyRow k="상호" v={PROVIDER.company} />
+      <PartyRow k="주소" v={PROVIDER.address} />
+      <PartyRow k="업태" v={PROVIDER.bizType} />
+      <PartyRow k="종목" v={PROVIDER.bizItem} />
+      <PartyRow k="사업자번호" v={PROVIDER.bizNo} />
+      <PartyRow k="대표전화" v={PROVIDER.phone} />
+      <PartyRow k="대표자" v={`${PROVIDER.ceo}(인)`} />
+    </dl>
+  )
+
+  const FeeGuide = (
+    <div>
+      <div className="mb-1.5 text-[12.5px] font-bold text-[#191f28]">재경비 및 기술료 청구 안내</div>
+      <p className="text-[11.5px] leading-relaxed text-[#4e5968]">
+        본 계약에 따라 재경비는 사업 수행 과정에서 발생하는 간접비용으로, 인건비, 사무실 운영비, 회계·법무·행정 관리 비용 등을 포함하며 총 사업비의 10% 이내에서 산정된다. 기술료는 연구개발 결과물의 활용 대가로, 기술 이전 및 상업적 이용 시 매출액 대비 10% 이내에서 부과될 수 있으며, 지급 방식은 계약 조건에 따라 일시금 또는 분할납부로 정해진다. 본 약관에 명시되지 않은 사항은 관련 법령 및 당사자 간 협의에 따른다.
+      </p>
+    </div>
+  )
 
   const AmountBlock = (
     <div className="text-[#191f28]">
@@ -56,7 +84,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
             <h1 className="text-[28px] font-extrabold tracking-tight">표준계약서</h1>
             <p className="mt-0.5 text-[14px] text-[#8b95a1]">standard contract</p>
           </div>
-          <div className="select-none text-[22px] font-black italic tracking-tight text-[#c4cbd4]">Jaicy™</div>
+          <JaicyWordmark className="h-[22px] w-auto text-[#c4cbd4]" />
         </div>
 
         <div className="mt-9">{AmountBlock}</div>
@@ -79,15 +107,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
         <div className="mt-7 grid grid-cols-2 gap-8 rounded-2xl bg-[#f4f5f7] px-6 py-5">
           <div>
             <div className="mb-3 text-[14px] font-bold">Provider info.(을)</div>
-            <dl className="space-y-1.5 text-[12.5px]">
-              <PartyRow k="상호" v={PROVIDER.company} />
-              <PartyRow k="주소" v={PROVIDER.address} />
-              <PartyRow k="업태" v={PROVIDER.bizType} />
-              <PartyRow k="종목" v={PROVIDER.bizItem} />
-              <PartyRow k="사업자번호" v={PROVIDER.bizNo} />
-              <PartyRow k="대표전화" v={PROVIDER.phone} />
-              <PartyRow k="대표자" v={`${PROVIDER.ceo}(인)`} />
-            </dl>
+            {ProviderBlock}
           </div>
           <div>
             <div className="mb-3 text-[14px] font-bold">Recipient info.(갑)</div>
@@ -171,6 +191,71 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
         ))}
       </section>
 
+      {/* ───────── 맨먼스 (투입 인력) ───────── */}
+      <section className="contract-page break-page px-[9%] py-[8%]">
+        <div className="flex items-start justify-between">
+          <JaicyWordmark className="h-[22px] w-auto text-[#191f28]" />
+        </div>
+        <div className="mt-7 flex items-center gap-2 border-l-2 border-[#191f28] pl-3">
+          <h2 className="text-[22px] font-extrabold tracking-tight">Man month</h2>
+        </div>
+
+        <div className="mt-7 grid grid-cols-[auto_1fr] gap-10">
+          <div className="min-w-[150px]">{AmountBlock}</div>
+          <div>
+            <div className="mb-3 text-[14px] font-bold">Provider info.(을)</div>
+            {ProviderBlock}
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-[#e5e8eb] pt-5">{FeeGuide}</div>
+
+        {techStack.length > 0 && (
+          <div className="mt-6 border-t border-[#e5e8eb] pt-5">
+            <div className="mb-1.5 text-[12.5px] font-bold text-[#191f28]">사용기술스택 및 서드파티</div>
+            <ol className="space-y-0.5 text-[12px] text-[#4e5968]">
+              {techStack.map((t, i) => (
+                <li key={i}>{i + 1}. {t}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        <div className="mt-7 overflow-x-auto border-t border-[#e5e8eb] pt-5">
+          <table className="w-full border-collapse text-[11.5px]">
+            <thead>
+              <tr className="border-b border-[#191f28] text-left align-bottom">
+                <Th en="Role" ko="역할" />
+                <Th en="Project in all" ko="투여인원 수" />
+                <Th en="Grade" ko="등급" />
+                <Th en="Participation rate" ko="참여율" />
+                <Th en="Man month" ko="M/M" />
+                <Th en="Total labor costs" ko="총 인건비" right />
+              </tr>
+            </thead>
+            <tbody>
+              {mm.rows.map((r, i) => (
+                <tr key={i} className="border-b border-[#f0f1f3] align-top text-[#4e5968]">
+                  <td className="py-2.5 pr-3 font-medium text-[#191f28]">{r.role}</td>
+                  <td className="py-2.5 pr-3 tabular-nums">{r.headcount}</td>
+                  <td className="py-2.5 pr-3">{r.grade}</td>
+                  <td className="py-2.5 pr-3 tabular-nums">{r.participation}</td>
+                  <td className="py-2.5 pr-3 tabular-nums">{formatMM(r.mm)}</td>
+                  <td className="py-2.5 text-right font-semibold tabular-nums text-[#191f28]">{formatWon(r.laborCost)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="align-top font-bold text-[#191f28]">
+                <td className="py-2.5 pr-3" colSpan={4}>합계</td>
+                <td className="py-2.5 pr-3 tabular-nums">{formatMM(mm.totalMM)}</td>
+                <td className="py-2.5 text-right tabular-nums">{formatWon(mm.totalLabor)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
       {/* ───────── 특약 ───────── */}
       {terms.length > 0 && (
         <section className="contract-flow break-page px-[9%] py-[8%]">
@@ -189,6 +274,15 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
         </section>
       )}
     </div>
+  )
+}
+
+function Th({ en, ko, right }: { en: string; ko: string; right?: boolean }) {
+  return (
+    <th className={`pb-2 pr-3 font-semibold text-[#191f28] ${right ? 'text-right' : ''}`}>
+      <div>{en}</div>
+      <div className="text-[10px] font-medium text-[#8b95a1]">{ko}</div>
+    </th>
   )
 }
 

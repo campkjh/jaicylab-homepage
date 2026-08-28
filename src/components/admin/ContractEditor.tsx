@@ -7,11 +7,11 @@ import { toast } from 'sonner'
 import { Field, Input, Textarea, Select, Button } from '@/components/admin/ui'
 import { ContractDocument } from '@/components/admin/ContractDocument'
 import {
-  computeAmounts, formatWon, emptyDraft, computeSchedule,
-  DEFAULT_SCHEDULE, KIND_LABEL, KIND_TITLE, type ContractDraft,
+  computeAmounts, formatWon, emptyDraft, computeSchedule, computeManMonth, formatMM,
+  DEFAULT_SCHEDULE, DEFAULT_MM_RATE, DEFAULT_ROLES, DEFAULT_TECH_STACK, KIND_TITLE, type ContractDraft,
 } from '@/lib/contract-template'
 import { saveContract, deleteContract, type ContractInput } from '@/app/admin/(dashboard)/contracts/actions'
-import type { Contract, ContractSpecialTerm } from '@/lib/types'
+import type { Contract, ContractSpecialTerm, ContractRole } from '@/lib/types'
 
 export type ClientLite = {
   id: number
@@ -32,6 +32,9 @@ function fromContract(c: Contract): State {
       kind: c.kind || 'homepage',
       payment_type: c.payment_type || 'lump',
       payment_schedule: Array.isArray(c.payment_schedule) && c.payment_schedule.length ? c.payment_schedule : DEFAULT_SCHEDULE,
+      manmonth_rate: c.manmonth_rate || DEFAULT_MM_RATE,
+      roles: Array.isArray(c.roles) && c.roles.length ? c.roles : DEFAULT_ROLES,
+      tech_stack: Array.isArray(c.tech_stack) && c.tech_stack.length ? c.tech_stack : DEFAULT_TECH_STACK,
       title: c.title,
       gap_company: c.gap_company ?? '',
       gap_address: c.gap_address ?? '',
@@ -116,6 +119,17 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
   const sched = useMemo(() => computeSchedule(d.dev_amount, d.payment_schedule), [d.dev_amount, d.payment_schedule])
   const pctSum = (d.payment_schedule ?? []).reduce((a, b) => a + (Number(b.percent) || 0), 0)
 
+  // 맨먼스(투입 인력)
+  const mm = useMemo(() => computeManMonth(d.dev_amount, d.manmonth_rate, d.roles), [d.dev_amount, d.manmonth_rate, d.roles])
+  const setRole = (i: number, patch: Partial<ContractRole>) =>
+    set({ roles: d.roles.map((r, idx) => (idx === i ? { ...r, ...patch } : r)) })
+  const addRole = () => set({ roles: [...d.roles, { role: '', grade: '중급', headcount: 1, participation: 100, weight: 0 }] })
+  const removeRole = (i: number) => set({ roles: d.roles.filter((_, idx) => idx !== i) })
+  const weightSum = (d.roles ?? []).reduce((a, b) => a + (Number(b.weight) || 0), 0)
+  const setTech = (i: number, val: string) => set({ tech_stack: d.tech_stack.map((t, idx) => (idx === i ? val : t)) })
+  const addTech = () => set({ tech_stack: [...d.tech_stack, ''] })
+  const removeTech = (i: number) => set({ tech_stack: d.tech_stack.filter((_, idx) => idx !== i) })
+
   // 특약
   const addTerm = () => set({ special_terms: [...d.special_terms, { title: '', body: '' }] })
   const setTerm = (i: number, patch: Partial<ContractSpecialTerm>) =>
@@ -130,6 +144,9 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
       kind: d.kind || 'homepage',
       payment_type: d.payment_type || 'lump',
       payment_schedule: d.payment_type === 'installment' ? d.payment_schedule : [],
+      manmonth_rate: Math.max(1, Math.round(Number(d.manmonth_rate) || DEFAULT_MM_RATE)),
+      roles: (d.roles ?? []).filter(r => r.role.trim()),
+      tech_stack: (d.tech_stack ?? []).map(t => t.trim()).filter(Boolean),
       title: d.title || '외주용역 홈페이지 개발',
       gap_company: d.gap_company ?? '',
       gap_address: d.gap_address ?? '',
@@ -276,6 +293,59 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
               <div className="flex justify-between"><span>공급가</span><b className="tabular-nums text-ink">{formatWon(dev)}</b></div>
               <div className="flex justify-between"><span>부가세 (10%)</span><b className="tabular-nums text-ink">{formatWon(vat)}</b></div>
               <div className="flex justify-between border-t border-line pt-1"><span>합계</span><b className="tabular-nums text-brand">{formatWon(total)}</b></div>
+            </div>
+          </FormCard>
+
+          <FormCard title="맨먼스 (투입 인력) · 자동 계산" action={<button type="button" onClick={addRole} className="text-sm font-medium text-brand hover:underline">+ 역할</button>}>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="맨먼스 단가 (원/MM)">
+                <Input type="number" min={1} step={100000} inputMode="numeric" value={d.manmonth_rate || ''} onChange={e => set({ manmonth_rate: Number(e.target.value) || 0 })} />
+              </Field>
+              <div className="flex items-end">
+                <div className="w-full rounded-lg bg-hover px-3 py-2 text-[13px] text-ink-soft">
+                  <div className="flex justify-between"><span>총 맨먼스</span><b className="tabular-nums text-ink">{formatMM(mm.totalMM)}</b></div>
+                  <div className="flex justify-between"><span>총 인건비</span><b className="tabular-nums text-ink">{formatWon(mm.totalLabor)}</b></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {d.roles.map((r, i) => (
+                <div key={i} className="rounded-lg border border-line p-2.5">
+                  <div className="mb-1.5 flex items-center gap-2">
+                    <Input placeholder="역할" value={r.role} onChange={e => setRole(i, { role: e.target.value })} />
+                    <button type="button" onClick={() => removeRole(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    <Field label="등급"><Input value={r.grade} onChange={e => setRole(i, { grade: e.target.value })} /></Field>
+                    <Field label="인원"><Input type="number" min={0} value={r.headcount || ''} onChange={e => setRole(i, { headcount: Number(e.target.value) || 0 })} /></Field>
+                    <Field label="참여율%"><Input type="number" min={0} max={100} value={r.participation || ''} onChange={e => setRole(i, { participation: Number(e.target.value) || 0 })} /></Field>
+                    <Field label="비중%"><Input type="number" min={0} max={100} value={r.weight || ''} onChange={e => setRole(i, { weight: Number(e.target.value) || 0 })} /></Field>
+                  </div>
+                  <div className="mt-1.5 flex justify-end gap-3 text-[11.5px] text-ink-muted">
+                    <span>{formatMM(mm.rows[i]?.mm ?? 0)}</span>
+                    <span className="font-semibold text-ink">{formatWon(mm.rows[i]?.laborCost ?? 0)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={`text-right text-[12px] ${weightSum === 100 ? 'text-ink-muted' : 'text-red-500'}`}>
+              비중 합계 {weightSum}%{weightSum !== 100 ? ' — 100%로 맞춰주세요' : ''}
+            </div>
+
+            <div className="border-t border-line pt-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-ink-soft">사용기술스택 및 서드파티</span>
+                <button type="button" onClick={addTech} className="text-xs font-medium text-brand hover:underline">+ 추가</button>
+              </div>
+              <div className="space-y-1.5">
+                {d.tech_stack.map((t, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input placeholder="예: React.js" value={t} onChange={e => setTech(i, e.target.value)} />
+                    <button type="button" onClick={() => removeTech(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                  </div>
+                ))}
+              </div>
             </div>
           </FormCard>
 

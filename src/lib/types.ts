@@ -6,6 +6,7 @@ export type ProjectStatus = 'planning' | 'in_progress' | 'review' | 'done' | 'pa
 // ── 계약서 ─────────────────────────────────────────────
 export type ContractSpecialTerm = { title: string; body: string }
 export type ContractPaymentStage = { label: string; percent: number }
+export type ContractRole = { role: string; grade: string; headcount: number; participation: number; weight: number }
 
 export type Contract = {
   id: number
@@ -13,6 +14,9 @@ export type Contract = {
   kind: string           // 분야: homepage | app
   payment_type: string   // 대금 방식: lump(일시금) | installment(중도금·잔금)
   payment_schedule: ContractPaymentStage[]  // installment 일 때 단계별 비율
+  manmonth_rate: number  // 맨먼스 단가(원/M·M)
+  roles: ContractRole[]  // 투입 인력(역할·비중)
+  tech_stack: string[]   // 사용 기술스택 및 서드파티
   title: string          // 계약명 (예: 외주용역 홈페이지 개발)
   // 갑(고객) 스냅샷 — 저장 시점 값 고정
   gap_company: string | null   // 상호
