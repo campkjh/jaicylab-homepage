@@ -250,6 +250,10 @@ const DDL = [
     created_at    timestamptz NOT NULL DEFAULT now(),
     updated_at    timestamptz NOT NULL DEFAULT now()
   )`,
+  // 분야(홈페이지/앱) + 대금 방식(일시금/중도금·잔금) 변형.
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'homepage'`,
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_type text NOT NULL DEFAULT 'lump'`,
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_schedule jsonb NOT NULL DEFAULT '[]'::jsonb`,
 
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (

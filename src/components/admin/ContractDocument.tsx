@@ -1,5 +1,5 @@
 import { CONTRACT_CHAPTERS, STATEMENT_PARAGRAPHS } from '@/lib/contract-content'
-import { PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, type ContractDraft } from '@/lib/contract-template'
+import { PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, kindSubject, computeSchedule, type ContractDraft } from '@/lib/contract-template'
 
 /**
  * 표준계약서 문서 렌더러 — 화면 미리보기와 인쇄(PDF) 양쪽에 동일하게 쓰인다.
@@ -10,6 +10,21 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
   const { dev, vat, total } = computeAmounts(data.dev_amount)
   const date = formatContractDate(data.contract_date)
   const terms = (data.special_terms ?? []).filter(t => (t.title || t.body).trim())
+  const subject = kindSubject(data.kind)
+  const installment = data.payment_type === 'installment'
+  const schedule = installment ? computeSchedule(data.dev_amount, data.payment_schedule ?? []) : []
+
+  const ScheduleLine = installment && schedule.length > 0 ? (
+    <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+      <span className="text-[#8b95a1]">대금 지급 일정</span>
+      {schedule.map((s, i) => (
+        <span key={i} className="whitespace-nowrap">
+          {i > 0 && <span className="text-[#c4cbd4]"> · </span>}
+          {s.label}({s.percent}%) <b className="font-semibold text-[#191f28]">{formatWon(s.amount)}</b>
+        </span>
+      ))}
+    </div>
+  ) : null
 
   const AmountBlock = (
     <div className="text-[#191f28]">
@@ -56,6 +71,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
             <div><span className="text-[#8b95a1]">계약기간</span>&nbsp;&nbsp;{data.period}</div>
             <div><span className="text-[#8b95a1]">사후오류보증</span>&nbsp;&nbsp;{data.warranty}</div>
             <div><span className="text-[#8b95a1]">입금계좌</span>&nbsp;&nbsp;{data.account}</div>
+            {ScheduleLine}
           </div>
         </div>
 
@@ -112,6 +128,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
           <div className="space-y-2 text-[12.5px] text-[#4e5968]">
             <div><span className="text-[#8b95a1]">대금지급</span>&nbsp;&nbsp;{data.account}</div>
             <div className="pt-1">{InfoGrid}</div>
+            {ScheduleLine}
           </div>
           <div className="min-w-[150px]">{AmountBlock}</div>
         </div>
@@ -143,7 +160,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
                   <div className="mt-1 space-y-1">
                     {a.clauses.map((c, cli) => (
                       <p key={cli} className="text-[11.5px] leading-relaxed text-[#4e5968]">
-                        {interpolate(c, data.dev_amount)}
+                        {interpolate(c, data.dev_amount, subject)}
                       </p>
                     ))}
                   </div>

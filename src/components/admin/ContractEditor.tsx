@@ -6,7 +6,10 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Field, Input, Textarea, Select, Button } from '@/components/admin/ui'
 import { ContractDocument } from '@/components/admin/ContractDocument'
-import { computeAmounts, formatWon, emptyDraft, type ContractDraft } from '@/lib/contract-template'
+import {
+  computeAmounts, formatWon, emptyDraft, computeSchedule,
+  DEFAULT_SCHEDULE, KIND_LABEL, KIND_TITLE, type ContractDraft,
+} from '@/lib/contract-template'
 import { saveContract, deleteContract, type ContractInput } from '@/app/admin/(dashboard)/contracts/actions'
 import type { Contract, ContractSpecialTerm } from '@/lib/types'
 
@@ -26,6 +29,9 @@ function fromContract(c: Contract): State {
     client_id: c.client_id,
     status: c.status,
     draft: {
+      kind: c.kind || 'homepage',
+      payment_type: c.payment_type || 'lump',
+      payment_schedule: Array.isArray(c.payment_schedule) && c.payment_schedule.length ? c.payment_schedule : DEFAULT_SCHEDULE,
       title: c.title,
       gap_company: c.gap_company ?? '',
       gap_address: c.gap_address ?? '',
@@ -85,6 +91,31 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
     }))
   }
 
+  // 분야 · 대금 방식
+  function setKind(kind: string) {
+    setSt(s => {
+      const wasDefault =
+        !s.draft.title.trim() || s.draft.title === KIND_TITLE.homepage || s.draft.title === KIND_TITLE.app
+      const nextTitle = wasDefault ? KIND_TITLE[kind as 'homepage' | 'app'] ?? s.draft.title : s.draft.title
+      return { ...s, draft: { ...s.draft, kind, title: nextTitle } }
+    })
+  }
+  function setPaymentType(pt: string) {
+    set({
+      payment_type: pt,
+      payment_schedule:
+        pt === 'installment' && (!d.payment_schedule || d.payment_schedule.length === 0)
+          ? DEFAULT_SCHEDULE
+          : d.payment_schedule,
+    })
+  }
+  const setStage = (i: number, patch: Partial<{ label: string; percent: number }>) =>
+    set({ payment_schedule: d.payment_schedule.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) })
+  const addStage = () => set({ payment_schedule: [...d.payment_schedule, { label: '', percent: 0 }] })
+  const removeStage = (i: number) => set({ payment_schedule: d.payment_schedule.filter((_, idx) => idx !== i) })
+  const sched = useMemo(() => computeSchedule(d.dev_amount, d.payment_schedule), [d.dev_amount, d.payment_schedule])
+  const pctSum = (d.payment_schedule ?? []).reduce((a, b) => a + (Number(b.percent) || 0), 0)
+
   // 특약
   const addTerm = () => set({ special_terms: [...d.special_terms, { title: '', body: '' }] })
   const setTerm = (i: number, patch: Partial<ContractSpecialTerm>) =>
@@ -96,6 +127,9 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
     const input: ContractInput = {
       id: st.id,
       client_id: st.client_id,
+      kind: d.kind || 'homepage',
+      payment_type: d.payment_type || 'lump',
+      payment_schedule: d.payment_type === 'installment' ? d.payment_schedule : [],
       title: d.title || '외주용역 홈페이지 개발',
       gap_company: d.gap_company ?? '',
       gap_address: d.gap_address ?? '',
@@ -163,6 +197,47 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
       <div className="grid gap-6 xl:grid-cols-[440px_1fr]">
         {/* 왼쪽: 입력 폼 */}
         <div className="contract-toolbar space-y-5">
+          <FormCard title="계약 유형">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="분야">
+                <Select value={d.kind} onChange={e => setKind(e.target.value)}>
+                  <option value="homepage">홈페이지 개발</option>
+                  <option value="app">앱 개발</option>
+                </Select>
+              </Field>
+              <Field label="대금 방식">
+                <Select value={d.payment_type} onChange={e => setPaymentType(e.target.value)}>
+                  <option value="lump">일시금</option>
+                  <option value="installment">중도금·잔금 (분할)</option>
+                </Select>
+              </Field>
+            </div>
+            {d.payment_type === 'installment' && (
+              <div className="rounded-lg border border-line p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-ink-soft">대금 지급 일정 (개발비 기준)</span>
+                  <button type="button" onClick={addStage} className="text-xs font-medium text-brand hover:underline">+ 단계</button>
+                </div>
+                <div className="space-y-2">
+                  {d.payment_schedule.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input className="w-24" placeholder="단계명" value={s.label} onChange={e => setStage(i, { label: e.target.value })} />
+                      <div className="relative w-20 shrink-0">
+                        <Input type="number" min={0} max={100} inputMode="numeric" value={s.percent || ''} onChange={e => setStage(i, { percent: Number(e.target.value) || 0 })} className="pr-6" />
+                        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-ink-muted">%</span>
+                      </div>
+                      <span className="flex-1 text-right text-[13px] tabular-nums text-ink">{formatWon(sched[i]?.amount ?? 0)}</span>
+                      <button type="button" onClick={() => removeStage(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                    </div>
+                  ))}
+                </div>
+                <div className={`mt-2 text-right text-[12px] ${pctSum === 100 ? 'text-ink-muted' : 'text-red-500'}`}>
+                  합계 {pctSum}%{pctSum !== 100 ? ' — 100%로 맞춰주세요' : ''}
+                </div>
+              </div>
+            )}
+          </FormCard>
+
           <FormCard title="고객 (갑)">
             <Field label="고객 선택">
               <Select value={st.client_id ?? ''} onChange={e => pickClient(e.target.value)}>

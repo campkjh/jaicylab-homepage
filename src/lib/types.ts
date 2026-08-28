@@ -5,10 +5,14 @@ export type ProjectStatus = 'planning' | 'in_progress' | 'review' | 'done' | 'pa
 
 // ── 계약서 ─────────────────────────────────────────────
 export type ContractSpecialTerm = { title: string; body: string }
+export type ContractPaymentStage = { label: string; percent: number }
 
 export type Contract = {
   id: number
   client_id: number | null
+  kind: string           // 분야: homepage | app
+  payment_type: string   // 대금 방식: lump(일시금) | installment(중도금·잔금)
+  payment_schedule: ContractPaymentStage[]  // installment 일 때 단계별 비율
   title: string          // 계약명 (예: 외주용역 홈페이지 개발)
   // 갑(고객) 스냅샷 — 저장 시점 값 고정
   gap_company: string | null   // 상호

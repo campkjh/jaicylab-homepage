@@ -25,6 +25,24 @@ export const CONTRACT_DEFAULTS = {
   account: '(케이뱅크)100-216-345262 예금주(제이씨랩 jaicylab)',
 } as const
 
+// 분야(계약 대상) — 제목/약관 주어("{{SUBJECT}}") 치환에 쓰인다.
+export type ContractKind = 'homepage' | 'app'
+export const KIND_LABEL: Record<ContractKind, string> = { homepage: '홈페이지 개발', app: '앱 개발' }
+export const KIND_SUBJECT: Record<ContractKind, string> = { homepage: '홈페이지개발', app: '앱개발' }
+export const KIND_TITLE: Record<ContractKind, string> = { homepage: '외주용역 홈페이지 개발', app: '외주용역 앱 개발' }
+export function kindSubject(kind: string | null | undefined): string {
+  return KIND_SUBJECT[(kind as ContractKind) in KIND_SUBJECT ? (kind as ContractKind) : 'homepage']
+}
+
+// 대금 방식 — 일시금 / 중도금·잔금(분할).
+export type PaymentType = 'lump' | 'installment'
+export type PaymentStage = { label: string; percent: number }
+export const DEFAULT_SCHEDULE: PaymentStage[] = [
+  { label: '계약금', percent: 40 },
+  { label: '중도금', percent: 30 },
+  { label: '잔금', percent: 30 },
+]
+
 export const VAT_RATE = 0.1
 
 export function formatWon(n: number): string {
@@ -39,9 +57,22 @@ export function computeAmounts(devAmount: number) {
   return { dev, vat, total }
 }
 
-/** 약관 문안의 {{DEV_AMOUNT}} 토큰을 실제 개발비로 치환. */
-export function interpolate(text: string, devAmount: number): string {
-  return text.replace(/\{\{DEV_AMOUNT\}\}/g, formatWon(devAmount))
+/** 약관 문안의 토큰 치환: {{DEV_AMOUNT}}=개발비, {{SUBJECT}}=분야 주어(홈페이지개발/앱개발). */
+export function interpolate(text: string, devAmount: number, subject: string): string {
+  return text
+    .replace(/\{\{DEV_AMOUNT\}\}/g, formatWon(devAmount))
+    .replace(/\{\{SUBJECT\}\}/g, subject)
+}
+
+/** 대금 일정 → 단계별 금액. 반올림 오차는 마지막 단계에 흡수해 합계=개발비. */
+export function computeSchedule(devAmount: number, stages: PaymentStage[]): (PaymentStage & { amount: number })[] {
+  const dev = Math.max(0, Math.round(devAmount || 0))
+  const out = (stages ?? []).map(s => ({ ...s, amount: Math.round((dev * (Number(s.percent) || 0)) / 100) }))
+  if (out.length) {
+    const sum = out.reduce((a, b) => a + b.amount, 0)
+    out[out.length - 1].amount += dev - sum
+  }
+  return out
 }
 
 /** 계약일(YYYY-MM-DD) → "2026년 3월 15일" / 값 없으면 빈 자리(년 월 일). */
@@ -60,6 +91,9 @@ export type ContractDraft = Omit<Contract, 'id' | 'created_at' | 'updated_at' | 
 
 export function emptyDraft(): ContractDraft {
   return {
+    kind: 'homepage',
+    payment_type: 'lump',
+    payment_schedule: DEFAULT_SCHEDULE,
     title: CONTRACT_DEFAULTS.title,
     gap_company: '',
     gap_address: '',
