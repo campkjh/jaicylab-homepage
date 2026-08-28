@@ -226,6 +226,31 @@ const DDL = [
   `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS req_status text`,
   `ALTER TABLE medinity_quotes ADD COLUMN IF NOT EXISTS dev jsonb`,
 
+  // 표준계약서. 어드민에서 금액·고객·특약만 채워 PDF로 출력한다. 고정 법무 문안은 코드(contract-content.ts)에 있다.
+  `CREATE TABLE IF NOT EXISTS contracts (
+    id            serial PRIMARY KEY,
+    client_id     integer REFERENCES clients(id) ON DELETE SET NULL,
+    title         text NOT NULL DEFAULT '외주용역 홈페이지 개발',
+    gap_company   text,
+    gap_address   text,
+    gap_biz_no    text,
+    gap_phone     text,
+    gap_ceo       text,
+    dev_amount    integer NOT NULL DEFAULT 0,
+    deposit       text DEFAULT 'N/A',
+    deposit_type  text DEFAULT 'N/A',
+    payment_terms text DEFAULT 'N/A',
+    penalty_rate  text DEFAULT 'N/A',
+    period        text DEFAULT '선급금 납입일로부터 2개월',
+    warranty      text DEFAULT '개발완료 후 무기한 무상보증',
+    account       text DEFAULT '(케이뱅크)100-216-345262 예금주(제이씨랩 jaicylab)',
+    contract_date date,
+    special_terms jsonb NOT NULL DEFAULT '[]'::jsonb,
+    status        text NOT NULL DEFAULT 'draft',
+    created_at    timestamptz NOT NULL DEFAULT now(),
+    updated_at    timestamptz NOT NULL DEFAULT now()
+  )`,
+
   // 자주 쓰는 말. 카드에서 바로 복사한다.
   `CREATE TABLE IF NOT EXISTS quick_phrases (
     id         serial PRIMARY KEY,

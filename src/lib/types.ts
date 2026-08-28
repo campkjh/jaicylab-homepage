@@ -3,6 +3,36 @@
 
 export type ProjectStatus = 'planning' | 'in_progress' | 'review' | 'done' | 'paused'
 
+// ── 계약서 ─────────────────────────────────────────────
+export type ContractSpecialTerm = { title: string; body: string }
+
+export type Contract = {
+  id: number
+  client_id: number | null
+  title: string          // 계약명 (예: 외주용역 홈페이지 개발)
+  // 갑(고객) 스냅샷 — 저장 시점 값 고정
+  gap_company: string | null   // 상호
+  gap_address: string | null
+  gap_biz_no: string | null    // 사업자번호
+  gap_phone: string | null     // 대표전화
+  gap_ceo: string | null       // 대표자
+  // 금액 (원)
+  dev_amount: number           // 개발비(공급가). 부가세=10%, 합계=개발비+부가세는 계산
+  // 계약 조건
+  deposit: string | null       // 계약 보증금
+  deposit_type: string | null  // 보증금 구분
+  payment_terms: string | null // 대금지급
+  penalty_rate: string | null  // 지체상금율
+  period: string | null        // 계약기간
+  warranty: string | null      // 사후오류보증
+  account: string | null       // 입금계좌
+  contract_date: string | null // 계약일 (YYYY-MM-DD)
+  special_terms: ContractSpecialTerm[]  // 특약
+  status: string               // draft | signed
+  created_at: string
+  updated_at: string
+}
+
 export type Client = {
   id: number
   name: string

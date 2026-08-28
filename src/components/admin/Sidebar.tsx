@@ -15,6 +15,7 @@ const NAV: { href: string; label: string; icon: IconName; exact: boolean }[] = [
   { href: '/admin/projects', label: '프로젝트', icon: 'folder', exact: false },
   { href: '/admin/clients', label: '계정', icon: 'key', exact: false },
   { href: '/admin/quotes', label: '견적함', icon: 'document', exact: false },
+  { href: '/admin/contracts', label: '계약서', icon: 'text', exact: false },
   { href: '/admin/phrases', label: '자주쓰는말', icon: 'copy', exact: false },
   { href: '/admin/settings', label: '설정', icon: 'setting', exact: false },
 ]

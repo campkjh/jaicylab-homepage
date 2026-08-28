@@ -241,3 +241,28 @@ body {
 /* 야자수 잎 살랑임 */
 @keyframes palmSway { from { transform: translateX(0); } to { transform: translateX(2px); } }
 .palm-sway { animation: palmSway 2.8s steps(3) infinite alternate; }
+
+/* ───────── 표준계약서 문서 (미리보기 + 인쇄) ───────── */
+/* 화면: A4 비율 흰 문서. .contract-page 사이에 옅은 구분선. */
+.contract-print { width: 794px; max-width: 100%; margin: 0 auto; color: #191f28; }
+.contract-page + .contract-page,
+.contract-page + .contract-flow,
+.contract-flow + .contract-flow { border-top: 1px dashed #d7dbe0; }
+
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { background: #fff !important; }
+  /* 문서만 보이게: 나머지는 감춘다 */
+  body * { visibility: hidden !important; }
+  .contract-print, .contract-print * { visibility: visible !important; }
+  .contract-print {
+    position: absolute; left: 0; top: 0; width: 100%;
+    box-shadow: none !important; border-radius: 0 !important;
+  }
+  .contract-page + .contract-page,
+  .contract-page + .contract-flow,
+  .contract-flow + .contract-flow { border-top: none; }
+  .contract-page { break-after: page; page-break-after: always; }
+  .break-page { break-before: page; page-break-before: always; }
+  .break-avoid { break-inside: avoid; page-break-inside: avoid; }
+}
