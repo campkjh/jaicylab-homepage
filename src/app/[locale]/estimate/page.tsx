@@ -1398,7 +1398,10 @@ export default function EstimatePage() {
       </>
       )}
 
-      {/* 견적서 PDF (인쇄 전용) — 요약 + 맨먼스/투입인원 + 기능명세서 */}
+      {/* 견적서 PDF (인쇄 전용) — 요약 + 맨먼스/투입인원 + 기능명세서.
+          앱 견적 탭일 때만 마운트 — 항상 렌더하면 홈페이지 탭의 PDF 출력까지
+          이 앱 견적서가 덮어버린다 (2026-09-10 실사고) */}
+      {quoteKind === 'app' && (
       <div className="print-doc hidden print:fixed print:inset-0 print:z-[999] print:block print:bg-white">
         <PrintableSpec
           title={c.quoteDocTitle}
@@ -1414,6 +1417,7 @@ export default function EstimatePage() {
           mmRateLabel={c.mmFootnote(MM_RATE.toLocaleString())}
         />
       </div>
+      )}
 
       {/* Quick Inquiry Modal — 글래스모피즘 + 전체 Spline 배경 */}
       {quickOpen && (
