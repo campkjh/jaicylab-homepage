@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, Plus, Minus } from 'lucide-react'
+import { Check, Plus, Minus, X } from 'lucide-react'
 import {
   MEDINITY_SECTIONS,
   WEB_LANGUAGE_SECTION,
@@ -41,6 +41,8 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
     return o
   })
   const [multi, setMulti] = useState<Set<string>>(new Set())
+  // 구글 지도 무료 연동 — 기본 포함이지만 견적 요약에서 ✕로 뺄 수 있다 (2026-09-10 요청)
+  const [googleMap, setGoogleMap] = useState(true)
   const [steppers, setSteppers] = useState<Record<string, number>>(() => {
     const o: Record<string, number> = {}
     for (const s of sections) if (s.stepper) o[s.stepper.id] = s.stepper.default
@@ -111,7 +113,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
           if (picked.has(child.id)) out.push({ key: child.id, label: child.name, sub: ch.name, price: child.price })
         }
       }
-      if (s.id === 'integration' && !picked.has('int-navermap')) {
+      if (s.id === 'integration' && !picked.has('int-navermap') && googleMap) {
         out.push({ key: 'googlemap', label: '구글 지도 연동', sub: '연동 · 기본 무료', price: 0 })
       }
       if (s.stepper) {
@@ -124,7 +126,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       }
     }
     return out
-  }, [sections, picked, includedIds, totalPages, steppers])
+  }, [sections, picked, includedIds, totalPages, steppers, googleMap])
 
   // 견적서 PDF — 섹션별 기능명세 + 맨먼스/투입인원(홈페이지 제작 기준)
   const specGroups: SpecGroup[] = useMemo(() => {
@@ -136,7 +138,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
         items.push({ label: ch.name, sub: ch.desc, price: includedIds.has(ch.id) ? 0 : priceOfChoice(ch, totalPages) })
         for (const child of ch.children ?? []) if (picked.has(child.id)) items.push({ label: `└ ${child.name}`, price: child.price })
       }
-      if (s.id === 'integration' && !picked.has('int-navermap')) items.push({ label: '구글 지도 연동', sub: '기본 무료', price: 0 })
+      if (s.id === 'integration' && !picked.has('int-navermap') && googleMap) items.push({ label: '구글 지도 연동', sub: '기본 무료', price: 0 })
       if (s.stepper) {
         const st = s.stepper
         const qty = Math.max(st.min, Math.min(st.max, Math.floor(Number(steppers[st.id] ?? 0))))
@@ -145,7 +147,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       if (items.length) out.push({ title: s.title, items })
     }
     return out
-  }, [sections, picked, includedIds, totalPages, steppers])
+  }, [sections, picked, includedIds, totalPages, steppers, googleMap])
 
   const subtotal = lines.reduce((sum, l) => sum + l.price, 0)
   // 할인 — 공급가에서 차감한 뒤 부가세를 매긴다 (0 ~ 공급가 한도)
@@ -282,10 +284,19 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                       )}
 
                       {ch.id === 'int-navermap' && !on && (
-                        <div className="flex items-center gap-2 border-t border-[#F2F3F5] bg-[#F2F3F5]/60 px-3 py-2 text-[12px] text-[#51535C]">
+                        <button
+                          type="button"
+                          onClick={() => setGoogleMap(v => !v)}
+                          className="flex w-full items-center gap-2 border-t border-[#F2F3F5] bg-[#F2F3F5]/60 px-3 py-2 text-left text-[12px] text-[#51535C]"
+                        >
+                          <span className={`flex size-4 shrink-0 items-center justify-center rounded border ${googleMap ? 'border-[#3180F7] bg-[#3180F7] text-white' : 'border-[#C8CEDA] bg-white'}`}>
+                            {googleMap && <Check className="size-2.5" strokeWidth={3} />}
+                          </span>
                           <GoogleIcon className="size-4 shrink-0" />
-                          <span>선택 안 하면 <b className="text-[#2B313D]">구글 지도</b>로 무료 연동됩니다</span>
-                        </div>
+                          {googleMap
+                            ? <span><b className="text-[#2B313D]">구글 지도</b>로 무료 연동됩니다 (끄려면 클릭)</span>
+                            : <span>지도 연동 없이 진행합니다 (구글 지도 무료 연동을 원하면 클릭)</span>}
+                        </button>
                       )}
                     </div>
                   )
@@ -352,6 +363,16 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                     {l.sub && <span className="block truncate text-[11px] text-[#A4ABBA]">{l.sub}</span>}
                   </span>
                   <span className="shrink-0 tabular-nums text-[#51535C]">{l.price === 0 ? '포함' : formatWon(l.price)}</span>
+                  {l.key === 'googlemap' && (
+                    <button
+                      type="button"
+                      onClick={() => setGoogleMap(false)}
+                      title="구글 지도 연동 빼기"
+                      className="shrink-0 rounded p-0.5 text-[#A4ABBA] transition hover:bg-[#E3E6EB] hover:text-[#D0454F]"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
