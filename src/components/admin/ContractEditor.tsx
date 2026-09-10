@@ -8,7 +8,8 @@ import { Field, Input, Textarea, Select, Button } from '@/components/admin/ui'
 import { ContractDocument } from '@/components/admin/ContractDocument'
 import {
   computeAmounts, formatWon, emptyDraft, computeSchedule, computeManMonth, formatMM,
-  DEFAULT_SCHEDULE, DEFAULT_MM_RATE, DEFAULT_ROLES, DEFAULT_TECH_STACK, KIND_TITLE, type ContractDraft,
+  DEFAULT_SCHEDULE, DEFAULT_MM_RATE, DEFAULT_ROLES, DEFAULT_TECH_STACK, type ContractDraft,
+  TYPE_LABEL, TYPE_PERIOD, TYPE_WARRANTY, contractTitle, ALL_DEFAULT_TITLES, normType, type ContractType,
 } from '@/lib/contract-template'
 import { saveContract, deleteContract, type ContractInput } from '@/app/admin/(dashboard)/contracts/actions'
 import type { Contract, ContractSpecialTerm, ContractRole } from '@/lib/types'
@@ -30,6 +31,7 @@ function fromContract(c: Contract): State {
     status: c.status,
     draft: {
       kind: c.kind || 'homepage',
+      contract_type: c.contract_type || 'new',
       payment_type: c.payment_type || 'lump',
       payment_schedule: Array.isArray(c.payment_schedule) && c.payment_schedule.length ? c.payment_schedule : DEFAULT_SCHEDULE,
       manmonth_rate: c.manmonth_rate || DEFAULT_MM_RATE,
@@ -94,15 +96,31 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
     }))
   }
 
-  // 분야 · 대금 방식
-  function setKind(kind: string) {
+  // 분야 · 계약 종류 · 대금 방식 — 사용자가 손대지 않은(기본값 그대로인) 필드만
+  // 새 조합의 기본값으로 갈아끼운다. 직접 고친 제목/기간/보증은 건드리지 않는다.
+  function applyCombo(patch: Partial<{ kind: string; contract_type: string }>) {
     setSt(s => {
-      const wasDefault =
-        !s.draft.title.trim() || s.draft.title === KIND_TITLE.homepage || s.draft.title === KIND_TITLE.app
-      const nextTitle = wasDefault ? KIND_TITLE[kind as 'homepage' | 'app'] ?? s.draft.title : s.draft.title
-      return { ...s, draft: { ...s.draft, kind, title: nextTitle } }
+      const kind = patch.kind ?? s.draft.kind
+      const ctype = normType(patch.contract_type ?? s.draft.contract_type)
+      const d = s.draft
+      const titleDefault = !d.title.trim() || ALL_DEFAULT_TITLES.includes(d.title)
+      const periodDefault = !(d.period ?? '').trim() || (Object.values(TYPE_PERIOD) as string[]).includes(d.period ?? '')
+      const warrantyDefault = !(d.warranty ?? '').trim() || (Object.values(TYPE_WARRANTY) as string[]).includes(d.warranty ?? '')
+      return {
+        ...s,
+        draft: {
+          ...d,
+          kind,
+          contract_type: ctype,
+          title: titleDefault ? contractTitle(kind, ctype) : d.title,
+          period: periodDefault ? TYPE_PERIOD[ctype] : d.period,
+          warranty: warrantyDefault ? TYPE_WARRANTY[ctype] : d.warranty,
+        },
+      }
     })
   }
+  const setKind = (kind: string) => applyCombo({ kind })
+  const setContractType = (contract_type: string) => applyCombo({ contract_type })
   function setPaymentType(pt: string) {
     set({
       payment_type: pt,
@@ -142,6 +160,7 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
       id: st.id,
       client_id: st.client_id,
       kind: d.kind || 'homepage',
+      contract_type: d.contract_type || 'new',
       payment_type: d.payment_type || 'lump',
       payment_schedule: d.payment_type === 'installment' ? d.payment_schedule : [],
       manmonth_rate: Math.max(1, Math.round(Number(d.manmonth_rate) || DEFAULT_MM_RATE)),
@@ -220,6 +239,13 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
                 <Select value={d.kind} onChange={e => setKind(e.target.value)}>
                   <option value="homepage">홈페이지 개발</option>
                   <option value="app">앱 개발</option>
+                </Select>
+              </Field>
+              <Field label="계약 종류">
+                <Select value={d.contract_type ?? 'new'} onChange={e => setContractType(e.target.value)}>
+                  {(Object.keys(TYPE_LABEL) as ContractType[]).map(t => (
+                    <option key={t} value={t}>{TYPE_LABEL[t]}</option>
+                  ))}
                 </Select>
               </Field>
               <Field label="대금 방식">

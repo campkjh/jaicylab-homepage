@@ -1,6 +1,6 @@
 import { CONTRACT_CHAPTERS, STATEMENT_PARAGRAPHS } from '@/lib/contract-content'
 import {
-  PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, kindSubject,
+  PROVIDER, computeAmounts, formatWon, interpolate, formatContractDate, contractSubject,
   computeSchedule, computeManMonth, formatMM, DEFAULT_MM_RATE, type ContractDraft,
 } from '@/lib/contract-template'
 import { JaicyWordmark } from '@/components/JaicyWordmark'
@@ -14,7 +14,7 @@ export function ContractDocument({ data }: { data: ContractDraft }) {
   const { dev, vat, total } = computeAmounts(data.dev_amount)
   const date = formatContractDate(data.contract_date)
   const terms = (data.special_terms ?? []).filter(t => (t.title || t.body).trim())
-  const subject = kindSubject(data.kind)
+  const subject = contractSubject(data.kind, data.contract_type)
   const installment = data.payment_type === 'installment'
   const schedule = installment ? computeSchedule(data.dev_amount, data.payment_schedule ?? []) : []
 

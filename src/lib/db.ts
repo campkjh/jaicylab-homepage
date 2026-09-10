@@ -252,6 +252,8 @@ const DDL = [
   )`,
   // 분야(홈페이지/앱) + 대금 방식(일시금/중도금·잔금) 변형.
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'homepage'`,
+  // 계약 종류(신규/추가개발/유지보수/소규모) — 기존 행은 신규개발로 간주.
+  `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS contract_type text NOT NULL DEFAULT 'new'`,
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_type text NOT NULL DEFAULT 'lump'`,
   `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS payment_schedule jsonb NOT NULL DEFAULT '[]'::jsonb`,
   // 맨먼스(투입 인력) 자동 산출.

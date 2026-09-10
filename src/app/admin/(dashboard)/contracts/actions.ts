@@ -9,6 +9,7 @@ export type ContractInput = {
   id?: number
   client_id: number | null
   kind: string
+  contract_type: string
   payment_type: string
   payment_schedule: ContractPaymentStage[]
   manmonth_rate: number
@@ -46,7 +47,8 @@ export async function saveContract(input: ContractInput): Promise<number> {
     await sql`
       UPDATE contracts SET
         client_id = ${input.client_id}, title = ${input.title},
-        kind = ${input.kind}, payment_type = ${input.payment_type}, payment_schedule = ${sched}::jsonb,
+        kind = ${input.kind}, contract_type = ${input.contract_type},
+        payment_type = ${input.payment_type}, payment_schedule = ${sched}::jsonb,
         manmonth_rate = ${input.manmonth_rate}, roles = ${roles}::jsonb, tech_stack = ${tech}::jsonb,
         gap_company = ${input.gap_company}, gap_address = ${input.gap_address}, gap_biz_no = ${input.gap_biz_no},
         gap_phone = ${input.gap_phone}, gap_ceo = ${input.gap_ceo},
@@ -64,10 +66,10 @@ export async function saveContract(input: ContractInput): Promise<number> {
 
   const rows = (await sql`
     INSERT INTO contracts
-      (client_id, kind, payment_type, payment_schedule, manmonth_rate, roles, tech_stack, title, gap_company, gap_address, gap_biz_no, gap_phone, gap_ceo, dev_amount,
+      (client_id, kind, contract_type, payment_type, payment_schedule, manmonth_rate, roles, tech_stack, title, gap_company, gap_address, gap_biz_no, gap_phone, gap_ceo, dev_amount,
        deposit, deposit_type, payment_terms, penalty_rate, period, warranty, account, contract_date, special_terms, status)
     VALUES
-      (${input.client_id}, ${input.kind}, ${input.payment_type}, ${sched}::jsonb, ${input.manmonth_rate}, ${roles}::jsonb, ${tech}::jsonb, ${input.title}, ${input.gap_company}, ${input.gap_address}, ${input.gap_biz_no},
+      (${input.client_id}, ${input.kind}, ${input.contract_type}, ${input.payment_type}, ${sched}::jsonb, ${input.manmonth_rate}, ${roles}::jsonb, ${tech}::jsonb, ${input.title}, ${input.gap_company}, ${input.gap_address}, ${input.gap_biz_no},
        ${input.gap_phone}, ${input.gap_ceo}, ${input.dev_amount},
        ${input.deposit}, ${input.deposit_type}, ${input.payment_terms}, ${input.penalty_rate},
        ${input.period}, ${input.warranty}, ${input.account}, ${date}, ${st}::jsonb, ${input.status})

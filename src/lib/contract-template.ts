@@ -34,6 +34,65 @@ export function kindSubject(kind: string | null | undefined): string {
   return KIND_SUBJECT[(kind as ContractKind) in KIND_SUBJECT ? (kind as ContractKind) : 'homepage']
 }
 
+// 계약 종류 — 신규/추가/유지보수/소규모 (2026-09-10). 분야와 직교하는 축으로,
+// 제목·약관 주어·기간/보증 기본값에 조합된다. 기존 계약(컬럼 없던 시절)은 'new'.
+export type ContractType = 'new' | 'addon' | 'maintenance' | 'small'
+export const TYPE_LABEL: Record<ContractType, string> = {
+  new: '신규개발',
+  addon: '추가개발',
+  maintenance: '유지보수',
+  small: '소규모개발',
+}
+const KIND_WORD: Record<ContractKind, string> = { homepage: '홈페이지', app: '앱' }
+
+function normKind(kind: string | null | undefined): ContractKind {
+  return kind === 'app' ? 'app' : 'homepage'
+}
+export function normType(t: string | null | undefined): ContractType {
+  return (t as ContractType) in TYPE_LABEL ? (t as ContractType) : 'new'
+}
+
+/** 분야×종류 → 계약명 기본값. 신규개발은 기존 제목과 동일(하위호환). */
+export function contractTitle(kind: string | null | undefined, type: string | null | undefined): string {
+  const w = KIND_WORD[normKind(kind)]
+  switch (normType(type)) {
+    case 'addon': return `외주용역 ${w} 추가개발`
+    case 'maintenance': return `${w} 유지보수 용역`
+    case 'small': return `외주용역 ${w} 소규모 개발`
+    default: return KIND_TITLE[normKind(kind)]
+  }
+}
+
+/** 분야×종류 → 약관 주어("{{SUBJECT}}"). 신규개발은 기존 주어와 동일. */
+export function contractSubject(kind: string | null | undefined, type: string | null | undefined): string {
+  const w = KIND_WORD[normKind(kind)]
+  switch (normType(type)) {
+    case 'addon': return `${w} 추가개발`
+    case 'maintenance': return `${w} 유지보수`
+    case 'small': return `${w} 소규모개발`
+    default: return KIND_SUBJECT[normKind(kind)]
+  }
+}
+
+/** 종류별 계약기간/사후보증 기본값 — 값이 아직 기본값일 때만 에디터가 갈아끼운다. */
+export const TYPE_PERIOD: Record<ContractType, string> = {
+  new: '선급금 납입일로부터 2개월',
+  addon: '선급금 납입일로부터 1개월',
+  maintenance: '계약일로부터 12개월',
+  small: '선급금 납입일로부터 1개월',
+}
+export const TYPE_WARRANTY: Record<ContractType, string> = {
+  new: '개발완료 후 무기한 무상보증',
+  addon: '개발완료 후 무기한 무상보증',
+  maintenance: '유지보수 계약기간 내 상시 대응',
+  small: '개발완료 후 무기한 무상보증',
+}
+
+/** 분야×종류 조합의 모든 기본 제목 — 사용자가 손대지 않은 제목인지 판별용. */
+export const ALL_DEFAULT_TITLES: readonly string[] = (['homepage', 'app'] as const).flatMap(k =>
+  (Object.keys(TYPE_LABEL) as ContractType[]).map(t => contractTitle(k, t)),
+)
+
 // 대금 방식 — 일시금 / 중도금·잔금(분할).
 export type PaymentType = 'lump' | 'installment'
 export type PaymentStage = { label: string; percent: number }
@@ -122,6 +181,7 @@ export type ContractDraft = Omit<Contract, 'id' | 'created_at' | 'updated_at' | 
 export function emptyDraft(): ContractDraft {
   return {
     kind: 'homepage',
+    contract_type: 'new',
     payment_type: 'lump',
     payment_schedule: DEFAULT_SCHEDULE,
     manmonth_rate: DEFAULT_MM_RATE,

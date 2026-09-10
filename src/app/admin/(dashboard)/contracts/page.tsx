@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ensureSchema, sql } from '@/lib/db'
 import { requireAdmin } from '@/lib/session'
 import { PageContainer, PageHeader, EmptyState } from '@/components/admin/ui'
-import { computeAmounts, formatWon } from '@/lib/contract-template'
+import { computeAmounts, formatWon, TYPE_LABEL, normType } from '@/lib/contract-template'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +13,7 @@ type Row = {
   dev_amount: number
   status: string
   kind: string
+  contract_type: string | null
   payment_type: string
   contract_date: string | null
   created_at: string
@@ -23,7 +24,7 @@ export default async function ContractsPage() {
   await ensureSchema()
 
   const rows = (await sql`
-    SELECT id, title, gap_company, dev_amount, status, kind, payment_type,
+    SELECT id, title, gap_company, dev_amount, status, kind, contract_type, payment_type,
            to_char(contract_date, 'YYYY-MM-DD') AS contract_date,
            to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS created_at
     FROM contracts
@@ -61,7 +62,7 @@ export default async function ContractsPage() {
                   <div className="flex items-center gap-1.5">
                     <span className="truncate text-sm font-semibold text-ink">{c.gap_company || '고객 미지정'}</span>
                     <span className="shrink-0 rounded bg-hover px-1.5 py-0.5 text-[10px] font-medium text-ink-soft">
-                      {c.kind === 'app' ? '앱' : '홈페이지'}
+                      {c.kind === 'app' ? '앱' : '홈페이지'} · {TYPE_LABEL[normType(c.contract_type)]}
                     </span>
                     {c.payment_type === 'installment' && (
                       <span className="shrink-0 rounded bg-hover px-1.5 py-0.5 text-[10px] font-medium text-ink-soft">분할</span>

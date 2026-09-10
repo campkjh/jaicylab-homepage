@@ -12,6 +12,7 @@ export type Contract = {
   id: number
   client_id: number | null
   kind: string           // 분야: homepage | app
+  contract_type: string  // 종류: new(신규) | addon(추가개발) | maintenance(유지보수) | small(소규모)
   payment_type: string   // 대금 방식: lump(일시금) | installment(중도금·잔금)
   payment_schedule: ContractPaymentStage[]  // installment 일 때 단계별 비율
   manmonth_rate: number  // 맨먼스 단가(원/M·M)
