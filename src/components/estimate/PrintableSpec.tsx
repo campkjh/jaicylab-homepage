@@ -14,6 +14,7 @@ export function PrintableSpec({
   date,
   groups,
   subtotal,
+  discount,
   vat,
   total,
   unit,
@@ -27,6 +28,8 @@ export function PrintableSpec({
   date: string
   groups: SpecGroup[]
   subtotal: number
+  /** 할인액 (공급가에서 차감, 부가세는 할인 후 기준) — 0이거나 없으면 행 생략 */
+  discount?: number
   vat: number
   total: number
   /** 금액 표기 단위 접미사 ('원' 또는 '만') */
@@ -70,6 +73,12 @@ export function PrintableSpec({
                 <td className="py-1.5 text-slate-600">공급가</td>
                 <td className="py-1.5 text-right tabular-nums">{money(subtotal)}</td>
               </tr>
+              {discount != null && discount > 0 && (
+                <tr className="border-b border-slate-200">
+                  <td className="py-1.5 text-slate-600">할인</td>
+                  <td className="py-1.5 text-right tabular-nums text-[#D0454F]">−{money(discount)}</td>
+                </tr>
+              )}
               <tr className="border-b border-slate-200">
                 <td className="py-1.5 text-slate-600">부가세 (10%)</td>
                 <td className="py-1.5 text-right tabular-nums">{money(vat)}</td>

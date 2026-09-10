@@ -50,6 +50,16 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
   const modeOf = (id: string) => sections.find(s => s.id === MEDINITY_CHOICE_INDEX[id]?.sectionId)?.mode
 
   const pickSingle = (sectionId: string, choiceId: string) => {
+    // 이미 선택된 카드를 다시 누르면 해제 — 기본 패키지(원페이지형)도 뺀
+    // 견적을 만들 수 있게 한다 (2026-09-10 요청)
+    if (singles[sectionId] === choiceId) {
+      setSingles(prev => {
+        const next = { ...prev }
+        delete next[sectionId]
+        return next
+      })
+      return
+    }
     const newInc = MEDINITY_CHOICE_INDEX[choiceId]?.includes ?? []
     setSingles(prev => {
       const next = { ...prev, [sectionId]: choiceId }
@@ -138,10 +148,14 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
   }, [sections, picked, includedIds, totalPages, steppers])
 
   const subtotal = lines.reduce((sum, l) => sum + l.price, 0)
-  const vat = Math.round(subtotal * VAT_RATE)
-  const total = subtotal + vat
+  // 할인 — 공급가에서 차감한 뒤 부가세를 매긴다 (0 ~ 공급가 한도)
+  const [discountInput, setDiscountInput] = useState(0)
+  const discount = Math.min(Math.max(0, discountInput), subtotal)
+  const supply = subtotal - discount
+  const vat = Math.round(supply * VAT_RATE)
+  const total = supply + vat
 
-  // 맨먼스: 공급가 / 600만원. 홈페이지 제작 표준 롤 배분.
+  // 맨먼스: 공급가 / 600만원. 홈페이지 제작 표준 롤 배분. (할인 전 규모 기준)
   const MM_RATE = 6_000_000
   const totalMM = subtotal / MM_RATE
   const team = useMemo(() => {
@@ -170,7 +184,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
               <div>
                 <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#2B313D]">
                   {section.title}
-                  {section.required && <span className="rounded bg-[#F2F3F5] px-1.5 py-0.5 text-[10px] font-semibold text-[#51535C]">필수</span>}
+                  {/* 자가견적은 기본 패키지도 해제 가능 — '필수' 뱃지는 여기선 표시하지 않는다 */}
                 </h3>
                 {section.desc && <p className="mt-0.5 text-[13px] text-[#A4ABBA]">{section.desc}</p>}
               </div>
@@ -344,6 +358,27 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
 
             <div className="mt-3 space-y-1 border-t border-[#C8CEDA] pt-3 text-[13px]">
               <div className="flex justify-between text-[#51535C]"><span>공급가</span><AnimatedWon value={subtotal} className="tabular-nums" /></div>
+              {/* 할인 입력 — 공급가에서 차감, 부가세는 할인 후 금액 기준 */}
+              <div className="flex items-center justify-between text-[#51535C]">
+                <span>할인</span>
+                <span className="flex items-center gap-1.5">
+                  {discount > 0 && <span className="font-semibold text-[#D0454F]">−</span>}
+                  <input
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={discountInput > 0 ? discountInput.toLocaleString('ko-KR') : ''}
+                    onChange={e => {
+                      const n = Number(e.target.value.replace(/[^0-9]/g, ''))
+                      setDiscountInput(Number.isFinite(n) ? n : 0)
+                    }}
+                    className={`w-[104px] rounded-md border border-[#C8CEDA] px-2 py-1 text-right tabular-nums outline-none transition focus:border-[#3180F7] focus:ring-1 focus:ring-[#3180F7] ${discount > 0 ? 'text-[#D0454F] font-semibold' : 'text-[#2B313D]'}`}
+                  />
+                  <span>원</span>
+                </span>
+              </div>
+              {discountInput > subtotal && (
+                <p className="text-right text-[11px] text-[#D0454F]">할인은 공급가({formatWon(subtotal)})까지만 적용됩니다</p>
+              )}
               <div className="flex justify-between text-[#51535C]"><span>부가세 (10%)</span><AnimatedWon value={vat} className="tabular-nums" /></div>
               <div className="flex items-center justify-between pt-1 text-base font-bold">
                 <span className="text-[#2B313D]">합계</span>
@@ -377,6 +412,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
           date={printDate}
           groups={specGroups}
           subtotal={subtotal}
+          discount={discount}
           vat={vat}
           total={total}
           unit="원"
