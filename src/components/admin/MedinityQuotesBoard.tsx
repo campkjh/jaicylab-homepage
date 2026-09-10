@@ -50,7 +50,7 @@ function QuoteCard({ quote, canPreview }: { quote: MedinityQuote; canPreview: bo
           <span className="text-xs text-ink-muted">{[quote.contact_name, quote.phone, quote.email].filter(Boolean).join(' · ')}</span>
         )}
         {quote.reference_url && (
-          <a href={quote.reference_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-xs font-medium text-brand hover:underline">🔗 레퍼런스 링크</a>
+          <a href={quote.reference_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"><Icon name="link" className="size-3.5" /> 레퍼런스 링크</a>
         )}
         <span className="ml-auto text-sm font-bold tabular-nums text-ink">{won(quote.total)}</span>
         <button onClick={() => setOpen(v => !v)} aria-label="상세" className="shrink-0 text-ink-muted transition hover:text-ink">

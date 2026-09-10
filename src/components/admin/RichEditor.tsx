@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Bold, List } from 'lucide-react'
 import { toast } from 'sonner'
 import Icon from './Icon'
 
@@ -110,7 +109,7 @@ export default function RichEditor({
   return (
     <div className={seamless ? '' : 'rounded-lg border border-line bg-surface focus-within:border-brand'}>
       <div className={`relative flex items-center gap-0.5 px-1.5 py-1 ${seamless ? 'rounded-lg bg-canvas' : 'border-b border-line'}`}>
-        <ToolbarButton title="굵게" onClick={() => exec('bold')}><Bold className="size-4" /></ToolbarButton>
+        <ToolbarButton title="굵게" onClick={() => exec('bold')}><Icon name="bold" className="size-4" /></ToolbarButton>
         <ToolbarButton title="기울임" onClick={() => exec('italic')}><Icon name="italic" className="size-4" /></ToolbarButton>
         <ToolbarButton title="밑줄" onClick={() => exec('underline')}><Icon name="underline" className="size-4" /></ToolbarButton>
         <ToolbarButton title="취소선" onClick={() => exec('strikeThrough')}><Icon name="strike" className="size-4" /></ToolbarButton>
@@ -137,7 +136,7 @@ export default function RichEditor({
           </div>
         )}
 
-        <ToolbarButton title="목록" onClick={() => exec('insertUnorderedList')}><List className="size-4" /></ToolbarButton>
+        <ToolbarButton title="목록" onClick={() => exec('insertUnorderedList')}><Icon name="list" className="size-4" /></ToolbarButton>
 
         <span className="mx-1 h-4 w-px bg-line" />
 

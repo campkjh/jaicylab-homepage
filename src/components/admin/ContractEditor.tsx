@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import Icon from './Icon'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -270,7 +271,7 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
                         <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-ink-muted">%</span>
                       </div>
                       <span className="flex-1 text-right text-[13px] tabular-nums text-ink">{formatWon(sched[i]?.amount ?? 0)}</span>
-                      <button type="button" onClick={() => removeStage(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                      <button type="button" onClick={() => removeStage(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50"><Icon name="x" className="size-3.5" /></button>
                     </div>
                   ))}
                 </div>
@@ -340,7 +341,7 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
                 <div key={i} className="rounded-lg border border-line p-2.5">
                   <div className="mb-1.5 flex items-center gap-2">
                     <Input placeholder="역할" value={r.role} onChange={e => setRole(i, { role: e.target.value })} />
-                    <button type="button" onClick={() => removeRole(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                    <button type="button" onClick={() => removeRole(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50"><Icon name="x" className="size-3.5" /></button>
                   </div>
                   <div className="grid grid-cols-4 gap-1.5">
                     <Field label="등급"><Input value={r.grade} onChange={e => setRole(i, { grade: e.target.value })} /></Field>
@@ -368,7 +369,7 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
                 {d.tech_stack.map((t, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Input placeholder="예: React.js" value={t} onChange={e => setTech(i, e.target.value)} />
-                    <button type="button" onClick={() => removeTech(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                    <button type="button" onClick={() => removeTech(i)} aria-label="삭제" className="shrink-0 rounded-md px-1.5 py-1 text-sm text-red-500 hover:bg-red-50"><Icon name="x" className="size-3.5" /></button>
                   </div>
                 ))}
               </div>
@@ -396,7 +397,7 @@ export default function ContractEditor({ contract, clients }: { contract: Contra
                   <div key={i} className="rounded-lg border border-line p-3">
                     <div className="mb-2 flex items-center gap-2">
                       <Input placeholder={`특약 ${i + 1} 제목 (선택)`} value={t.title} onChange={e => setTerm(i, { title: e.target.value })} />
-                      <button type="button" onClick={() => removeTerm(i)} aria-label="삭제" className="shrink-0 rounded-md px-2 py-1 text-sm text-red-500 hover:bg-red-50">✕</button>
+                      <button type="button" onClick={() => removeTerm(i)} aria-label="삭제" className="shrink-0 rounded-md px-2 py-1 text-sm text-red-500 hover:bg-red-50"><Icon name="x" className="size-3.5" /></button>
                     </div>
                     <Textarea rows={3} placeholder="특약 내용" value={t.body} onChange={e => setTerm(i, { body: e.target.value })} />
                   </div>
