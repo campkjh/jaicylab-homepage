@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
-/* 공개 사이트는 다크지만 관리자는 여름 모래사장 테마의 라이트를 따로 쓴다. */
+/* 공개 사이트는 다크지만 관리자는 가을 낙엽 해변 테마의 라이트를 따로 쓴다.
+   (2026-09-10: 여름 모래사장 → 가을 — 호박빛 크림 바탕 + 단풍 주황 브랜드) */
 @theme {
-  --color-ink: #3d3527;
-  --color-ink-soft: #6f6350;
-  --color-ink-muted: #a5977c;
-  --color-line: #eddfbf;
-  --color-surface: #fffdf6;
-  --color-canvas: #f9f0d9;
-  --color-hover: #f4ead0;
-  --color-brand: #0aa2c0;
-  --color-brand-soft: #ddf3f8;
+  --color-ink: #3d3023;
+  --color-ink-soft: #71604a;
+  --color-ink-muted: #a8926f;
+  --color-line: #ecd9b4;
+  --color-surface: #fffcf4;
+  --color-canvas: #f7ead0;
+  --color-hover: #f3e3c4;
+  --color-brand: #d9741a;
+  --color-brand-soft: #fbe9d2;
 }
 
 :root {
@@ -53,13 +54,25 @@ body {
 .rich-body ol { list-style: decimal; padding-left: 1.25rem; }
 .rich-body a { color: #2563eb; text-decoration: underline; }
 
-/* 노션 느낌의 얇은 스크롤바 (모래 톤) */
+/* 노션 느낌의 얇은 스크롤바 (낙엽 톤) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #ddcfab; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #cbbb92; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: #dcc79b; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #c9b183; background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ── 여름 도트 해변 장식 ─────────────────────────────── */
+/* ── 가을 도트 해변 장식 ─────────────────────────────── */
+
+/* 낙엽: 화면 위에서 좌우로 흔들리며 데굴데굴 떨어진다 (상시, 은은하게) */
+@keyframes leafFall {
+  0%   { transform: translate(0, -30px) rotate(0deg); opacity: 0; }
+  6%   { opacity: 0.95; }
+  25%  { transform: translate(-16px, 25vh) rotate(80deg); }
+  50%  { transform: translate(12px, 50vh) rotate(170deg); }
+  75%  { transform: translate(-14px, 75vh) rotate(260deg); }
+  96%  { opacity: 0.95; }
+  100% { transform: translate(8px, 103vh) rotate(350deg); opacity: 0; }
+}
+.leaf-fall { position: absolute; top: 0; animation: leafFall linear infinite; }
 
 .pixelated { image-rendering: pixelated; shape-rendering: crispEdges; }
 

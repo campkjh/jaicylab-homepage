@@ -1,7 +1,7 @@
 'use client'
 
 /*
- * 여름 도트 해변 + 꽃게 펫.
+ * 가을 도트 해변 + 꽃게 펫. (2026-09-10 가을 리스킨 — 단풍 야자수·낙엽·가을 팔레트)
  * 꽃게는 40ms 물리 루프로 돌아다니며: 클릭하면 말대꾸(친화력 증감), 드래그로 옮길 수 있고,
  * 헬리콥터로 타임라인까지 올라갔다 추락하고, 서핑하고, 오늘 날짜 칸에서 썬탠하고,
  * 오늘 식단을 보며 침을 흘리고, 17시가 넘으면 차 옆에서 퇴근 준비를 하고, 비 오면 우산을 쓴다.
@@ -11,11 +11,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-const SAND = '#f2dfae'
-const SAND_DOT = '#e3cb8f'
-const SEA_FRONT = '#38b9da'
-const SEA_MID = '#5fcbe4'
-const SEA_BACK = '#8fe0ef'
+const SAND = '#eed3a0' // 가을 모래 — 여름보다 살짝 짙고 주황기
+const SAND_DOT = '#dfc084'
+const SEA_FRONT = '#2f9ec4' // 가을 바다 — 채도 낮춘 깊은 청록
+const SEA_MID = '#57b3d1'
+const SEA_BACK = '#8fd0e2'
 
 const GROUND_Y = 2
 const SURF_Y = 30
@@ -57,8 +57,8 @@ const LINES = {
   pokeLow: ['...', '흥.', '너랑 말 안 해 {n}', '저리 가...', '건들지 마라 진짜', '(못 들은 척)', '오늘은 대화하고 싶지 않아'],
   pokeHigh: ['헤헤 {n} 왔구나', '오늘도 와줬네~', '심심했는데 잘 왔어', '{n} 최고야', '이따 모래성 같이 만들래?', '너 오면 기분 좋아', '집게 하이파이브!'],
   pet: ['기분 좋다~', '오~ 부드러운 손길', '우리 좀 친해진 듯?', '한 번 더 쓰다듬어도 돼', '헤헤헤', '등딱지 광나지?'],
-  idle: ['덥다 더워...', '바다는 언제 봐도 좋네', '야자수 밑은 위험해...', '코코넛은 무서워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '짠내 나는 하루', '옆으로 걷는 게 제일 빨라', '모래알 세는 중... 하나, 둘...', '갈매기한테 새우깡 뺏겼어', '이 바다 관리자가 나야', '점심 뭐 먹었어?', '파도 소리 ASMR 최고', '일광욕하기 좋은 날이네'],
-  suntan: ['썬탠 중... 방해 금지', '선크림 발랐으니까 괜찮아', '오늘 날짜 자리가 명당이야', '등딱지 태우는 중~', '치이익... 익는 소리 아니지?'],
+  idle: ['쌀쌀하다... 가을이네', '바다는 언제 봐도 좋네', '야자수 밑은 위험해...', '코코넛은 무서워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '가을 바다는 차분해서 좋아', '옆으로 걷는 게 제일 빨라', '낙엽 세는 중... 하나, 둘...', '갈매기한테 새우깡 뺏겼어', '이 바다 관리자가 나야', '점심 뭐 먹었어?', '파도 소리 ASMR 최고', '낙엽 밟는 소리 좋다'],
+  suntan: ['가을볕 쬐는 중... 방해 금지', '선크림 발랐으니까 괜찮아', '단풍 뷰 명당은 여기야', '가을볕에 등딱지 말리는 중~', '치이익... 익는 소리 아니지?'],
   drool: ['오늘 메뉴 맛있겠구나...', '한 입만... 안 될까?', '군침이 싹 도네', '이거 내 몫도 있는 거지?', '냄새만 맡을게...'],
   surf: ['파도 좋다!!', '서핑은 옆으로 타는 거야', '우와아아~~', '발리까지 간다~', '이게 바로 꽃게 파도타기'],
   heli: ['타임라인 점검하러 출동!', '날 수 있을 것 같아!', '위에서 보면 다 보인다구', '두두두두두두'],
@@ -100,7 +100,7 @@ const LINES = {
 }
 
 /** 클릭 메뉴에서 줄 수 있는 간식 (이모지) */
-const SNACKS = ['🍪', '🍤', '🍡', '🥨', '🦐', '🍘']
+const SNACKS = ['🍠', '🌰', '🍎', '🍪', '🍡', '🥮']
 
 // ─────────────────────────── 픽셀 파츠
 
@@ -231,19 +231,19 @@ function Umbrella() {
       aria-hidden
     >
       {/* 캐노피 (돔) */}
-      <rect x="20" y="0" width="10" height="3" fill="#2563eb" />
-      <rect x="14" y="3" width="22" height="3" fill="#60a5fa" />
-      <rect x="8" y="6" width="34" height="4" fill="#3b82f6" />
-      <rect x="4" y="10" width="42" height="3" fill="#2563eb" />
+      <rect x="20" y="0" width="10" height="3" fill="#b3452f" />
+      <rect x="14" y="3" width="22" height="3" fill="#e08a52" />
+      <rect x="8" y="6" width="34" height="4" fill="#c85a38" />
+      <rect x="4" y="10" width="42" height="3" fill="#b3452f" />
       {/* 캐노피 골 무늬 */}
-      <rect x="14" y="6" width="2" height="4" fill="#93c5fd" />
-      <rect x="24" y="3" width="2" height="7" fill="#93c5fd" />
-      <rect x="34" y="6" width="2" height="4" fill="#93c5fd" />
+      <rect x="14" y="6" width="2" height="4" fill="#f0b183" />
+      <rect x="24" y="3" width="2" height="7" fill="#f0b183" />
+      <rect x="34" y="6" width="2" height="4" fill="#f0b183" />
       {/* 물결 가장자리 */}
-      <rect x="4" y="13" width="6" height="2" fill="#2563eb" />
-      <rect x="16" y="13" width="6" height="2" fill="#2563eb" />
-      <rect x="28" y="13" width="6" height="2" fill="#2563eb" />
-      <rect x="40" y="13" width="6" height="2" fill="#2563eb" />
+      <rect x="4" y="13" width="6" height="2" fill="#b3452f" />
+      <rect x="16" y="13" width="6" height="2" fill="#b3452f" />
+      <rect x="28" y="13" width="6" height="2" fill="#b3452f" />
+      <rect x="40" y="13" width="6" height="2" fill="#b3452f" />
       {/* 꼭지 */}
       <rect x="24" y="-3" width="2" height="3" fill="#8f5f33" />
       {/* 손잡이대: 중앙에서 오른쪽 아래로 사선, 끝은 J 손잡이 */}
@@ -299,20 +299,20 @@ function Palm() {
       <rect x="45" y="43" width="10" height="3" fill="#8f5f33" />
       <rect x="49" y="32" width="9" height="3" fill="#8f5f33" />
       <g className="palm-sway">
-        <rect x="34" y="22" width="20" height="6" fill="#2fae63" />
-        <rect x="20" y="26" width="16" height="6" fill="#2fae63" />
-        <rect x="8" y="32" width="14" height="6" fill="#1f8f4e" />
-        <rect x="2" y="38" width="8" height="5" fill="#1f8f4e" />
-        <rect x="34" y="14" width="18" height="6" fill="#1f8f4e" />
-        <rect x="22" y="10" width="14" height="6" fill="#2fae63" />
-        <rect x="14" y="14" width="8" height="5" fill="#1f8f4e" />
-        <rect x="48" y="6" width="12" height="7" fill="#2fae63" />
-        <rect x="44" y="2" width="8" height="6" fill="#1f8f4e" />
-        <rect x="58" y="12" width="16" height="6" fill="#2fae63" />
-        <rect x="72" y="16" width="10" height="5" fill="#1f8f4e" />
-        <rect x="58" y="22" width="18" height="6" fill="#1f8f4e" />
-        <rect x="74" y="28" width="12" height="6" fill="#2fae63" />
-        <rect x="84" y="34" width="7" height="5" fill="#1f8f4e" />
+        <rect x="34" y="22" width="20" height="6" fill="#e8892a" />
+        <rect x="20" y="26" width="16" height="6" fill="#e8892a" />
+        <rect x="8" y="32" width="14" height="6" fill="#c9661b" />
+        <rect x="2" y="38" width="8" height="5" fill="#c9661b" />
+        <rect x="34" y="14" width="18" height="6" fill="#c9661b" />
+        <rect x="22" y="10" width="14" height="6" fill="#e8892a" />
+        <rect x="14" y="14" width="8" height="5" fill="#c9661b" />
+        <rect x="48" y="6" width="12" height="7" fill="#e8892a" />
+        <rect x="44" y="2" width="8" height="6" fill="#c9661b" />
+        <rect x="58" y="12" width="16" height="6" fill="#e8892a" />
+        <rect x="72" y="16" width="10" height="5" fill="#c9661b" />
+        <rect x="58" y="22" width="18" height="6" fill="#c9661b" />
+        <rect x="74" y="28" width="12" height="6" fill="#e8892a" />
+        <rect x="84" y="34" width="7" height="5" fill="#c9661b" />
       </g>
       <rect x="46" y="24" width="7" height="7" fill="#6f4726" />
       <rect x="56" y="26" width="7" height="7" fill="#7a4f2a" />
@@ -403,8 +403,8 @@ function Sandcastle({ level, smashing, onSmash }: { level: number; smashing: boo
 function BeachBall() {
   return (
     <svg viewBox="0 0 14 14" className="pixelated h-[14px] w-[14px]" aria-hidden>
-      <rect x="4" y="0" width="6" height="14" fill="#ef4444" />
-      <rect x="0" y="4" width="14" height="6" fill="#fbbf24" />
+      <rect x="4" y="0" width="6" height="14" fill="#c2410c" />
+      <rect x="0" y="4" width="14" height="6" fill="#d9a13b" />
       <rect x="4" y="4" width="6" height="6" fill="#ffffff" />
     </svg>
   )
@@ -575,6 +575,50 @@ function HeatSteam() {
 }
 
 /** 강풍: 화면을 가로질러 날아가는 모래 먼지 */
+/** 낙엽: 화면 전체에 은은하게 흩날린다 (가을 상시 장식). 도트 잎 3색. */
+const LEAVES = [
+  { left: '6%', dur: 17, delay: 0, tone: '#d97425', flip: false },
+  { left: '22%', dur: 21, delay: 6, tone: '#c2410c', flip: true },
+  { left: '38%', dur: 15, delay: 11, tone: '#d9a13b', flip: false },
+  { left: '57%', dur: 19, delay: 3, tone: '#c9661b', flip: true },
+  { left: '73%', dur: 16, delay: 9, tone: '#d97425', flip: false },
+  { left: '90%', dur: 22, delay: 14, tone: '#b3452f', flip: true },
+] as const
+
+function LeafDot({ tone, flip }: { tone: string; flip: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 10 10"
+      className="pixelated h-[10px] w-[10px]"
+      style={flip ? { transform: 'scaleX(-1)' } : undefined}
+      aria-hidden
+    >
+      <rect x="2" y="0" width="4" height="2" fill={tone} />
+      <rect x="0" y="2" width="8" height="4" fill={tone} />
+      <rect x="2" y="6" width="4" height="2" fill={tone} />
+      <rect x="6" y="6" width="2" height="2" fill="#8f5f33" />
+      <rect x="8" y="8" width="2" height="2" fill="#8f5f33" />
+      <rect x="3" y="2" width="1" height="4" fill="#8f5f33" opacity="0.5" />
+    </svg>
+  )
+}
+
+function FallingLeaves() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[4] overflow-hidden" aria-hidden>
+      {LEAVES.map((l, i) => (
+        <span
+          key={i}
+          className="leaf-fall"
+          style={{ left: l.left, animationDuration: `${l.dur}s`, animationDelay: `${l.delay}s` }}
+        >
+          <LeafDot tone={l.tone} flip={l.flip} />
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function WindDust() {
   return (
     <>
@@ -1768,6 +1812,8 @@ export default function SummerShore({ admin }: { admin: string }) {
 
   return (
     <div ref={shoreRef} aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
+      {/* 가을 낙엽 — 화면 전체 레이어 */}
+      <FallingLeaves />
       {/* 하늘: 갈매기 두 마리 */}
       <div className="gull-drift absolute bottom-[120px]" style={{ animationDuration: '38s' }}>
         <Seagull />
