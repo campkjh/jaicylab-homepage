@@ -414,7 +414,7 @@ export default function ScheduleCalendar({
   }
 
   return (
-    // 아래 3rem 은 해변 장식(SummerShore) 자리
+    // 아래 3rem 은 산 장식(AutumnMountain) 자리
     <div className="flex h-[calc(100dvh-11rem)] gap-2 lg:h-[calc(100dvh-6.5rem)]">
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3">

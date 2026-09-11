@@ -1,5 +1,5 @@
 import Sidebar from '@/components/admin/Sidebar'
-import SummerShore from '@/components/admin/SummerShore'
+import AutumnMountain from '@/components/admin/AutumnMountain'
 import PresenceProvider from '@/components/admin/PresenceProvider'
 import { requireAdmin } from '@/lib/session'
 import { ensureSchema, sql } from '@/lib/db'
@@ -22,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <main className="min-w-0 flex-1 px-4 pt-[4.5rem] pb-16 lg:px-7 lg:pt-6 lg:pb-16">
           <div className="w-full animate-fade-up">{children}</div>
         </main>
-        <SummerShore admin={admin} />
+        <AutumnMountain admin={admin} />
       </div>
     </PresenceProvider>
   )

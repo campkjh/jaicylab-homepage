@@ -60,7 +60,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: #c9b183; background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ── 가을 도트 해변 장식 ─────────────────────────────── */
+/* ── 가을 도트 산 장식 ─────────────────────────────── */
 
 /* 낙엽: 화면 위에서 좌우로 흔들리며 데굴데굴 떨어진다 (상시, 은은하게) */
 @keyframes leafFall {
@@ -76,24 +76,20 @@ body {
 
 .pixelated { image-rendering: pixelated; shape-rendering: crispEdges; }
 
-/* 파도: 타일(48px)의 배수만큼 계단식으로 밀어 끊김 없이 돈다 */
-@keyframes pixelSlide { to { transform: translateX(-96px); } }
-.wave-front { animation: pixelSlide 2.1s steps(6) infinite; }
-.wave-back  { animation: pixelSlide 3.6s steps(8) infinite reverse; }
-.wave-far   { animation: pixelSlide 5.2s steps(10) infinite; }
+/* 운해: 능선 허리의 안개 띠가 아주 느리게 흐른다 (타일 72px 배수로 밀어 이음새 없음).
+   산은 움직이지 않으므로 능선 자체엔 애니메이션을 걸지 않는다. */
+@keyframes mistSlide { to { transform: translateX(-72px); } }
+.mist-drift { animation: mistSlide 26s linear infinite; }
+.mist-drift-slow { animation: mistSlide 44s linear infinite reverse; }
 
-/* 파도 거품 (타일 24px) */
-@keyframes foamSlide { to { transform: translateX(-48px); } }
-.foam-move { animation: foamSlide 1.6s steps(8) infinite; }
-
-/* 코코넛: 게 머리에 맞고(60%) 튕겨서 모래에 떨어진다 */
-@keyframes coconutFall {
+/* 도토리: 게 머리에 맞고(60%) 튕겨서 흙길에 떨어진다 */
+@keyframes acornFall {
   0%   { transform: translateY(0); }
   60%  { transform: translateY(30px); }
   75%  { transform: translateY(24px) translateX(10px); }
   100% { transform: translateY(56px) translateX(14px); }
 }
-.coconut-fall { animation: coconutFall 0.7s steps(8) forwards; }
+.acorn-fall { animation: acornFall 0.7s steps(8) forwards; }
 
 /* 혹 났을 때 머리 주위 별이 어질어질 */
 @keyframes dizzySpin { from { opacity: 1; } to { opacity: 0.15; } }
@@ -109,18 +105,30 @@ body {
 @keyframes gullFlap { from { transform: scaleY(1); } to { transform: scaleY(-0.6); } }
 .gull-flap { animation: gullFlap 0.5s steps(2) infinite alternate; }
 
-/* 물고기: 파도 위로 폴짝 */
-@keyframes fishArc {
+/* 다람쥐: 낙엽 사이에서 폴짝 */
+@keyframes squirrelHop {
   0%   { transform: translateY(0) scaleX(1); opacity: 0; }
   15%  { opacity: 1; }
   50%  { transform: translateY(-52px) scaleX(1); }
   100% { transform: translateY(6px) scaleX(1); opacity: 0; }
 }
-.fish-arc { animation: fishArc 1.5s steps(12) forwards; }
+.squirrel-hop { animation: squirrelHop 1.5s steps(12) forwards; }
 
-/* 바다 반짝임 */
-@keyframes seaSparkle { 0%, 70% { opacity: 0; } 85% { opacity: 0.9; } 100% { opacity: 0; } }
-.sea-sparkle { animation: seaSparkle 4s steps(3) infinite; display: inline-block; }
+/* 모닥불: 불꽃이 타닥타닥 */
+@keyframes fireFlicker {
+  0%   { transform: scaleY(1) translateY(0); opacity: 1; }
+  50%  { transform: scaleY(1.12) translateY(-1px); opacity: 0.92; }
+  100% { transform: scaleY(0.94) translateY(1px); opacity: 1; }
+}
+.fire-flicker { animation: fireFlicker 0.34s steps(3) infinite alternate; transform-origin: bottom center; }
+
+/* 불똥이 위로 피어오른다 */
+@keyframes emberRise {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translate(-3px, -12px); opacity: 0; }
+}
+.ember-rise { animation: emberRise 1.6s steps(6) infinite; }
 
 /* 비: 빗방울 하나하나가 비스듬히 떨어진다 */
 @keyframes dropFall {
@@ -162,7 +170,7 @@ body {
 @keyframes blownSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .blown-spin { animation: blownSpin 0.55s steps(4) infinite; }
 
-/* 강풍: 가로로 날아가는 모래 먼지 */
+/* 강풍: 가로로 날아가는 낙엽 부스러기 */
 @keyframes windDust {
   0% { transform: translateX(-40px); opacity: 0; }
   10% { opacity: 0.8; }
@@ -208,13 +216,13 @@ body {
 }
 .dirt-bit { animation: dirtBurst 0.5s steps(4) forwards; }
 
-/* 모래성 무너짐: 아래로 주저앉으며 흩어진다 */
-@keyframes castleSmash {
+/* 돌탑 무너짐: 아래로 주저앉으며 흩어진다 */
+@keyframes cairnSmash {
   0% { transform: translateY(0) scaleY(1) scaleX(1); opacity: 1; }
   30% { transform: translateY(2px) scaleY(0.8) scaleX(1.1); }
   100% { transform: translateY(10px) scaleY(0.1) scaleX(1.4); opacity: 0; }
 }
-.castle-smash { animation: castleSmash 0.65s steps(6) forwards; transform-origin: bottom center; }
+.cairn-smash { animation: cairnSmash 0.65s steps(6) forwards; transform-origin: bottom center; }
 
 /* 슬플 때 눈물이 뚝뚝 */
 @keyframes tearDrop {
@@ -243,15 +251,11 @@ body {
 @keyframes crabBob { from { transform: translateY(0); } to { transform: translateY(2px); } }
 .crab-bob { animation: crabBob 0.45s steps(2) infinite alternate; }
 
-/* 수평선 위 태양: 빛살이 깜빡인다 */
+/* 능선 위 가을 해: 빛살이 깜빡인다 */
 @keyframes sunRays { from { opacity: 0.35; } to { opacity: 1; } }
 .sun-rays { animation: sunRays 2.4s steps(2) infinite alternate; }
 
-/* 불가사리 반짝임 */
-@keyframes starTwinkle { from { opacity: 0.75; } to { opacity: 1; } }
-.star-twinkle { animation: starTwinkle 3s steps(2) infinite alternate; }
-
-/* 야자수 잎 살랑임 */
+/* 나뭇가지·억새 살랑임 */
 @keyframes palmSway { from { transform: translateX(0); } to { transform: translateX(2px); } }
 .palm-sway { animation: palmSway 2.8s steps(3) infinite alternate; }
 

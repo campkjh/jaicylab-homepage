@@ -1,7 +1,7 @@
 'use client'
 
 /*
- * 가을 도트 해변 + 꽃게 펫. (2026-09-10 가을 리스킨 — 단풍 야자수·낙엽·가을 팔레트)
+ * 가을 도트 산 + 꽃게 펫. (2026-09-11: 해변 → 산 — 능선 3겹·운해·단풍 참나무·돌탑·모닥불)
  * 꽃게는 40ms 물리 루프로 돌아다니며: 클릭하면 말대꾸(친화력 증감), 드래그로 옮길 수 있고,
  * 헬리콥터로 타임라인까지 올라갔다 추락하고, 서핑하고, 오늘 날짜 칸에서 썬탠하고,
  * 오늘 식단을 보며 침을 흘리고, 17시가 넘으면 차 옆에서 퇴근 준비를 하고, 비 오면 우산을 쓴다.
@@ -11,16 +11,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-const SAND = '#eed3a0' // 가을 모래 — 여름보다 살짝 짙고 주황기
-const SAND_DOT = '#dfc084'
-const SEA_FRONT = '#2f9ec4' // 가을 바다 — 채도 낮춘 깊은 청록
-const SEA_MID = '#57b3d1'
-const SEA_BACK = '#8fd0e2'
+// 가을 산 팔레트 (2026-09-11: 바다 → 산). 능선은 멀수록 옅고 푸르게(대기원근).
+const GROUND = '#d2ab76' // 낙엽 덮인 흙길
+const GROUND_DOT = '#bd9560'
+const GROUND_LEAF = '#d9742533' // 흙에 흩어진 낙엽 부스러기
+const RIDGE_NEAR = '#b2612b' // 근경 — 붉게 물든 앞산
+const RIDGE_MID = '#c98a4b' // 중경 — 누렇게 물든 능선
+const RIDGE_FAR = '#a9a3bd' // 원경 — 안개 낀 연봉(푸른 보라)
 
 const GROUND_Y = 2
-const SURF_Y = 30
+const RIDGE_Y = 30 // 능선 위 높이 — 비탈 미끄럼/계곡 담그기 때 게가 올라가는 y
 const CRAB_W = 56
-const MAX_CASTLE = 60
+const MAX_CAIRN = 60
 
 type Mode =
   | 'walk'
@@ -55,37 +57,37 @@ const LINES = {
   poke: ['왜 건들여 {n}', '응? 왜', '왜 불러 {n}', '집게 조심해라?', '옆구리 간지럽다니까', '왜요 왜요 왜요', '나 바빠 보이지 않아?', '헉 깜짝이야', '{n} 손 차갑다', '노크 먼저 해줄래?'],
   pokeAnnoyed: ['아 하지마', '그만 눌러!!', '야!! {n}!!', '진짜 화낸다?', '꼬집는다? 진짜 꼬집는다?', '으아아 어지러워', '한 번만 더 누르면 문다', '{n} 너 이름 기억해놨다', '스트레스 받으면 옆으로만 걷는다고!', '아아아 그만~~', '갑질 신고할 거야', '집게 나간다???'],
   pokeLow: ['...', '흥.', '너랑 말 안 해 {n}', '저리 가...', '건들지 마라 진짜', '(못 들은 척)', '오늘은 대화하고 싶지 않아'],
-  pokeHigh: ['헤헤 {n} 왔구나', '오늘도 와줬네~', '심심했는데 잘 왔어', '{n} 최고야', '이따 모래성 같이 만들래?', '너 오면 기분 좋아', '집게 하이파이브!'],
+  pokeHigh: ['헤헤 {n} 왔구나', '오늘도 와줬네~', '심심했는데 잘 왔어', '{n} 최고야', '이따 돌탑 같이 쌓을래?', '너 오면 기분 좋아', '집게 하이파이브!'],
   pet: ['기분 좋다~', '오~ 부드러운 손길', '우리 좀 친해진 듯?', '한 번 더 쓰다듬어도 돼', '헤헤헤', '등딱지 광나지?'],
-  idle: ['쌀쌀하다... 가을이네', '바다는 언제 봐도 좋네', '야자수 밑은 위험해...', '코코넛은 무서워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '가을 바다는 차분해서 좋아', '옆으로 걷는 게 제일 빨라', '낙엽 세는 중... 하나, 둘...', '갈매기한테 새우깡 뺏겼어', '이 바다 관리자가 나야', '점심 뭐 먹었어?', '파도 소리 ASMR 최고', '낙엽 밟는 소리 좋다'],
+  idle: ['쌀쌀하다... 가을이네', '산은 언제 봐도 좋네', '참나무 밑은 위험해...', '도토리는 무서워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '가을 산은 조용해서 좋아', '옆으로 걷는 게 제일 빨라', '낙엽 세는 중... 하나, 둘...', '다람쥐한테 도토리 뺏겼어', '이 산 관리자가 나야', '점심 뭐 먹었어?', '바람에 낙엽 구르는 소리 최고', '낙엽 밟는 소리 좋다'],
   suntan: ['가을볕 쬐는 중... 방해 금지', '선크림 발랐으니까 괜찮아', '단풍 뷰 명당은 여기야', '가을볕에 등딱지 말리는 중~', '치이익... 익는 소리 아니지?'],
   drool: ['오늘 메뉴 맛있겠구나...', '한 입만... 안 될까?', '군침이 싹 도네', '이거 내 몫도 있는 거지?', '냄새만 맡을게...'],
-  surf: ['파도 좋다!!', '서핑은 옆으로 타는 거야', '우와아아~~', '발리까지 간다~', '이게 바로 꽃게 파도타기'],
+  surf: ['비탈 좋다!!', '낙엽 보드는 옆으로 타는 거야', '우와아아~~', '능선 끝까지 간다~', '이게 바로 꽃게 낙엽타기'],
   heli: ['타임라인 점검하러 출동!', '날 수 있을 것 같아!', '위에서 보면 다 보인다구', '두두두두두두'],
   heliCrash: ['아야야...', '다신 안 탄다...', '착륙은 원래 어려운 거야', '헬기 면허 따야겠다...', '별이 보여...'],
   car: ['슬슬 퇴근 준비...', '차 시동 걸어놨어', '6시 되면 바로 출발이야', '{n} 퇴근 안 해?', '트렁크에 모래 좀 싣고...', '내일 또 보자~', '퇴근길 막히기 전에 가야지'],
   rain: ['비 온다...', '우산 챙겼지 {n}?', '꿉꿉해...', '빗소리 좋다~', '등딱지에 빗방울 통통', '이런 날엔 파전에... 아니 아무것도 아니야'],
   drop: ['여기가 어디야?!', '함부로 옮기지 마!', '우와 순간이동?!', '어지러워...', '오? 여기 뷰 좋은데?', '납치는 신고감이야 {n}', '내려줘서 고마워...?'],
-  coconut: ['아야!!', '누가 코코넛 던졌어!!', '야자수 밑은 피했어야 했는데...', '별이 보여...', '혹 났잖아!!'],
-  hot: ['나도 삶아지는 걸까..?', '어디선가 맛있는 냄새가 나...', '등딱지가 노릇노릇해지는 기분이야', '이러다 대게 아니라 찐게 된다', '바닷물이 미지근해...', '선크림이 버터처럼 녹아', '32도 넘으면 게는 위험하다구', '아지랑이가 보여...'],
-  wind: ['바람이 너무 세!!', '집게로 모래를 꽉 잡는 중', '모래가 눈에 들어가!!', '오늘은 낮게 다녀야겠어', '파도가 사나운데?'],
+  acorn: ['아야!!', '누가 도토리 던졌어!!', '참나무 밑은 피했어야 했는데...', '별이 보여...', '혹 났잖아!!'],
+  hot: ['나도 삶아지는 걸까..?', '어디선가 맛있는 냄새가 나...', '등딱지가 노릇노릇해지는 기분이야', '이러다 대게 아니라 찐게 된다', '계곡물도 미지근해...', '선크림이 버터처럼 녹아', '가을에 32도라니 말이 돼?', '아지랑이가 보여...'],
+  wind: ['바람이 너무 세!!', '집게로 나뭇가지 꽉 잡는 중', '낙엽이 눈에 들어가!!', '오늘은 낮게 다녀야겠어', '산바람이 사나운데?'],
   thunder: ['천둥이다!! 숨어야 해!!', '번개 무서워...', '찌릿찌릿한 예감이 들어...', '피뢰침 없나?!', '하늘이 화났나 봐'],
   zapped: ['짜릿하다...⚡', '머리가 파마머리 됐어...', '충전 100% 완료...?', '번개 맛은 좀 맵네...', '지지직... 재부팅 중...'],
   blownStart: ['으아아 바람이!!', '날아간다아아아~~!!', '집게로 못 버티겠어!!', '누가 좀 잡아줘~~!'],
   blownCrash: ['쿵!! 아야...', '어디까지 날아온 거야...', '바람 반대로 걸을걸...', '착지 실패...'],
-  dig: ['여기 숨으면 아무도 몰라', '모래 속은 시원하다~', '잠수 아니고 잠사(모래)야', '나 찾아봐라~'],
-  digOut: ['푸하!! 답답했다', '모래 목욕 완료!', '아무도 못 찾았지?'],
-  nap: ['잠깐 낮잠... 쿨쿨', '5분만 잘게...', '파도 소리 들으니 졸려...', '자장자장...'],
+  dig: ['낙엽 더미에 숨으면 아무도 몰라', '낙엽 속은 포근하다~', '잠수 아니고 잠엽(낙엽)이야', '나 찾아봐라~'],
+  digOut: ['푸하!! 답답했다', '낙엽 목욕 완료!', '아무도 못 찾았지?'],
+  nap: ['잠깐 낮잠... 쿨쿨', '5분만 잘게...', '바람 소리 들으니 졸려...', '자장자장...'],
   napWake: ['누구야!!', '깜짝이야!! 자고 있었잖아!', '5분만 더...', '꿈에서 새우깡 먹고 있었는데!!'],
   dance: ['게다리 춤 타임!!', '옆으로 옆으로~ 옆으로 옆으로~', '흥이 났다 흥이 났어', '{n} 너도 춰봐'],
-  admire: ['이 성, 내가 만든 거임', '웅장하다...', '성주는 나야', '파도야 오지 마라...', '점점 커지고 있어', '이 정도면 궁전이지'],
-  build: ['영차... 영차...', '한 층만 더 올리자', '집게로 다지고~', '모래성 장인이 나야', '조금만 더 높이!', '이번엔 탑을 세워볼까', '완벽한 성을 만들 거야', '무너지지 마라 제발...'],
-  smashLow: ['앗! 내 성...', '이제 막 시작했는데', '뭐야~ 다시 쌓지 뭐', '한 층밖에 안 됐는데...'],
-  smashMid: ['내 성이... 왜...', '{n} 너무해...', '몇 층이나 쌓았는데!!', '아니 왜 부수는 거야ㅠㅠ', '반나절 걸린 건데...'],
-  smashHigh: ['안돼애애애ㅠㅠㅠ', '내 인생의 역작이...', '몇 시간을 쌓았는데...!!', '{n}... 우리 이제 끝이야', '다신 안 만들 거야 흑흑', '집게가 부들부들 떨려...', '이건 만행이야...'],
-  cooloff: ['시원하다~~', '어푸어푸', '역시 게는 물이지', '더위 탈출 성공!'],
-  morning: ['좋은 아침~ {n}', '모닝 바닷물 한 모금', '오늘도 화이팅이야', '아침 파도가 제일 맑아'],
-  night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤바다는 낭만이지'],
+  admire: ['이 돌탑, 내가 쌓은 거임', '웅장하다...', '이 산 돌탑 주인은 나야', '바람아 불지 마라...', '점점 높아지고 있어', '이 정도면 소원 들어주겠지'],
+  build: ['영차... 영차...', '한 층만 더 올리자', '집게로 돌을 고르고~', '돌탑 장인이 나야', '조금만 더 높이!', '납작한 돌이 최고지', '완벽한 돌탑을 쌓을 거야', '무너지지 마라 제발...'],
+  smashLow: ['앗! 내 돌탑...', '이제 막 시작했는데', '뭐야~ 다시 쌓지 뭐', '한 층밖에 안 됐는데...'],
+  smashMid: ['내 돌탑이... 왜...', '{n} 너무해...', '몇 층이나 쌓았는데!!', '아니 왜 무너뜨리는 거야ㅠㅠ', '반나절 걸린 건데...'],
+  smashHigh: ['안돼애애애ㅠㅠㅠ', '내 인생의 역작이...', '몇 시간을 쌓았는데...!!', '{n}... 우리 이제 끝이야', '다신 안 쌓을 거야 흑흑', '집게가 부들부들 떨려...', '이건 만행이야...'],
+  cooloff: ['계곡물 시원하다~~', '어푸어푸', '역시 게는 계곡이지', '더위 탈출 성공!'],
+  morning: ['좋은 아침~ {n}', '모닝 약수 한 모금', '오늘도 화이팅이야', '아침 산공기가 제일 맑아'],
+  night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤산은 낭만이지'],
   friday: ['불금이다!!!', '내일 쉬는 날이지?!', '금요일엔 게도 신난다', '주말 계획 있어 {n}?'],
   crisp: ['으아아아 또 맞았어!!', '이번엔 진짜다...', '몸이... 타들어가...', '지지직...!!'],
   respawn: ['쇼쇼속~ 부활!', '푸하!! 다시 태어났다', '땅 파고 올라왔지롱', '재에서 부활한 불사조 게', '나 죽지 않아~', '깜짝 놀랐지 {n}?'],
@@ -104,30 +106,41 @@ const SNACKS = ['🍠', '🌰', '🍎', '🍪', '🍡', '🥮']
 
 // ─────────────────────────── 픽셀 파츠
 
-function WaveStrip({ id, fill, opacity = 1 }: { id: string; fill: string; opacity?: number }) {
+/** 산 능선 — 픽셀 실루엣 타일이 가로로 이어진다. 산은 움직이지 않으므로 정지. */
+const RIDGE_PATH = {
+  far: 'M0,112 L0,92 L8,92 L8,78 L16,78 L16,65 L24,65 L24,51 L32,51 L32,38 L40,38 L40,24 L48,24 L48,47 L56,47 L56,69 L64,69 L64,92 L72,92 L72,71 L80,71 L80,50 L88,50 L88,60 L96,60 L96,71 L104,71 L104,82 L112,82 L112,92 L120,92 L120,79 L128,79 L128,67 L136,67 L136,54 L144,54 L144,41 L152,41 L152,29 L160,29 L160,16 L168,16 L168,35 L176,35 L176,54 L184,54 L184,73 L192,73 L192,92 L200,92 L200,75 L208,75 L208,59 L216,59 L216,42 L224,42 L224,59 L232,59 L232,75 L240,75 L240,92 L248,92 L248,80 L256,80 L256,68 L264,68 L264,56 L272,56 L272,44 L280,44 L280,32 L288,32 L288,20 L296,20 L296,8 L304,8 L304,25 L312,25 L312,42 L320,42 L320,58 L328,58 L328,75 L336,75 L336,92 L344,92 L344,79 L352,79 L352,67 L360,67 L360,54 L368,54 L368,64 L376,64 L376,73 L384,73 L384,82 L392,82 L392,92 L400,92 L400,78 L408,78 L408,63 L416,63 L416,48 L424,48 L424,34 L432,34 L432,44 L440,44 L440,53 L448,53 L448,63 L456,63 L456,73 L464,73 L464,82 L472,82 L472,92 L480,92 L480,112 Z',
+  mid: 'M0,76 L0,62 L8,62 L8,51 L16,51 L16,40 L24,40 L24,29 L32,29 L32,18 L40,18 L40,33 L48,33 L48,47 L56,47 L56,62 L64,62 L64,49 L72,49 L72,36 L80,36 L80,45 L88,45 L88,53 L96,53 L96,62 L104,62 L104,51 L112,51 L112,40 L120,40 L120,30 L128,30 L128,19 L136,19 L136,8 L144,8 L144,22 L152,22 L152,35 L160,35 L160,48 L168,48 L168,62 L176,62 L176,51 L184,51 L184,41 L192,41 L192,30 L200,30 L200,38 L208,38 L208,46 L216,46 L216,54 L224,54 L224,62 L232,62 L232,50 L240,50 L240,38 L248,38 L248,26 L256,26 L256,14 L264,14 L264,24 L272,24 L272,33 L280,33 L280,43 L288,43 L288,52 L296,52 L296,62 L304,62 L304,76 Z',
+  near: 'M0,46 L0,36 L8,36 L8,30 L16,30 L16,24 L24,24 L24,18 L32,18 L32,12 L40,12 L40,18 L48,18 L48,24 L56,24 L56,30 L64,30 L64,36 L72,36 L72,32 L80,32 L80,28 L88,28 L88,24 L96,24 L96,28 L104,28 L104,32 L112,32 L112,36 L120,36 L120,30 L128,30 L128,24 L136,24 L136,18 L144,18 L144,12 L152,12 L152,6 L160,6 L160,12 L168,12 L168,18 L176,18 L176,24 L184,24 L184,30 L192,30 L192,36 L200,36 L200,31 L208,31 L208,25 L216,25 L216,20 L224,20 L224,24 L232,24 L232,28 L240,28 L240,32 L248,32 L248,36 L256,36 L256,46 Z',
+} as const
+
+function RidgeStrip({
+  id, d, tileW, tileH, fill, opacity = 1,
+}: { id: string; d: string; tileW: number; tileH: number; fill: string; opacity?: number }) {
   return (
-    <svg className="pixelated block h-[14px] w-full" preserveAspectRatio="none" aria-hidden>
+    <svg className="pixelated block w-full" style={{ height: tileH }} preserveAspectRatio="none" aria-hidden>
       <defs>
-        <pattern id={id} width="48" height="14" patternUnits="userSpaceOnUse">
-          <path d="M0 14 V8 H12 V4 H24 V8 H36 V11 H48 V14 Z" fill={fill} opacity={opacity} />
+        <pattern id={id} width={tileW} height={tileH} patternUnits="userSpaceOnUse">
+          <path d={d} fill={fill} opacity={opacity} />
         </pattern>
       </defs>
-      <rect width="100%" height="14" fill={`url(#${id})`} />
+      <rect width="100%" height={tileH} fill={`url(#${id})`} />
     </svg>
   )
 }
 
-/** 파도 거품: 흰 점선이 계단식으로 흐른다 */
-function FoamStrip() {
+/** 운해(雲海): 능선 허리를 감는 안개 띠가 아주 느리게 흐른다 */
+function MistStrip() {
   return (
-    <svg className="pixelated block h-[4px] w-full" preserveAspectRatio="none" aria-hidden>
+    <svg className="pixelated block h-[7px] w-full" preserveAspectRatio="none" aria-hidden>
       <defs>
-        <pattern id="foam" width="24" height="4" patternUnits="userSpaceOnUse">
-          <rect x="0" y="0" width="6" height="3" fill="#ffffff" opacity="0.85" />
-          <rect x="12" y="1" width="4" height="3" fill="#ffffff" opacity="0.6" />
+        <pattern id="mist" width="72" height="7" patternUnits="userSpaceOnUse">
+          <rect x="0" y="3" width="22" height="3" fill="#ffffff" opacity="0.42" />
+          <rect x="4" y="1" width="10" height="2" fill="#ffffff" opacity="0.3" />
+          <rect x="34" y="2" width="13" height="3" fill="#ffffff" opacity="0.26" />
+          <rect x="56" y="4" width="9" height="2" fill="#ffffff" opacity="0.34" />
         </pattern>
       </defs>
-      <rect width="100%" height="4" fill="url(#foam)" />
+      <rect width="100%" height="7" fill="url(#mist)" />
     </svg>
   )
 }
@@ -256,13 +269,21 @@ function Umbrella() {
   )
 }
 
-function Surfboard() {
+/** 낙엽 보드 — 커다란 단풍잎을 타고 비탈을 미끄러진다 */
+function LeafBoard() {
   return (
-    <svg viewBox="0 0 72 10" className="pixelated absolute -bottom-[8px] -left-[8px] h-[10px] w-[72px]" aria-hidden>
-      <rect x="4" y="2" width="64" height="6" fill="#fbbf24" />
-      <rect x="0" y="4" width="4" height="4" fill="#fbbf24" />
-      <rect x="68" y="4" width="4" height="2" fill="#fbbf24" />
-      <rect x="30" y="2" width="4" height="6" fill="#ef4444" />
+    <svg viewBox="0 0 72 12" className="pixelated absolute -bottom-[8px] -left-[8px] h-[12px] w-[72px]" aria-hidden>
+      <rect x="10" y="3" width="52" height="6" fill="#d9742a" />
+      <rect x="5" y="4" width="6" height="4" fill="#d9742a" />
+      <rect x="1" y="5" width="5" height="2" fill="#c25f27" />
+      <rect x="61" y="4" width="6" height="4" fill="#d9742a" />
+      <rect x="66" y="5" width="5" height="2" fill="#c25f27" />
+      <rect x="14" y="2" width="14" height="1" fill="#e3a534" />
+      <rect x="40" y="9" width="16" height="1" fill="#a8451c" />
+      {/* 잎맥 */}
+      <rect x="8" y="6" width="56" height="1" fill="#a8451c" />
+      <rect x="26" y="4" width="1" height="5" fill="#a8451c" />
+      <rect x="46" y="4" width="1" height="5" fill="#a8451c" />
     </svg>
   )
 }
@@ -276,171 +297,336 @@ function Drool() {
   )
 }
 
-function Coconut() {
+/** 참나무에서 떨어지는 도토리 — 게 머리에 맞는 그 녀석 */
+function Acorn() {
   return (
-    <svg viewBox="0 0 8 8" className="pixelated h-[8px] w-[8px]" aria-hidden>
-      <rect width="8" height="8" fill="#6f4726" />
-      <rect x="1" y="1" width="2" height="2" fill="#8f6a42" />
-      <rect x="5" y="5" width="2" height="2" fill="#583a20" />
+    <svg viewBox="0 0 10 10" className="pixelated h-[10px] w-[10px]" aria-hidden>
+      <rect x="4" y="0" width="2" height="1" fill="#8f6a42" />
+      <rect x="1" y="1" width="8" height="3" fill="#6f4726" />
+      <rect x="2" y="1" width="2" height="1" fill="#8f6a42" />
+      <rect x="2" y="4" width="6" height="5" fill="#c98a4b" />
+      <rect x="3" y="9" width="4" height="1" fill="#a8713e" />
+      <rect x="3" y="5" width="1" height="2" fill="#e0b788" />
     </svg>
   )
 }
 
-function Palm() {
+/** 단풍 든 참나무 — 게가 아래를 지나면 도토리가 떨어진다 */
+function OakTree() {
   return (
-    <svg viewBox="0 0 92 84" className="pixelated h-[84px] w-[92px]" aria-hidden>
-      <rect x="36" y="72" width="12" height="12" fill="#a8713e" />
-      <rect x="38" y="60" width="11" height="12" fill="#b07a45" />
-      <rect x="41" y="48" width="10" height="12" fill="#b07a45" />
-      <rect x="45" y="37" width="10" height="11" fill="#b8834e" />
-      <rect x="49" y="27" width="9" height="10" fill="#b8834e" />
-      <rect x="38" y="66" width="11" height="3" fill="#8f5f33" />
-      <rect x="41" y="54" width="10" height="3" fill="#8f5f33" />
-      <rect x="45" y="43" width="10" height="3" fill="#8f5f33" />
-      <rect x="49" y="32" width="9" height="3" fill="#8f5f33" />
+    <svg viewBox="0 0 96 96" className="pixelated h-[96px] w-[96px]" aria-hidden>
+      {/* 줄기 — 뿌리목이 굵고 위로 갈수록 가늘어진다 */}
+      <rect x="36" y="86" width="24" height="10" fill="#6b4728" />
+      <rect x="40" y="70" width="16" height="18" fill="#7a5230" />
+      <rect x="42" y="54" width="12" height="18" fill="#835838" />
+      <rect x="42" y="54" width="4" height="32" fill="#8f6238" />
+      {/* 가지 */}
+      <rect x="28" y="62" width="14" height="4" fill="#7a5230" />
+      <rect x="24" y="56" width="5" height="8" fill="#7a5230" />
+      <rect x="54" y="58" width="14" height="4" fill="#7a5230" />
+      <rect x="66" y="52" width="5" height="8" fill="#7a5230" />
+      {/* 수관 — 위(노랑)→가운데(주황)→아래(적갈). 가장자리를 들쭉날쭉하게 해 잎 덩이처럼 */}
       <g className="palm-sway">
-        <rect x="34" y="22" width="20" height="6" fill="#e8892a" />
-        <rect x="20" y="26" width="16" height="6" fill="#e8892a" />
-        <rect x="8" y="32" width="14" height="6" fill="#c9661b" />
-        <rect x="2" y="38" width="8" height="5" fill="#c9661b" />
-        <rect x="34" y="14" width="18" height="6" fill="#c9661b" />
-        <rect x="22" y="10" width="14" height="6" fill="#e8892a" />
-        <rect x="14" y="14" width="8" height="5" fill="#c9661b" />
-        <rect x="48" y="6" width="12" height="7" fill="#e8892a" />
-        <rect x="44" y="2" width="8" height="6" fill="#c9661b" />
-        <rect x="58" y="12" width="16" height="6" fill="#e8892a" />
-        <rect x="72" y="16" width="10" height="5" fill="#c9661b" />
-        <rect x="58" y="22" width="18" height="6" fill="#c9661b" />
-        <rect x="74" y="28" width="12" height="6" fill="#e8892a" />
-        <rect x="84" y="34" width="7" height="5" fill="#c9661b" />
+        <rect x="40" y="2" width="18" height="6" fill="#eab94e" />
+        <rect x="32" y="8" width="34" height="6" fill="#eab94e" />
+        <rect x="52" y="6" width="10" height="4" fill="#e3a534" />
+        <rect x="24" y="14" width="50" height="6" fill="#e3a534" />
+        <rect x="18" y="20" width="60" height="6" fill="#e09a34" />
+        <rect x="12" y="26" width="70" height="7" fill="#d9742a" />
+        <rect x="8" y="29" width="6" height="8" fill="#d9742a" />
+        <rect x="12" y="33" width="70" height="7" fill="#d9742a" />
+        <rect x="80" y="31" width="7" height="8" fill="#c25f27" />
+        <rect x="16" y="40" width="62" height="6" fill="#c25f27" />
+        <rect x="22" y="46" width="50" height="6" fill="#a8451c" />
+        {/* 아래 가장자리는 덩이 셋으로 끊어 잎 뭉치 느낌 */}
+        <rect x="26" y="52" width="16" height="5" fill="#a8451c" />
+        <rect x="46" y="52" width="12" height="6" fill="#a8451c" />
+        <rect x="60" y="52" width="10" height="4" fill="#933d18" />
+        <rect x="30" y="57" width="8" height="3" fill="#933d18" />
+        {/* 잎새 하이라이트·그늘 */}
+        <rect x="34" y="10" width="6" height="4" fill="#f2d071" />
+        <rect x="58" y="16" width="7" height="4" fill="#f0c463" />
+        <rect x="20" y="28" width="7" height="5" fill="#e7873a" />
+        <rect x="64" y="34" width="8" height="5" fill="#b8531f" />
+        <rect x="38" y="42" width="8" height="4" fill="#c96a2b" />
       </g>
-      <rect x="46" y="24" width="7" height="7" fill="#6f4726" />
-      <rect x="56" y="26" width="7" height="7" fill="#7a4f2a" />
-      <rect x="47" y="25" width="2" height="2" fill="#8f6a42" />
-      <rect x="57" y="27" width="2" height="2" fill="#8f6a42" />
+      {/* 매달린 도토리 */}
+      <rect x="30" y="56" width="5" height="6" fill="#c98a4b" />
+      <rect x="29" y="55" width="7" height="2" fill="#6f4726" />
+      <rect x="64" y="60" width="5" height="6" fill="#c98a4b" />
+      <rect x="63" y="59" width="7" height="2" fill="#6f4726" />
     </svg>
   )
 }
 
-function Starfish({ tone = '#f4a340', dark = '#e08a2c' }: { tone?: string; dark?: string }) {
+/** 노랗게 물든 은행나무 — 반대편 배경 나무 */
+function GinkgoTree() {
   return (
-    <svg viewBox="0 0 15 15" className="pixelated star-twinkle h-[15px] w-[15px]" aria-hidden>
-      <rect x="6" y="0" width="3" height="15" fill={tone} />
-      <rect x="0" y="6" width="15" height="3" fill={tone} />
-      <rect x="3" y="3" width="3" height="3" fill={dark} />
-      <rect x="9" y="3" width="3" height="3" fill={dark} />
-      <rect x="3" y="9" width="3" height="3" fill={dark} />
-      <rect x="9" y="9" width="3" height="3" fill={dark} />
+    <svg viewBox="0 0 68 80" className="pixelated h-[80px] w-[68px]" aria-hidden>
+      <rect x="26" y="72" width="16" height="8" fill="#6b4728" />
+      <rect x="29" y="56" width="10" height="18" fill="#7a5230" />
+      <rect x="29" y="56" width="3" height="18" fill="#8f6238" />
+      <rect x="20" y="58" width="10" height="3" fill="#6b4728" />
+      <rect x="38" y="54" width="10" height="3" fill="#6b4728" />
+      <g className="palm-sway">
+        <rect x="27" y="2" width="14" height="6" fill="#f2d468" />
+        <rect x="19" y="8" width="30" height="6" fill="#ecc447" />
+        <rect x="13" y="14" width="42" height="6" fill="#ecc447" />
+        <rect x="9" y="20" width="50" height="7" fill="#d8a92c" />
+        <rect x="11" y="27" width="46" height="7" fill="#d8a92c" />
+        <rect x="15" y="34" width="38" height="6" fill="#c0952a" />
+        <rect x="22" y="40" width="24" height="6" fill="#c0952a" />
+        <rect x="29" y="46" width="12" height="5" fill="#ab8424" />
+        <rect x="21" y="10" width="6" height="4" fill="#f7e295" />
+        <rect x="40" y="22" width="7" height="4" fill="#e8c554" />
+        <rect x="17" y="29" width="6" height="4" fill="#b08a22" />
+      </g>
     </svg>
   )
 }
 
-function Shell() {
+/** 억새 — 가을 산등성이의 은빛 이삭. 위로 갈수록 가늘어지는 깃털 다발이 살랑인다. */
+function Reeds({ n = 4, tone = '#d8c9a8' }: { n?: number; tone?: string }) {
+  const W = n * 9 + 8
+  const H = 34
   return (
-    <svg viewBox="0 0 12 10" className="pixelated h-[10px] w-[12px]" aria-hidden>
-      <rect x="2" y="2" width="8" height="4" fill="#f9a8d4" />
-      <rect x="0" y="4" width="12" height="2" fill="#f472b6" />
-      <rect x="4" y="0" width="4" height="2" fill="#fbcfe8" />
-      <rect x="4" y="6" width="4" height="4" fill="#f472b6" />
+    <svg viewBox={`0 0 ${W} ${H}`} className="pixelated" style={{ width: W, height: H }} aria-hidden>
+      <g className="palm-sway">
+        {Array.from({ length: n }, (_, i) => {
+          const stemH = 12 + ((i * 5) % 7) // 줄기 키 제각각
+          const lean = (i % 3) - 1 // -1·0·1 로 기울기 분산 (울타리처럼 안 보이게)
+          const x = i * 9 + 4
+          const baseY = H - stemH // 이삭이 시작되는 높이
+          const plume = 13 // 이삭 길이
+          return (
+            <g key={i}>
+              {/* 줄기 */}
+              <rect x={x} y={baseY} width="2" height={stemH} fill="#ab9872" />
+              {/* 잎 한 장 — 밑동에서 비스듬히 */}
+              <rect x={x - 4} y={baseY + 4} width="4" height="2" fill="#c0ab7c" />
+              <rect x={x - 6} y={baseY + 6} width="3" height="2" fill="#c0ab7c" />
+              {/* 깃털 이삭 — 아래는 통통, 위로 갈수록 1px 로 수렴 */}
+              {Array.from({ length: plume }, (_, k) => {
+                const t = k / (plume - 1)
+                const w = Math.max(1, Math.round(4 - t * 3))
+                const dx = Math.round(lean * t * 3)
+                return (
+                  <rect
+                    key={k}
+                    x={x - Math.floor(w / 2) + 1 + dx}
+                    y={baseY - k}
+                    width={w}
+                    height="1"
+                    fill={t > 0.6 ? '#f0e8d6' : tone}
+                  />
+                )
+              })}
+              {/* 옆으로 삐친 잔털 */}
+              <rect x={x - 2 + lean} y={baseY - 4} width="2" height="1" fill={tone} />
+              <rect x={x + 2 + lean} y={baseY - 7} width="2" height="1" fill={tone} />
+            </g>
+          )
+        })}
+      </g>
+    </svg>
+  )
+}
+
+/** 낙엽 더미 — 게가 파고들어 숨는 곳 */
+function LeafPile() {
+  return (
+    <svg viewBox="0 0 34 12" className="pixelated h-[12px] w-[34px]" aria-hidden>
+      <rect x="2" y="7" width="30" height="5" fill="#b4571f" />
+      <rect x="0" y="9" width="34" height="3" fill="#a04a19" />
+      <rect x="6" y="4" width="10" height="4" fill="#d9742a" />
+      <rect x="17" y="3" width="11" height="5" fill="#c9651f" />
+      <rect x="11" y="1" width="8" height="3" fill="#e3a534" />
+      <rect x="24" y="6" width="6" height="3" fill="#e3a534" />
+      <rect x="3" y="6" width="4" height="2" fill="#eab94e" />
+    </svg>
+  )
+}
+
+/** 벌어진 밤송이 — 알밤이 보인다 */
+function Chestnut({ tone = '#8e9a4b', dark = '#6f7a37' }: { tone?: string; dark?: string }) {
+  return (
+    <svg viewBox="0 0 16 13" className="pixelated h-[13px] w-[16px]" aria-hidden>
+      {/* 가시 */}
+      <rect x="1" y="3" width="2" height="3" fill={dark} />
+      <rect x="13" y="3" width="2" height="3" fill={dark} />
+      <rect x="4" y="1" width="2" height="3" fill={dark} />
+      <rect x="10" y="1" width="2" height="3" fill={dark} />
+      <rect x="7" y="0" width="2" height="3" fill={dark} />
+      {/* 껍질 */}
+      <rect x="2" y="5" width="12" height="6" fill={tone} />
+      <rect x="3" y="11" width="10" height="2" fill={dark} />
+      {/* 알밤 */}
+      <rect x="5" y="6" width="6" height="5" fill="#7a4520" />
+      <rect x="6" y="6" width="4" height="2" fill="#96592b" />
+      <rect x="6" y="10" width="4" height="1" fill="#e8dcc4" />
+    </svg>
+  )
+}
+
+/** 낙엽 사이 버섯 */
+function Mushroom() {
+  return (
+    <svg viewBox="0 0 14 12" className="pixelated h-[12px] w-[14px]" aria-hidden>
+      <rect x="1" y="3" width="12" height="4" fill="#c0522e" />
+      <rect x="3" y="1" width="8" height="2" fill="#d4623a" />
+      <rect x="4" y="2" width="2" height="2" fill="#efb79c" />
+      <rect x="8" y="4" width="2" height="2" fill="#efb79c" />
+      <rect x="2" y="7" width="10" height="1" fill="#8f3c20" />
+      <rect x="5" y="8" width="4" height="4" fill="#f0e2c8" />
+      <rect x="5" y="8" width="1" height="4" fill="#fbf4e6" />
     </svg>
   )
 }
 
 /**
- * 게가 쌓는 모래성. level(1~60)이 올라갈수록 층이 계속 위로 쌓여 무한정 높아진다.
- * 층마다 조금씩 좁아지는 계단식 탑. 클릭하면 부술 수 있다(onSmash).
+ * 게가 쌓는 돌탑(케언). level(1~60)이 올라갈수록 돌이 계속 위로 쌓인다.
+ * 등산로 돌탑처럼 위로 갈수록 좁아지고, 클릭하면 무너뜨릴 수 있다(onSmash).
  */
-function Sandcastle({ level, smashing, onSmash }: { level: number; smashing: boolean; onSmash: () => void }) {
+function Cairn({ level, smashing, onSmash }: { level: number; smashing: boolean; onSmash: () => void }) {
   if (level <= 0 && !smashing) return null
   const L = Math.max(1, level)
-  const TIER_H = 4 // 층 높이(픽셀)
-  const BASE_H = 12 // 바닥 성벽
-  const baseW = 34 + Math.min(L, 12) * 3 // 초반엔 넓어지고 이후 폭 고정(가로 화면 보호), 높이만 계속
-  const topW = 10
-  const H = BASE_H + L * TIER_H + 12 // 맨 위 깃발 공간 포함
+  const STONE_H = 6 // 돌 한 층 — 너무 납작하면 계단처럼 보인다
+  const BASE_H = 7 // 바닥 받침돌
+  const baseW = 24 + Math.min(L, 10) // 폭은 좁게: 케언은 넓적한 탑이 아니라 갸름한 돌무더기
+  const topW = 9
+  const H = BASE_H + L * STONE_H + 10 // 꼭대기 단풍잎 공간
   const cx = baseW / 2
+  const TONES = ['#9a8f82', '#877c70', '#a79c8e']
 
   const rects: React.ReactNode[] = []
-  // 바닥 성벽 + 좌우 망루
-  rects.push(<rect key="base" x={0} y={H - BASE_H} width={baseW} height={BASE_H} fill="#e6cf9a" />)
-  rects.push(<rect key="base-hl" x={0} y={H - BASE_H} width={baseW} height={2} fill="#f2dfae" />)
-  rects.push(<rect key="lt" x={0} y={H - BASE_H - 4} width={5} height={4} fill="#e6cf9a" />)
-  rects.push(<rect key="rt" x={baseW - 5} y={H - BASE_H - 4} width={5} height={4} fill="#e6cf9a" />)
-  rects.push(<rect key="door" x={cx - 2} y={H - 8} width={4} height={6} fill="#b8985f" />)
-
-  // 층을 위로 계속 쌓는다 (위로 갈수록 완만히 좁아지는 사다리꼴)
+  // 바닥 받침돌
+  rects.push(<rect key="base-t" x={2} y={H - BASE_H} width={baseW - 4} height={1} fill="#988d80" />)
+  rects.push(<rect key="base" x={0} y={H - BASE_H + 1} width={baseW} height={BASE_H - 2} fill="#7d7267" />)
+  rects.push(<rect key="base-b" x={2} y={H - 1} width={baseW - 4} height={1} fill="#645b52" />)
+  // 돌을 위로 계속 쌓는다. 각 돌은 [윗면 좁게 / 배 넓게 / 밑면 좁게] 3단으로 그려
+  // 각진 계단이 아니라 둥근 강돌이 포개진 모양이 된다.
   for (let i = 0; i < L; i++) {
     const t = i / L
-    const w = Math.max(topW, baseW - (baseW - topW) * t)
-    const y = H - BASE_H - (i + 1) * TIER_H
-    rects.push(<rect key={`t${i}`} x={cx - w / 2} y={y} width={w} height={TIER_H} fill={i % 2 ? '#edd8a8' : '#e0c88c'} />)
-    // 몇 층마다 톱니 흉벽으로 디테일
-    if (i % 6 === 5 && w > 14) {
-      rects.push(<rect key={`c${i}l`} x={cx - w / 2} y={y - 2} width={2} height={2} fill="#edd8a8" />)
-      rects.push(<rect key={`c${i}r`} x={cx + w / 2 - 2} y={y - 2} width={2} height={2} fill="#edd8a8" />)
-    }
+    const jitter = [0, -3, 2, -1, 3, -2, 1][i % 7] // 돌마다 크기를 달리해 윤곽을 들쭉날쭉하게
+    const w = Math.max(topW, Math.round(baseW - (baseW - topW) * t) + jitter)
+    const y = H - BASE_H - (i + 1) * STONE_H
+    const x = Math.round(cx - w / 2) + [(-2), 1, 2, -1, 0][i % 5] // 어긋나게 쌓아 손맛
+    const tone = TONES[i % 3]
+    rects.push(<rect key={`s${i}`} x={x + 2} y={y} width={w - 4} height={1} fill="#b3a798" />)
+    rects.push(<rect key={`t${i}`} x={x + 1} y={y + 1} width={w - 2} height={1} fill={tone} />)
+    rects.push(<rect key={`b${i}`} x={x} y={y + 2} width={w} height={2} fill={tone} />)
+    rects.push(<rect key={`u${i}`} x={x + 1} y={y + 4} width={w - 2} height={1} fill="#6f655b" />)
+    if (i % 3 === 1 && w > 14) rects.push(<rect key={`m${i}`} x={x + 3} y={y + 2} width={2} height={1} fill="#6f655b" />)
   }
-
-  // 꼭대기 깃발 (레벨이 높을수록 금빛)
-  const topY = H - BASE_H - L * TIER_H
-  rects.push(<rect key="pole" x={cx - 1} y={topY - 10} width={2} height={12} fill="#8f5f33" />)
-  rects.push(<rect key="flag" x={cx + 1} y={topY - 10} width={6} height={4} fill={L >= 40 ? '#a855f7' : L >= 20 ? '#f59e0b' : '#ef4444'} />)
+  // 꼭대기: 소원 담은 단풍잎 (높이 오를수록 붉게)
+  const topY = H - BASE_H - L * STONE_H
+  rects.push(<rect key="leaf1" x={cx - 3} y={topY - 6} width={7} height={4} fill={L >= 40 ? '#a8451c' : L >= 20 ? '#d9742a' : '#e3a534'} />)
+  rects.push(<rect key="leaf2" x={cx - 1} y={topY - 8} width={3} height={3} fill={L >= 40 ? '#c25f27' : '#eab94e'} />)
+  rects.push(<rect key="stem" x={cx + 3} y={topY - 3} width={2} height={3} fill="#7a5230" />)
 
   return (
     <svg
       viewBox={`0 0 ${baseW} ${H}`}
       style={{ width: baseW, height: H }}
-      className={`pixelated pointer-events-auto cursor-pointer ${smashing ? 'castle-smash' : ''}`}
+      className={`pixelated pointer-events-auto cursor-pointer ${smashing ? 'cairn-smash' : ''}`}
       onClick={onSmash}
       role="button"
-      aria-label="모래성 부수기"
+      aria-label="돌탑 무너뜨리기"
     >
       {rects}
     </svg>
   )
 }
 
-function BeachBall() {
+/** 모닥불 — 장작 위 불꽃이 타닥타닥 흔들린다 */
+function Campfire() {
   return (
-    <svg viewBox="0 0 14 14" className="pixelated h-[14px] w-[14px]" aria-hidden>
-      <rect x="4" y="0" width="6" height="14" fill="#c2410c" />
-      <rect x="0" y="4" width="14" height="6" fill="#d9a13b" />
-      <rect x="4" y="4" width="6" height="6" fill="#ffffff" />
-    </svg>
-  )
-}
-
-function Parasol() {
-  return (
-    <svg viewBox="0 0 40 36" className="pixelated h-[36px] w-[40px]" aria-hidden>
-      <rect x="4" y="8" width="32" height="4" fill="#f97316" />
-      <rect x="8" y="4" width="24" height="4" fill="#fdba74" />
-      <rect x="14" y="0" width="12" height="4" fill="#f97316" />
-      <rect x="19" y="12" width="3" height="24" fill="#8f5f33" />
-    </svg>
-  )
-}
-
-function Seagull() {
-  return (
-    <svg viewBox="0 0 20 8" className="pixelated h-[8px] w-[20px]" aria-hidden>
-      <g className="gull-flap" style={{ transformOrigin: '10px 4px' }}>
-        <rect x="0" y="2" width="8" height="2" fill="#64748b" />
-        <rect x="12" y="2" width="8" height="2" fill="#64748b" />
+    <svg viewBox="0 0 22 22" className="pixelated h-[22px] w-[22px]" aria-hidden>
+      {/* 장작 */}
+      <rect x="1" y="17" width="20" height="3" fill="#7a5230" />
+      <rect x="3" y="14" width="16" height="3" fill="#8f6238" />
+      <rect x="2" y="15" width="4" height="2" fill="#6b4728" />
+      <rect x="16" y="18" width="5" height="2" fill="#6b4728" />
+      {/* 불꽃 */}
+      <g className="fire-flicker">
+        <rect x="7" y="8" width="8" height="7" fill="#e0521a" />
+        <rect x="5" y="11" width="3" height="4" fill="#e0521a" />
+        <rect x="14" y="10" width="3" height="5" fill="#e0521a" />
+        <rect x="8" y="4" width="6" height="5" fill="#f2872a" />
+        <rect x="9" y="1" width="4" height="4" fill="#fbc63f" />
+        <rect x="9" y="10" width="4" height="4" fill="#ffe08a" />
       </g>
-      <rect x="8" y="3" width="4" height="3" fill="#94a3b8" />
-      <rect x="12" y="3" width="2" height="2" fill="#f59e0b" />
+      {/* 불똥 */}
+      <rect className="ember-rise" x="6" y="2" width="2" height="2" fill="#fbc63f" />
+      <rect className="ember-rise" x="15" y="4" width="2" height="2" fill="#f2872a" style={{ animationDelay: '0.8s' }} />
     </svg>
   )
 }
 
-function Fish() {
+/** 캠핑 텐트 — 가을 산의 야영 한 채 */
+function Tent() {
   return (
-    <svg viewBox="0 0 16 10" className="pixelated h-[10px] w-[16px]" aria-hidden>
-      <rect x="2" y="2" width="10" height="6" fill="#60a5fa" />
-      <rect x="12" y="0" width="4" height="4" fill="#3b82f6" />
-      <rect x="12" y="6" width="4" height="4" fill="#3b82f6" />
-      <rect x="4" y="4" width="2" height="2" fill="#1d4ed8" />
+    <svg viewBox="0 0 46 32" className="pixelated h-[32px] w-[46px]" aria-hidden>
+      {/* 몸통(삼각) */}
+      <rect x="20" y="2" width="6" height="4" fill="#3f6b4f" />
+      <rect x="16" y="6" width="14" height="5" fill="#47785a" />
+      <rect x="11" y="11" width="24" height="5" fill="#3f6b4f" />
+      <rect x="6" y="16" width="34" height="6" fill="#47785a" />
+      <rect x="2" y="22" width="42" height="6" fill="#3f6b4f" />
+      {/* 입구 */}
+      <rect x="19" y="14" width="8" height="14" fill="#2c4c38" />
+      <rect x="21" y="17" width="4" height="11" fill="#243f2e" />
+      {/* 바닥 그림자·팩 */}
+      <rect x="0" y="28" width="46" height="2" fill="#2c4c38" />
+      <rect x="1" y="26" width="3" height="5" fill="#7a5230" />
+      <rect x="42" y="26" width="3" height="5" fill="#7a5230" />
+    </svg>
+  )
+}
+
+/** 기러기 편대 — 가을 하늘을 가로지르는 V자 대열 */
+function GooseFlock() {
+  return (
+    <svg viewBox="0 0 52 22" className="pixelated h-[22px] w-[52px]" aria-hidden>
+      {[
+        [16, 0],
+        [4, 7],
+        [28, 7],
+        [0, 14],
+        [40, 14],
+      ].map(([x, y], i) => (
+        <g key={i} transform={`translate(${x},${y})`}>
+          <g className="gull-flap" style={{ transformOrigin: '6px 3px' }}>
+            <rect x="0" y="1" width="5" height="2" fill="#6b6357" />
+            <rect x="7" y="1" width="5" height="2" fill="#6b6357" />
+          </g>
+          <rect x="5" y="2" width="2" height="2" fill="#4f4940" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+/** 다람쥐 — 낙엽 사이에서 포르르 뛰어오른다 */
+function Squirrel() {
+  return (
+    <svg viewBox="0 0 20 16" className="pixelated h-[16px] w-[20px]" aria-hidden>
+      {/* 꼬리 */}
+      <rect x="14" y="2" width="5" height="9" fill="#a8713e" />
+      <rect x="16" y="0" width="4" height="5" fill="#c08a52" />
+      {/* 몸통 */}
+      <rect x="5" y="5" width="10" height="7" fill="#b07a45" />
+      <rect x="6" y="10" width="8" height="3" fill="#c9975e" />
+      {/* 머리 */}
+      <rect x="1" y="4" width="6" height="6" fill="#b07a45" />
+      <rect x="1" y="2" width="2" height="3" fill="#96652f" />
+      <rect x="4" y="2" width="2" height="3" fill="#96652f" />
+      <rect x="2" y="6" width="2" height="2" fill="#3d3023" />
+      {/* 다리 */}
+      <rect x="6" y="12" width="3" height="3" fill="#96652f" />
+      <rect x="11" y="12" width="3" height="3" fill="#96652f" />
+      {/* 물고 있는 도토리 */}
+      <rect x="0" y="8" width="3" height="3" fill="#c98a4b" />
     </svg>
   )
 }
@@ -510,23 +696,23 @@ function Sun() {
   )
 }
 
-/** 줄무늬 썬베드. 썬탠할 때 꽃게가 이 위에 눕는다. */
-function SunLounger() {
+/** 캠핑 릴렉스 체어. 가을볕 쬘 때 꽃게가 이 위에 눕는다. */
+function CampChair() {
   return (
     <svg viewBox="0 0 72 30" className="pixelated absolute -bottom-[10px] -left-[10px] h-[30px] w-[72px]" aria-hidden>
       {/* 등받이 (왼쪽으로 기울어짐) */}
-      <rect x="2" y="0" width="6" height="6" fill="#38bdf8" />
-      <rect x="6" y="4" width="6" height="6" fill="#e0f2fe" />
-      <rect x="10" y="8" width="8" height="6" fill="#38bdf8" />
+      <rect x="2" y="0" width="6" height="6" fill="#8c4a2a" />
+      <rect x="6" y="4" width="6" height="6" fill="#c98a4b" />
+      <rect x="10" y="8" width="8" height="6" fill="#8c4a2a" />
       {/* 시트 */}
-      <rect x="16" y="12" width="14" height="6" fill="#e0f2fe" />
-      <rect x="30" y="12" width="14" height="6" fill="#38bdf8" />
-      <rect x="44" y="12" width="14" height="6" fill="#e0f2fe" />
-      <rect x="58" y="12" width="10" height="6" fill="#38bdf8" />
+      <rect x="16" y="12" width="14" height="6" fill="#c98a4b" />
+      <rect x="30" y="12" width="14" height="6" fill="#8c4a2a" />
+      <rect x="44" y="12" width="14" height="6" fill="#c98a4b" />
+      <rect x="58" y="12" width="10" height="6" fill="#8c4a2a" />
       {/* 프레임·다리 */}
-      <rect x="14" y="18" width="56" height="3" fill="#b8834e" />
-      <rect x="18" y="21" width="4" height="9" fill="#8f5f33" />
-      <rect x="60" y="21" width="4" height="9" fill="#8f5f33" />
+      <rect x="14" y="18" width="56" height="3" fill="#6f655b" />
+      <rect x="18" y="21" width="4" height="9" fill="#5b534a" />
+      <rect x="60" y="21" width="4" height="9" fill="#5b534a" />
     </svg>
   )
 }
@@ -714,11 +900,11 @@ function DirtBurst() {
 
 // ─────────────────────────── 본체
 
-export default function SummerShore({ admin }: { admin: string }) {
-  const shoreRef = useRef<HTMLDivElement>(null)
+export default function AutumnMountain({ admin }: { admin: string }) {
+  const sceneRef = useRef<HTMLDivElement>(null)
   const crabRef = useRef<HTMLDivElement>(null)
-  const palmRef = useRef<HTMLDivElement>(null)
-  const sandcastleAnchorRef = useRef<HTMLDivElement>(null)
+  const treeRef = useRef<HTMLDivElement>(null)
+  const cairnAnchorRef = useRef<HTMLDivElement>(null)
 
   // 물리 상태는 ref 로 들고 매 틱 DOM 에 직접 쓴다. (리렌더 최소화)
   const phys = useRef({
@@ -732,8 +918,8 @@ export default function SummerShore({ admin }: { admin: string }) {
     afterGoto: 'walk' as Mode,
     // 접속 직후엔 잠시 얌전히 걷는다
     lastActivity: Date.now() - 8000,
-    coconutArmed: true,
-    coconutBusy: false,
+    acornArmed: true,
+    acornBusy: false,
     // 감전이 유효한 시각(그 전에 또 맞으면 바사삭). respawn 시 새 x.
     zappedUntil: 0,
     respawnX: 60,
@@ -748,9 +934,9 @@ export default function SummerShore({ admin }: { admin: string }) {
   const [facing, setFacing] = useState<1 | -1>(1)
   const [wx, setWx] = useState({ raining: false, thunder: false, windy: false, hot: false })
   const [evening, setEvening] = useState(false)
-  const [coconutDrop, setCoconutDrop] = useState<{ left: number } | null>(null)
+  const [acornDrop, setAcornDrop] = useState<{ left: number } | null>(null)
   const [flash, setFlash] = useState<'love' | 'anger' | null>(null)
-  const [fishJump, setFishJump] = useState<{ left: number; key: number } | null>(null)
+  const [squirrelHop, setSquirrelHop] = useState<{ left: number; key: number } | null>(null)
   const [zapped, setZapped] = useState(false)
   const [bolt, setBolt] = useState<{ x: number; key: number } | null>(null)
   /** 바사삭: 재로 흩어짐(ash) / 리스폰 시 흙 튀김(dirt) */
@@ -762,13 +948,13 @@ export default function SummerShore({ admin }: { admin: string }) {
   const [wordDraft, setWordDraft] = useState('')
   const [treat, setTreat] = useState<{ kind: number; key: number } | null>(null)
   const snackTimes = useRef<number[]>([])
-  /** 게가 쌓는 모래성 레벨(0~12, localStorage 유지) + 부서지는 중 플래그 */
-  const [castleLevel, setCastleLevel] = useState(0)
-  const [castleSmashing, setCastleSmashing] = useState(false)
-  const castleRef = useRef(0)
-  castleRef.current = castleLevel
-  const castleSmashRef = useRef(false)
-  castleSmashRef.current = castleSmashing
+  /** 게가 쌓는 돌탑 레벨(0~12, localStorage 유지) + 부서지는 중 플래그 */
+  const [cairnLevel, setCairnLevel] = useState(0)
+  const [cairnSmashing, setCairnSmashing] = useState(false)
+  const cairnRef = useRef(0)
+  cairnRef.current = cairnLevel
+  const cairnSmashRef = useRef(false)
+  cairnSmashRef.current = cairnSmashing
 
   const bubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pokeTimes = useRef<number[]>([])
@@ -813,25 +999,26 @@ export default function SummerShore({ admin }: { admin: string }) {
     [admin],
   )
 
-  // ── 모래성 레벨 (localStorage 유지)
+  // ── 돌탑 레벨 (localStorage 유지)
   useEffect(() => {
+    // 저장 키는 'castle' 그대로 — 바꾸면 기존 사용자의 쌓아둔 층수가 날아간다
     const saved = Number(localStorage.getItem('jl.crab.castle'))
-    if (Number.isFinite(saved) && saved > 0) setCastleLevel(Math.min(MAX_CASTLE, saved))
+    if (Number.isFinite(saved) && saved > 0) setCairnLevel(Math.min(MAX_CAIRN, saved))
   }, [])
 
-  // ── 모래성 부수기 (내가 클릭)
-  const smashCastle = useCallback(() => {
-    const lv = castleRef.current
-    if (lv <= 0 || castleSmashing) return
-    setCastleSmashing(true)
+  // ── 돌탑 부수기 (내가 클릭)
+  const smashCairn = useCallback(() => {
+    const lv = cairnRef.current
+    if (lv <= 0 || cairnSmashing) return
+    setCairnSmashing(true)
     setTimeout(() => {
-      setCastleLevel(0)
+      setCairnLevel(0)
       try {
         localStorage.setItem('jl.crab.castle', '0')
       } catch {
-        /* 저장 실패해도 계속 (setCastleSmashing(false) 는 반드시 실행) */
+        /* 저장 실패해도 계속 (setCairnSmashing(false) 는 반드시 실행) */
       }
-      setCastleSmashing(false)
+      setCairnSmashing(false)
     }, 650)
     // 게가 부서진 성 쪽을 보며 상실감 (쌓은 만큼 슬픔이 크다, 1~60 스케일)
     const high = lv >= 20
@@ -845,7 +1032,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     }
     say(high ? LINES.smashHigh : mid ? LINES.smashMid : LINES.smashLow, high ? 5500 : 3200)
     bumpAffinity(high ? -5 : mid ? -2 : -1)
-  }, [castleSmashing, say, bumpAffinity])
+  }, [cairnSmashing, say, bumpAffinity])
 
   // ── 오늘 달력 칸에 있는 식단 메뉴 이름 하나 읽기 (스케줄 페이지에서만)
   const readTodayMenu = useCallback((): string | null => {
@@ -951,7 +1138,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     let timer: ReturnType<typeof setTimeout>
     const strike = () => {
       if (cancelled) return
-      const W = shoreRef.current?.getBoundingClientRect().width ?? 800
+      const W = sceneRef.current?.getBoundingClientRect().width ?? 800
       const aimCrab = Math.random() < 0.45
       const p = phys.current
       const x = aimCrab ? p.x + CRAB_W / 2 - 28 : 30 + Math.random() * Math.max(60, W - 90)
@@ -1022,8 +1209,8 @@ export default function SummerShore({ admin }: { admin: string }) {
   // ── 물고기 점프 (가끔)
   useEffect(() => {
     const id = setInterval(() => {
-      const w = shoreRef.current?.getBoundingClientRect().width ?? 800
-      if (Math.random() < 0.5) setFishJump({ left: 60 + Math.random() * (w - 160), key: Date.now() })
+      const w = sceneRef.current?.getBoundingClientRect().width ?? 800
+      if (Math.random() < 0.5) setSquirrelHop({ left: 60 + Math.random() * (w - 160), key: Date.now() })
     }, 14_000)
     return () => clearInterval(id)
   }, [])
@@ -1034,8 +1221,8 @@ export default function SummerShore({ admin }: { admin: string }) {
     const timers: ReturnType<typeof setTimeout>[] = []
     const later = (fn: () => void, ms: number) => timers.push(setTimeout(fn, ms))
 
-    const shoreW = () => shoreRef.current?.getBoundingClientRect().width ?? 800
-    const shoreLeft = () => shoreRef.current?.getBoundingClientRect().left ?? 0
+    const shoreW = () => sceneRef.current?.getBoundingClientRect().width ?? 800
+    const sceneLeft = () => sceneRef.current?.getBoundingClientRect().left ?? 0
 
     /** 오늘 날짜 캘린더 칸 (스케줄 페이지에서만 있다) */
     const todayCell = () => document.querySelector<HTMLElement>('[data-today="1"]')
@@ -1052,7 +1239,7 @@ export default function SummerShore({ admin }: { admin: string }) {
 
     /** rect 위에 올라서는 목표 좌표 (shore 기준 x, bottom 기준 y) */
     const perchOn = (rect: DOMRect, offsetY = 6) => ({
-      x: rect.left - shoreLeft() + rect.width / 2 - CRAB_W / 2,
+      x: rect.left - sceneLeft() + rect.width / 2 - CRAB_W / 2,
       y: Math.max(GROUND_Y, window.innerHeight - rect.bottom + offsetY),
     })
 
@@ -1106,15 +1293,15 @@ export default function SummerShore({ admin }: { admin: string }) {
         },
       })
 
-      // 모래성 짓기(계속 쌓기) / 다 지었으면 감상. 모래성 앵커로 이동.
-      const castle = sandcastleAnchorRef.current
-      if (castle && castle.offsetParent !== null) {
-        const full = castleRef.current >= MAX_CASTLE
+      // 돌탑 짓기(계속 쌓기) / 다 지었으면 감상. 돌탑 앵커로 이동.
+      const cairn = cairnAnchorRef.current
+      if (cairn && cairn.offsetParent !== null) {
+        const full = cairnRef.current >= MAX_CAIRN
         acts.push({
           w: full ? 1.2 : 4, // 아직 안 찼으면 자주 쌓으러 간다
           run: () => {
-            const r = castle.getBoundingClientRect()
-            p.target = { x: r.left - shoreLeft() - CRAB_W + 14, y: GROUND_Y }
+            const r = cairn.getBoundingClientRect()
+            p.target = { x: r.left - sceneLeft() - CRAB_W + 14, y: GROUND_Y }
             p.afterGoto = full ? 'admire' : 'build'
             setModeBoth('goto')
           },
@@ -1126,7 +1313,7 @@ export default function SummerShore({ admin }: { admin: string }) {
         w: wxRef.current.hot ? 3 : 0.4,
         run: () => {
           setModeBoth('cooloff')
-          p.y = SURF_Y - 12
+          p.y = RIDGE_Y - 12
           p.modeUntil = now + 7000
           say(LINES.cooloff)
         },
@@ -1143,7 +1330,7 @@ export default function SummerShore({ admin }: { admin: string }) {
         w: 2,
         run: () => {
           setModeBoth('surf')
-          p.y = SURF_Y
+          p.y = RIDGE_Y
           p.dir = 1
           p.modeUntil = now + 9000
           say(LINES.surf)
@@ -1156,7 +1343,7 @@ export default function SummerShore({ admin }: { admin: string }) {
           w: 1.6,
           run: () => {
             const r = panel.getBoundingClientRect()
-            p.target = { x: r.left - shoreLeft() + 40, y: window.innerHeight - r.top - 140 }
+            p.target = { x: r.left - sceneLeft() + 40, y: window.innerHeight - r.top - 140 }
             setModeBoth('heliUp')
             say(LINES.heli)
           },
@@ -1213,7 +1400,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     // 콘솔 장난감 겸 검증용: window.__crab.do('surf') 처럼 바로 시켜볼 수 있다.
     const forceActivity = (
       kind:
-        | 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'coconut' | 'dig' | 'nap'
+        | 'surf' | 'heli' | 'suntan' | 'drool' | 'car' | 'acorn' | 'dig' | 'nap'
         | 'dance' | 'admire' | 'cooloff' | 'blown' | 'zap' | 'crisp' | 'menu' | 'fridge' | 'leo' | 'build',
     ) => {
       const p = phys.current
@@ -1240,7 +1427,7 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
       if (kind === 'dig' || kind === 'nap' || kind === 'dance' || kind === 'admire' || kind === 'cooloff') {
         setModeBoth(kind)
-        if (kind === 'cooloff') p.y = SURF_Y - 12
+        if (kind === 'cooloff') p.y = RIDGE_Y - 12
         p.modeUntil = Date.now() + (kind === 'dance' ? 6000 : 8000)
         say(LINES[kind])
         return 'ok'
@@ -1277,14 +1464,14 @@ export default function SummerShore({ admin }: { admin: string }) {
       }
       if (kind === 'surf') {
         setModeBoth('surf')
-        p.y = SURF_Y
+        p.y = RIDGE_Y
         p.modeUntil = Date.now() + 9000
         say(LINES.surf)
       } else if (kind === 'heli') {
         const panel = timelinePanel()
         if (!panel) return '타임라인 패널이 안 보여요'
         const r = panel.getBoundingClientRect()
-        p.target = { x: r.left - shoreLeft() + 40, y: window.innerHeight - r.top - 140 }
+        p.target = { x: r.left - sceneLeft() + 40, y: window.innerHeight - r.top - 140 }
         setModeBoth('heliUp')
         say(LINES.heli)
       } else if (kind === 'suntan') {
@@ -1303,13 +1490,13 @@ export default function SummerShore({ admin }: { admin: string }) {
         p.target = { x: 40, y: GROUND_Y }
         p.afterGoto = 'car'
         setModeBoth('goto')
-      } else if (kind === 'coconut') {
-        const palm = palmRef.current
-        if (!palm) return '야자수가 안 보여요'
-        p.x = palm.getBoundingClientRect().left - shoreLeft() + 46 - CRAB_W / 2 - 40
+      } else if (kind === 'acorn') {
+        const tree = treeRef.current
+        if (!tree) return '야자수가 안 보여요'
+        p.x = tree.getBoundingClientRect().left - sceneLeft() + 46 - CRAB_W / 2 - 40
         p.dir = 1
-        p.coconutArmed = true
-        p.coconutBusy = false
+        p.acornArmed = true
+        p.acornBusy = false
         setModeBoth('walk')
       }
       return 'ok'
@@ -1344,27 +1531,27 @@ export default function SummerShore({ admin }: { admin: string }) {
           p.y = GROUND_Y
 
           // 야자수 코코넛 개그
-          const palm = palmRef.current
-          if (palm && !p.coconutBusy && palm.offsetParent !== null) {
-            const coconutX = palm.getBoundingClientRect().left - shoreLeft() + 46
+          const tree = treeRef.current
+          if (tree && !p.acornBusy && tree.offsetParent !== null) {
+            const acornX = tree.getBoundingClientRect().left - sceneLeft() + 46
             const crabCenter = p.x + CRAB_W / 2
-            if (!p.coconutArmed) {
-              if (Math.abs(crabCenter - coconutX) > 160) p.coconutArmed = true
-            } else if (Math.abs(crabCenter - coconutX) < 9) {
-              p.coconutArmed = false
-              p.coconutBusy = true
-              setCoconutDrop({ left: coconutX - 4 })
+            if (!p.acornArmed) {
+              if (Math.abs(crabCenter - acornX) > 160) p.acornArmed = true
+            } else if (Math.abs(crabCenter - acornX) < 9) {
+              p.acornArmed = false
+              p.acornBusy = true
+              setAcornDrop({ left: acornX - 4 })
               later(() => {
                 setBump(true)
                 setDizzy(true)
                 setModeBoth('stun')
                 p.modeUntil = Date.now() + 1800
-                say(LINES.coconut)
+                say(LINES.acorn)
               }, 350)
-              later(() => setCoconutDrop(null), 1800)
+              later(() => setAcornDrop(null), 1800)
               later(() => setBump(false), 9000)
               later(() => {
-                p.coconutBusy = false
+                p.acornBusy = false
               }, 12_000)
             }
           }
@@ -1443,7 +1630,7 @@ export default function SummerShore({ admin }: { admin: string }) {
             p.x = W - CRAB_W - 20
             p.dir = -1
           }
-          p.y = SURF_Y + (Math.floor(now / 240) % 2 === 0 ? 0 : 2)
+          p.y = RIDGE_Y + (Math.floor(now / 240) % 2 === 0 ? 0 : 2)
           if (now > p.modeUntil) {
             p.vy = 0
             setModeBoth('fall')
@@ -1555,10 +1742,10 @@ export default function SummerShore({ admin }: { admin: string }) {
           if (now > p.modeUntil) {
             p.y = GROUND_Y
             // 한 층 더! (부수는 중이 아닐 때만)
-            if (!castleSmashRef.current) {
-              const next = Math.min(MAX_CASTLE, castleRef.current + 1)
-              castleRef.current = next
-              setCastleLevel(next)
+            if (!cairnSmashRef.current) {
+              const next = Math.min(MAX_CAIRN, cairnRef.current + 1)
+              cairnRef.current = next
+              setCairnLevel(next)
               try {
                 localStorage.setItem('jl.crab.castle', String(next))
               } catch {
@@ -1579,7 +1766,7 @@ export default function SummerShore({ admin }: { admin: string }) {
 
         case 'cooloff': {
           // 파도에 몸을 반쯤 담그고 둥실둥실
-          p.y = SURF_Y - 12 + (Math.floor(now / 300) % 2 === 0 ? 0 : 2)
+          p.y = RIDGE_Y - 12 + (Math.floor(now / 300) % 2 === 0 ? 0 : 2)
           if (now > p.modeUntil) {
             p.vy = 0
             setModeBoth('fall')
@@ -1699,7 +1886,7 @@ export default function SummerShore({ admin }: { admin: string }) {
     d.moved = true
     const p = phys.current
     if (p.mode !== 'drag') setModeBoth('drag')
-    const shoreRect = shoreRef.current?.getBoundingClientRect()
+    const shoreRect = sceneRef.current?.getBoundingClientRect()
     if (!shoreRect) return
     p.x = e.clientX - shoreRect.left - CRAB_W / 2
     p.y = Math.max(GROUND_Y, window.innerHeight - e.clientY - 20)
@@ -1811,90 +1998,99 @@ export default function SummerShore({ admin }: { admin: string }) {
   const halfClip = mode === 'dig' || mode === 'cooloff' ? { clipPath: 'inset(0 0 42% 0)' } : undefined
 
   return (
-    <div ref={shoreRef} aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
+    <div ref={sceneRef} aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
       {/* 가을 낙엽 — 화면 전체 레이어 */}
       <FallingLeaves />
-      {/* 하늘: 갈매기 두 마리 */}
-      <div className="gull-drift absolute bottom-[120px]" style={{ animationDuration: '38s' }}>
-        <Seagull />
+      {/* 하늘: 남쪽으로 가는 기러기 편대 */}
+      <div className="gull-drift absolute bottom-[150px]" style={{ animationDuration: '46s' }}>
+        <GooseFlock />
       </div>
-      <div className="gull-drift absolute bottom-[150px]" style={{ animationDuration: '55s', animationDelay: '-20s' }}>
-        <Seagull />
+      <div className="gull-drift absolute bottom-[186px] opacity-60" style={{ animationDuration: '64s', animationDelay: '-24s' }}>
+        <GooseFlock />
       </div>
 
-      {/* 수평선 위 태양 */}
-      <div className="absolute right-[190px] bottom-[32px]">
+      {/* 능선 위로 기우는 가을 해 */}
+      <div className="absolute right-[190px] bottom-[104px]">
         <Sun />
       </div>
 
-      {/* 물고기 점프 */}
-      {fishJump && (
-        <div key={fishJump.key} className="fish-arc absolute bottom-[36px]" style={{ left: fishJump.left }}>
-          <Fish />
+      {/* 다람쥐가 낙엽 사이에서 폴짝 */}
+      {squirrelHop && (
+        <div key={squirrelHop.key} className="squirrel-hop absolute bottom-[30px]" style={{ left: squirrelHop.left }}>
+          <Squirrel />
         </div>
       )}
 
-      {/* 바다 반짝임 */}
-      <div className="absolute right-0 bottom-[42px] left-0 flex justify-around">
-        {[0, 1, 2, 3, 4, 5].map(i => (
-          <span key={i} className="sea-sparkle h-[3px] w-[3px] bg-white" style={{ animationDelay: `${i * 0.7}s` }} />
-        ))}
+      {/* ── 산 능선 세 겹 (원경→근경) + 허리를 감는 운해 ── */}
+      <div className="absolute inset-x-0 bottom-[20px] overflow-hidden">
+        <RidgeStrip id="ridge-far" d={RIDGE_PATH.far} tileW={480} tileH={112} fill={RIDGE_FAR} opacity={0.62} />
+      </div>
+      {/* 골짜기를 채운 운해 — 원경과 중경 사이를 갈라 깊이를 만든다 */}
+      <div className="absolute inset-x-0 bottom-[56px] overflow-hidden">
+        <div className="mist-drift w-[calc(100%+72px)]">
+          <MistStrip />
+        </div>
+      </div>
+      <div className="absolute inset-x-0 bottom-[20px] overflow-hidden">
+        <RidgeStrip id="ridge-mid" d={RIDGE_PATH.mid} tileW={304} tileH={76} fill={RIDGE_MID} opacity={0.95} />
+      </div>
+      <div className="absolute inset-x-0 bottom-[34px] overflow-hidden">
+        <div className="mist-drift-slow w-[calc(100%+72px)]">
+          <MistStrip />
+        </div>
+      </div>
+      <div className="absolute inset-x-0 bottom-[18px] overflow-hidden">
+        <RidgeStrip id="ridge-near" d={RIDGE_PATH.near} tileW={256} tileH={46} fill={RIDGE_NEAR} />
       </div>
 
-      {/* 파도 세 겹 + 거품 */}
-      <div className="absolute inset-x-0 bottom-[36px] overflow-hidden">
-        <div className="wave-far w-[calc(100%+96px)]">
-          <WaveStrip id="wave-c" fill={SEA_BACK} opacity={0.8} />
-        </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-[30px] overflow-hidden">
-        <div className="wave-back w-[calc(100%+96px)]">
-          <WaveStrip id="wave-b" fill={SEA_MID} opacity={0.95} />
-        </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-[24px] overflow-hidden">
-        <div className="wave-front w-[calc(100%+96px)]">
-          <WaveStrip id="wave-a" fill={SEA_FRONT} />
-        </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-[24px] overflow-hidden">
-        <div className="foam-move w-[calc(100%+48px)]">
-          <FoamStrip />
-        </div>
-      </div>
-
-      {/* 모래사장 */}
+      {/* 낙엽 깔린 등산로 흙길 */}
       <div
         className="h-[26px] w-full"
         style={{
-          backgroundColor: SAND,
-          backgroundImage: `radial-gradient(${SAND_DOT} 1.5px, transparent 1.5px)`,
-          backgroundSize: '14px 9px',
+          backgroundColor: GROUND,
+          backgroundImage: `radial-gradient(${GROUND_LEAF} 2px, transparent 2px), radial-gradient(${GROUND_DOT} 1.5px, transparent 1.5px)`,
+          backgroundSize: '34px 17px, 14px 9px',
+          backgroundPosition: '7px 4px, 0 0',
         }}
       />
 
-      {/* 모래 위 소품들 */}
-      <div ref={palmRef} className="absolute right-8 bottom-[18px] hidden sm:block">
-        <Palm />
+      {/* 산길 위 소품들 */}
+      <div ref={treeRef} className="absolute right-6 bottom-[18px] hidden sm:block">
+        <OakTree />
+      </div>
+      <div className="absolute bottom-[18px] left-[4%] hidden lg:block">
+        <GinkgoTree />
+      </div>
+      <div className="absolute bottom-[20px] left-[20%] hidden sm:block">
+        <Reeds n={5} />
+      </div>
+      <div className="absolute bottom-[20px] left-[46%] hidden md:block">
+        <Reeds n={3} tone="#d7cbb0" />
       </div>
       <div className="absolute bottom-[6px] left-[16%]">
-        <Starfish />
+        <Chestnut />
       </div>
       <div className="absolute bottom-[4px] left-[38%]">
-        <Starfish tone="#c084fc" dark="#a855f7" />
+        <Chestnut tone="#9aa65a" dark="#77833f" />
       </div>
-      <div className="absolute bottom-[8px] left-[27%]">
-        <Shell />
+      <div className="absolute bottom-[6px] left-[27%]">
+        <Mushroom />
       </div>
-      {/* 모래성: 게가 점점 쌓고, 클릭하면 부술 수 있다. 앵커 div 는 항상 존재(게 목표점) */}
-      <div ref={sandcastleAnchorRef} className="absolute bottom-[8px] left-[55%] hidden md:block">
-        <Sandcastle level={castleLevel} smashing={castleSmashing} onSmash={smashCastle} />
+      <div className="absolute bottom-[4px] left-[33%] hidden sm:block">
+        <LeafPile />
+      </div>
+      <div className="absolute bottom-[4px] left-[86%] hidden lg:block">
+        <LeafPile />
+      </div>
+      {/* 돌탑: 게가 점점 쌓고, 클릭하면 무너뜨릴 수 있다. 앵커 div 는 항상 존재(게 목표점) */}
+      <div ref={cairnAnchorRef} className="absolute bottom-[8px] left-[55%] hidden md:block">
+        <Cairn level={cairnLevel} smashing={cairnSmashing} onSmash={smashCairn} />
       </div>
       <div className="absolute bottom-[8px] left-[70%] hidden md:block">
-        <Parasol />
+        <Tent />
       </div>
-      <div className="absolute bottom-[6px] left-[75%] hidden md:block">
-        <BeachBall />
+      <div className="absolute bottom-[7px] left-[79%] hidden md:block">
+        <Campfire />
       </div>
 
       {/* 17시 이후: 퇴근 차량 대기 */}
@@ -1905,9 +2101,9 @@ export default function SummerShore({ admin }: { admin: string }) {
       )}
 
       {/* 떨어지는 코코넛 */}
-      {coconutDrop && (
-        <div className="coconut-fall absolute bottom-[64px]" style={{ left: coconutDrop.left }}>
-          <Coconut />
+      {acornDrop && (
+        <div className="acorn-fall absolute bottom-[64px]" style={{ left: acornDrop.left }}>
+          <Acorn />
         </div>
       )}
 
@@ -1969,7 +2165,7 @@ export default function SummerShore({ admin }: { admin: string }) {
         )}
 
         {/* 액세서리 */}
-        {mode === 'suntan' && <SunLounger />}
+        {mode === 'suntan' && <CampChair />}
         {(mode === 'heliUp' || mode === 'heliDrop') && <Helicopter spinning={mode === 'heliUp'} />}
         {showUmbrella && <Umbrella />}
         {mode === 'suntan' && <Sunglasses />}
@@ -1988,7 +2184,7 @@ export default function SummerShore({ admin }: { admin: string }) {
             {SNACKS[treat.kind]}
           </div>
         )}
-        {/* 모래성 짓는 중 땀 */}
+        {/* 돌탑 짓는 중 땀 */}
         {mode === 'build' && (
           <div className="heat-steam absolute -top-[6px] left-[38px] text-[11px]">💦</div>
         )}
@@ -2007,7 +2203,7 @@ export default function SummerShore({ admin }: { admin: string }) {
           <CrabBody eyes={mode === 'crisp' ? 'dead' : zapped ? 'dizzy' : eyes} bump={bump} />
         </div>
 
-        {mode === 'surf' && <Surfboard />}
+        {mode === 'surf' && <LeafBoard />}
       </div>
 
       {/* 클릭 액션 메뉴 (포탈) */}
