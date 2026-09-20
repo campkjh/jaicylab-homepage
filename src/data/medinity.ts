@@ -180,7 +180,8 @@ export const WEB_LANGUAGE_SECTION: MedinitySection = {
   mode: 'multi',
   choices: [
     { id: 'lang-en', name: '영어', desc: 'English', price: 0, perLang: true },
-    { id: 'lang-zh', name: '중국어', desc: '简体中文', price: 0, perLang: true },
+    { id: 'lang-zh-cn', name: '중국어 (북경어)', desc: '简体中文 · 보통화', price: 0, perLang: true },
+    { id: 'lang-zh-hk', name: '중국어 (광둥어)', desc: '繁體中文 · 粵語', price: 0, perLang: true },
     { id: 'lang-ja', name: '일본어', desc: '日本語', price: 0, perLang: true },
     { id: 'lang-ru', name: '러시아어', desc: 'Русский', price: 0, perLang: true },
     { id: 'lang-es', name: '스페인어', desc: 'Español', price: 0, perLang: true },
@@ -220,9 +221,35 @@ export function languageUnitPrice(totalPages: number): number {
   return 100_000
 }
 
-/** 옵션의 실제 단가. perLang 이면 총 페이지 수 구간별, perPage 가 있으면 페이지 수 비례로 계산한다. */
-export function priceOfChoice(choice: { price: number; perPage?: number; perLang?: boolean }, totalPages: number): number {
-  if (choice.perLang) return languageUnitPrice(totalPages)
+/**
+ * 중국어 2종(북경어·광둥어) — 둘 다 고르면 언어당 20% 할인.
+ * 한쪽만 고르면 언어 단가 그대로(5p↓ 10만), 둘 다면 합계가 단가의 1.6배(5p↓ 16만)가 된다.
+ * 페이지 구간이 올라가도 같은 비율로 적용된다(10p↑ 20만/32만, 20p↑ 30만/48만).
+ */
+export const CHINESE_LANG_IDS = ['lang-zh-cn', 'lang-zh-hk'] as const
+export const CHINESE_PAIR_RATE = 0.8
+
+/** 중국어 2종을 함께 고른 상태인지 */
+export function hasChinesePair(picked: Iterable<string>): boolean {
+  const set = picked instanceof Set ? picked : new Set(picked)
+  return CHINESE_LANG_IDS.every(id => set.has(id))
+}
+
+/**
+ * 옵션의 실제 단가. perLang 이면 총 페이지 수 구간별, perPage 가 있으면 페이지 수 비례로 계산한다.
+ * picked 를 넘기면 중국어 2종 동시 선택 할인까지 반영한다(안 넘기면 할인 없음 = 기존 동작).
+ */
+export function priceOfChoice(
+  choice: { id?: string; price: number; perPage?: number; perLang?: boolean },
+  totalPages: number,
+  picked?: Iterable<string>,
+): number {
+  if (choice.perLang) {
+    const unit = languageUnitPrice(totalPages)
+    const isChinese = !!choice.id && (CHINESE_LANG_IDS as readonly string[]).includes(choice.id)
+    if (isChinese && picked && hasChinesePair(picked)) return Math.round(unit * CHINESE_PAIR_RATE)
+    return unit
+  }
   return choice.perPage != null ? choice.perPage * totalPages : choice.price
 }
 

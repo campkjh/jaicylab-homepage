@@ -10,6 +10,9 @@ import {
   totalPageCount,
   priceOfChoice,
   languageUnitPrice,
+  hasChinesePair,
+  CHINESE_LANG_IDS,
+  CHINESE_PAIR_RATE,
   stepperPrice,
   VAT_RATE,
   formatWon,
@@ -106,8 +109,16 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
         out.push({
           key: ch.id,
           label: ch.name,
-          sub: inc ? `${s.title} · 기본 포함` : (ch.perPage != null || ch.perLang) ? `${s.title} · ${totalPages}페이지 기준` : s.title,
-          price: inc ? 0 : priceOfChoice(ch, totalPages),
+          sub: inc
+            ? `${s.title} · 기본 포함`
+            : ch.perPage != null || ch.perLang
+              ? `${s.title} · ${totalPages}페이지 기준${
+                  ch.perLang && (CHINESE_LANG_IDS as readonly string[]).includes(ch.id) && hasChinesePair(picked)
+                    ? ' · 2종 동시 할인'
+                    : ''
+                }`
+              : s.title,
+          price: inc ? 0 : priceOfChoice(ch, totalPages, picked),
         })
         for (const child of ch.children ?? []) {
           if (picked.has(child.id)) out.push({ key: child.id, label: child.name, sub: ch.name, price: child.price })
@@ -135,7 +146,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       const items: { label: string; sub?: string; price: number }[] = []
       for (const ch of s.choices ?? []) {
         if (!picked.has(ch.id)) continue
-        items.push({ label: ch.name, sub: ch.desc, price: includedIds.has(ch.id) ? 0 : priceOfChoice(ch, totalPages) })
+        items.push({ label: ch.name, sub: ch.desc, price: includedIds.has(ch.id) ? 0 : priceOfChoice(ch, totalPages, picked) })
         for (const child of ch.children ?? []) if (picked.has(child.id)) items.push({ label: `└ ${child.name}`, price: child.price })
       }
       if (s.id === 'integration' && !picked.has('int-navermap') && googleMap) items.push({ label: '구글 지도 연동', sub: '기본 무료', price: 0 })
@@ -216,7 +227,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                         </span>
                       )}
                       <span className="mt-2 text-sm font-bold text-[#2B313D]">
-                        {includedIds.has(ch.id) ? '포함' : formatWon(priceOfChoice(ch, totalPages))}
+                        {includedIds.has(ch.id) ? '포함' : formatWon(priceOfChoice(ch, totalPages, picked))}
                       </span>
                     </button>
                   )
@@ -232,6 +243,13 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                     <span>총 <b className="text-[#2B313D]">{totalPages}페이지</b> 기준</span>
                     <span className="text-[#C8CEDA]">·</span>
                     <span>언어당 <b className="text-[#3180F7]">{formatWon(languageUnitPrice(totalPages))}</b></span>
+                    <span className="text-[#C8CEDA]">·</span>
+                    <span>
+                      중국어 2종(북경어·광둥어) 동시{' '}
+                      <b className="text-[#3180F7]">
+                        {formatWon(Math.round(languageUnitPrice(totalPages) * CHINESE_PAIR_RATE) * 2)}
+                      </b>
+                    </span>
                     <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-[#A4ABBA]">5p↓ 10만 · 10p↑ 20만 · 20p↑ 30만</span>
                   </div>
                 )}
@@ -252,7 +270,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                           {includedIds.has(ch.id)
                             ? '포함'
                             : ch.perLang
-                              ? `+${formatWon(priceOfChoice(ch, totalPages))}`
+                              ? `+${formatWon(priceOfChoice(ch, totalPages, picked))}`
                               : ch.price === 0
                                 ? '기본 0원'
                                 : `+${formatWon(ch.price)}`}
