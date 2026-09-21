@@ -5,6 +5,8 @@ import { Check, Plus, Minus, X } from 'lucide-react'
 import {
   MEDINITY_SECTIONS,
   WEB_LANGUAGE_SECTION,
+  EXTRA_PAGE_DENSE_SECTION,
+  DENSE_PAGE_FREE_SECTIONS,
   MEDINITY_CHOICE_INDEX,
   includedChoiceIds,
   totalPageCount,
@@ -35,6 +37,9 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
     const arr = [...MEDINITY_SECTIONS]
     const revIdx = arr.findIndex(s => s.id === 'revision')
     arr.splice(revIdx < 0 ? arr.length : revIdx, 0, WEB_LANGUAGE_SECTION)
+    // 섹션 추가금은 '추가 페이지' 바로 뒤에 붙인다 (추가 페이지가 0장이면 렌더에서 숨긴다)
+    const pagesIdx = arr.findIndex(s => s.id === 'pages')
+    arr.splice(pagesIdx < 0 ? arr.length : pagesIdx + 1, 0, EXTRA_PAGE_DENSE_SECTION)
     return arr
   }, [])
 
@@ -100,6 +105,12 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
   const totalPages = useMemo(() => totalPageCount(picked, extraPages), [picked, extraPages])
   const basePages = totalPages - extraPages
 
+  // '4섹션 초과' 장수는 추가 페이지 장수가 상한. (추가 페이지를 줄이면 자동으로 함께 줄어든다)
+  const stepperMax = (st: { id: string; max: number }) =>
+    st.id === 'dense-page' ? Math.min(st.max, extraPages) : st.max
+  const stepperQty = (st: { id: string; min: number; max: number }) =>
+    Math.max(st.min, Math.min(stepperMax(st), Math.floor(Number(steppers[st.id] ?? 0))))
+
   const lines: Line[] = useMemo(() => {
     const out: Line[] = []
     for (const s of sections) {
@@ -129,7 +140,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       }
       if (s.stepper) {
         const st = s.stepper
-        const qty = Math.max(st.min, Math.min(st.max, Math.floor(Number(steppers[st.id] ?? 0))))
+        const qty = stepperQty(st)
         if (qty > 0) {
           const free = st.freeUnits ? ` · ${st.freeUnits}${st.unit}까지 무료` : ''
           out.push({ key: st.id, label: `${st.name} ${qty}${st.unit}`, sub: `${s.title}${free}`, price: stepperPrice(st, qty) })
@@ -137,7 +148,7 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       }
     }
     return out
-  }, [sections, picked, includedIds, totalPages, steppers, googleMap])
+  }, [sections, picked, includedIds, totalPages, steppers, extraPages, googleMap])
 
   // 견적서 PDF — 섹션별 기능명세 + 맨먼스/투입인원(홈페이지 제작 기준)
   const specGroups: SpecGroup[] = useMemo(() => {
@@ -152,13 +163,13 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
       if (s.id === 'integration' && !picked.has('int-navermap') && googleMap) items.push({ label: '구글 지도 연동', sub: '기본 무료', price: 0 })
       if (s.stepper) {
         const st = s.stepper
-        const qty = Math.max(st.min, Math.min(st.max, Math.floor(Number(steppers[st.id] ?? 0))))
+        const qty = stepperQty(st)
         if (qty > 0) items.push({ label: `${st.name} ${qty}${st.unit}`, price: stepperPrice(st, qty) })
       }
       if (items.length) out.push({ title: s.title, items })
     }
     return out
-  }, [sections, picked, includedIds, totalPages, steppers, googleMap])
+  }, [sections, picked, includedIds, totalPages, steppers, extraPages, googleMap])
 
   const subtotal = lines.reduce((sum, l) => sum + l.price, 0)
   // 할인 — 공급가에서 차감한 뒤 부가세를 매긴다 (0 ~ 공급가 한도)
@@ -188,7 +199,10 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
     <div className="mx-auto grid max-w-[1320px] gap-8 px-6 lg:grid-cols-[1fr_400px]">
       {/* 옵션 선택 */}
       <div className="flex flex-col gap-4">
-        {sections.map(section => (
+        {sections.map(section => {
+          // 추가 페이지가 없으면 섹션 추가금 카드는 의미가 없다
+          if (section.id === 'pages-dense' && extraPages === 0) return null
+          return (
           <section key={section.id} className="rounded-[24px] bg-white p-5">
             <div className="mb-4 flex items-start gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#F2F3F5]">
@@ -325,9 +339,18 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
             {/* 수량 스텝퍼 */}
             {section.mode === 'stepper' && section.stepper && (() => {
               const st = section.stepper!
-              const q = steppers[st.id] ?? 0
+              const max = stepperMax(st)
+              const q = stepperQty(st)
               return (
                 <>
+                  {section.id === 'pages-dense' && (
+                    <div className="mb-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-[#F2F3F5] px-3 py-2.5 text-[12px] text-[#51535C]">
+                      <span>추가 페이지 <b className="text-[#2B313D]">{extraPages}페이지</b> 중</span>
+                      <span className="text-[#C8CEDA]">·</span>
+                      <span>섹션 <b className="text-[#2B313D]">{DENSE_PAGE_FREE_SECTIONS}개 초과</b> <b className="text-[#3180F7]">{q}페이지</b></span>
+                      <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-[#A4ABBA]">장당 +4만원</span>
+                    </div>
+                  )}
                   {section.id === 'pages' && (
                     <div className="mb-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-[#F2F3F5] px-3 py-2.5 text-[12px] text-[#51535C]">
                       <span>기본 패키지 <b className="text-[#2B313D]">{basePages}페이지</b></span>
@@ -345,12 +368,12 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <button onClick={() => setQty(st.id, st.min, st.max, -1)} disabled={q <= st.min}
+                      <button onClick={() => setQty(st.id, st.min, max, -1)} disabled={q <= st.min}
                         className="flex size-8 items-center justify-center rounded-lg border border-[#C8CEDA] text-[#51535C] transition hover:bg-[#F2F3F5] disabled:opacity-30">
                         <Minus className="size-4" />
                       </button>
                       <span className="w-8 text-center text-base font-bold tabular-nums text-[#2B313D]">{q}</span>
-                      <button onClick={() => setQty(st.id, st.min, st.max, 1)} disabled={q >= st.max}
+                      <button onClick={() => setQty(st.id, st.min, max, 1)} disabled={q >= max}
                         className="flex size-8 items-center justify-center rounded-lg border border-[#C8CEDA] text-[#51535C] transition hover:bg-[#F2F3F5] disabled:opacity-30">
                         <Plus className="size-4" />
                       </button>
@@ -360,7 +383,8 @@ export function WebQuotePanel({ onSubmit }: { onSubmit?: (total: number) => void
               )
             })()}
           </section>
-        ))}
+          )
+        })}
       </div>
 
       {/* 견적 요약 */}

@@ -47,6 +47,11 @@ export type MedinitySection = {
 /** 상급(커스텀 모션) 인터랙션의 페이지당 단가. TODO: 실제 단가 확정 필요. */
 export const INTER_HIGH_PER_PAGE = 100_000
 
+/** 추가 페이지 한 장의 섹션이 4개를 넘을 때 그 장에 붙는 추가금. */
+export const DENSE_PAGE_SURCHARGE = 40_000
+/** 추가금 없이 담을 수 있는 페이지당 섹션 수. */
+export const DENSE_PAGE_FREE_SECTIONS = 4
+
 export const MEDINITY_SECTIONS: MedinitySection[] = [
   {
     id: 'base',
@@ -187,6 +192,29 @@ export const WEB_LANGUAGE_SECTION: MedinitySection = {
     { id: 'lang-es', name: '스페인어', desc: 'Español', price: 0, perLang: true },
     { id: 'lang-vi', name: '베트남어', desc: 'Tiếng Việt', price: 0, perLang: true },
   ],
+}
+
+/**
+ * 추가 페이지 섹션 추가금 (2026-09-21) — 자가견적 홈페이지 견적에서만 노출한다.
+ * 추가 페이지 한 장의 내용(섹션)이 4개를 넘으면 그 장당 4만원이 더 붙는다.
+ * 장수는 '추가 페이지' 수를 넘을 수 없다(패널에서 상한을 건다).
+ */
+export const EXTRA_PAGE_DENSE_SECTION: MedinitySection = {
+  id: 'pages-dense',
+  title: '추가 페이지 · 섹션 추가금',
+  desc: '추가 페이지 중 내용(섹션)이 4개를 넘는 페이지가 몇 장인지 정합니다. 장당 4만원이 더해집니다. (선택)',
+  icon: 'file',
+  mode: 'stepper',
+  stepper: {
+    id: 'dense-page',
+    name: '4섹션 초과',
+    desc: '장당',
+    unitPrice: DENSE_PAGE_SURCHARGE,
+    unit: '페이지',
+    min: 0,
+    max: 20,
+    default: 0,
+  },
 }
 
 /** 모든 옵션(하위 포함)을 id 로 찾기 위한 인덱스. 다국어 섹션도 조회가 되도록 함께 등록한다. */
