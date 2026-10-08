@@ -5,6 +5,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/admin/actions'
 import { usePresence } from './PresenceProvider'
+
+/** 마지막 접속 후 지난 초 → '방금 전 / N분 전 / N시간 전 / N일 전'. */
+function lastSeenLabel(sec: number): string {
+  if (sec < 60) return '방금 전'
+  const min = Math.floor(sec / 60)
+  if (min < 60) return `${min}분 전`
+  const hour = Math.floor(min / 60)
+  if (hour < 24) return `${hour}시간 전`
+  return `${Math.floor(hour / 24)}일 전`
+}
+
+/** 정확한 시각(툴팁용). 서버가 준 '지난 초'로 역산한다. */
+function lastSeenTitle(sec: number): string {
+  const d = new Date(Date.now() - sec * 1000)
+  return `마지막 접속 ${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
 import Wordmark from './Wordmark'
 import Avatar from './Avatar'
 import Icon, { type IconName } from './Icon'
@@ -119,7 +135,15 @@ export default function Sidebar({
                     </span>
                     {u.position && <span className="block truncate text-[10px] text-ink-muted">{u.position}</span>}
                   </span>
-                  {u.typing && <span className="ml-auto shrink-0 text-[10px] text-brand">입력 중…</span>}
+                  {u.typing ? (
+                    <span className="ml-auto shrink-0 text-[10px] text-brand">입력 중…</span>
+                  ) : u.online ? (
+                    <span className="ml-auto shrink-0 text-[10px] text-ink-muted">접속 중</span>
+                  ) : (
+                    <span className="ml-auto shrink-0 text-[10px] text-ink-muted" title={lastSeenTitle(u.seconds_ago)}>
+                      {lastSeenLabel(u.seconds_ago)}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

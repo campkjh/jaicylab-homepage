@@ -189,6 +189,8 @@ export type PresenceUser = {
   typing: boolean
   /** 지금 입력 중인 일정 id */
   typing_on: number | null
+  /** 마지막 접속 후 지난 초. 서버에서 계산해 내려준다(기기 시계 어긋남 방지). */
+  seconds_ago: number
 }
 
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'

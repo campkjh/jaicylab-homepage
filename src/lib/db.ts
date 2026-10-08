@@ -122,6 +122,9 @@ const DDL = [
   // 타이핑 만료는 서버가 관리한다. 같은 사람이 탭을 여러 개 열어두면
   // 입력하지 않는 탭의 하트비트가 방금 세운 플래그를 지워버리기 때문이다.
   `ALTER TABLE admin_presence ADD COLUMN IF NOT EXISTS typing_until timestamptz`,
+  // 마지막 접속 시각('N분 전' 표시용). goOffline 이 last_seen 을 1시간 뒤로 돌려
+  // 오프라인 처리를 하기 때문에, 진짜 활동 시각은 이 칸에 따로 적는다.
+  `ALTER TABLE admin_presence ADD COLUMN IF NOT EXISTS last_active timestamptz`,
 
   `CREATE TABLE IF NOT EXISTS meal_entries (
     id         serial PRIMARY KEY,

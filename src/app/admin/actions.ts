@@ -821,11 +821,12 @@ export async function heartbeat(location: string, typingOn: number | null): Prom
 
   // typingOn 이 null 이어도 아직 만료 전이면 기존 플래그를 유지한다. (다중 탭 대응)
   await sql`
-    INSERT INTO admin_presence (name, last_seen, location, typing_on, typing_until)
-    VALUES (${admin}, now(), ${location}, ${typingOn},
+    INSERT INTO admin_presence (name, last_seen, last_active, location, typing_on, typing_until)
+    VALUES (${admin}, now(), now(), ${location}, ${typingOn},
             CASE WHEN ${typingOn}::int IS NULL THEN NULL ELSE now() + interval '6 seconds' END)
     ON CONFLICT (name) DO UPDATE SET
       last_seen = now(),
+      last_active = now(),
       location  = EXCLUDED.location,
       typing_on = CASE
         WHEN EXCLUDED.typing_on IS NOT NULL             THEN EXCLUDED.typing_on
@@ -841,7 +842,8 @@ export async function heartbeat(location: string, typingOn: number | null): Prom
     SELECT p.name, pr.avatar_url, pr.position,
            (p.last_seen > now() - make_interval(secs => ${ONLINE_WINDOW_SEC})) AS online,
            (p.typing_on IS NOT NULL AND p.typing_until > now()) AS typing,
-           p.typing_on
+           p.typing_on,
+           GREATEST(0, EXTRACT(EPOCH FROM (now() - COALESCE(p.last_active, p.last_seen))))::int AS seconds_ago
     FROM admin_presence p LEFT JOIN admin_profiles pr ON pr.name = p.name
     ORDER BY p.name
   `) as PresenceUser[]
@@ -850,6 +852,7 @@ export async function heartbeat(location: string, typingOn: number | null): Prom
 export async function goOffline(): Promise<void> {
   const admin = await requireAdmin()
   await ensureSchema()
+  // last_active 는 그대로 둔다. 여기서 같이 되돌리면 '방금 나갔는데 1시간 전'으로 보인다.
   await sql`
     UPDATE admin_presence
     SET last_seen = now() - interval '1 hour', typing_on = NULL, typing_until = NULL
