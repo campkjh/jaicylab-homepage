@@ -810,6 +810,8 @@ export async function updatePosition(fd: FormData): Promise<void> {
 // ─────────────────────────── 접속 상태 / 타이핑
 
 const ONLINE_WINDOW_SEC = 20
+/** 이 시간 안에 하트비트가 다시 오면 같은 '접속'으로 이어 붙인다. (넘으면 새 접속) */
+const SESSION_GAP_MIN = 10
 
 /**
  * 하트비트 겸 조회. 클라이언트가 몇 초마다 부른다.
@@ -836,6 +838,22 @@ export async function heartbeat(location: string, typingOn: number | null): Prom
         WHEN EXCLUDED.typing_until IS NOT NULL          THEN EXCLUDED.typing_until
         WHEN admin_presence.typing_until > now()        THEN admin_presence.typing_until
         ELSE NULL END
+  `
+
+  // 접속 로그 — 직전 접속이 10분 안이면 끝 시각만 늘리고, 아니면 새 접속으로 기록한다.
+  await sql`
+    WITH last AS (
+      SELECT id FROM admin_sessions
+      WHERE name = ${admin} AND ended_at > now() - make_interval(mins => ${SESSION_GAP_MIN})
+      ORDER BY ended_at DESC LIMIT 1
+    ), extended AS (
+      UPDATE admin_sessions SET ended_at = now()
+      WHERE id = (SELECT id FROM last)
+      RETURNING id
+    )
+    INSERT INTO admin_sessions (name, started_at, ended_at)
+    SELECT ${admin}, now(), now()
+    WHERE NOT EXISTS (SELECT 1 FROM extended)
   `
 
   return (await sql`

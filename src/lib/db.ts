@@ -126,6 +126,16 @@ const DDL = [
   // 오프라인 처리를 하기 때문에, 진짜 활동 시각은 이 칸에 따로 적는다.
   `ALTER TABLE admin_presence ADD COLUMN IF NOT EXISTS last_active timestamptz`,
 
+  // 직원 접속 로그. 하트비트가 끊기지 않고 이어지는 동안을 한 번의 '접속'으로 본다.
+  // (자리를 비워도 탭이 열려 있으면 계속 접속으로 집계된다 — 로그인 시간 기준이 아니다)
+  `CREATE TABLE IF NOT EXISTS admin_sessions (
+    id         serial PRIMARY KEY,
+    name       text NOT NULL,
+    started_at timestamptz NOT NULL DEFAULT now(),
+    ended_at   timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS admin_sessions_name_ended_idx ON admin_sessions (name, ended_at DESC)`,
+
   `CREATE TABLE IF NOT EXISTS meal_entries (
     id         serial PRIMARY KEY,
     meal_date  date NOT NULL,

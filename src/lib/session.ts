@@ -22,6 +22,13 @@ export async function requireAdmin(): Promise<string> {
  */
 const RESTRICTED_ADMINS = new Set(['메디니티'])
 
+/** 대표 — 직원 접속 로그처럼 다른 사람 기록까지 보는 메뉴는 여기만 열린다. */
+const OWNER_ADMINS = new Set(['정훈'])
+
+export function isOwnerAdmin(name: string | null): boolean {
+  return !!name && OWNER_ADMINS.has(name)
+}
+
 export function isRestrictedAdmin(name: string | null): boolean {
   return !!name && RESTRICTED_ADMINS.has(name)
 }

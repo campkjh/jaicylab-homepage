@@ -1,10 +1,11 @@
 import { ensureSchema, sql, type EventCategory, type TimelineStatusDef, type AccountCategory } from '@/lib/db'
-import { requireAdmin } from '@/lib/session'
+import { requireAdmin, isOwnerAdmin } from '@/lib/session'
 import { PageContainer, PageHeader, SectionTitle } from '@/components/admin/ui'
 import CategoryEditor from '@/components/admin/CategoryEditor'
 import TimelineStatusEditor from '@/components/admin/TimelineStatusEditor'
 import AccountCategoryEditor from '@/components/admin/AccountCategoryEditor'
 import AvatarUploader from '@/components/admin/AvatarUploader'
+import AccessLogTable, { type AccessSummary, type AccessDay } from '@/components/admin/AccessLogTable'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,39 @@ export default async function SettingsPage() {
     (acctUsageRows as { category: string; count: number }[]).map(r => [r.category, r.count]),
   )
   const profile = (profileRows as { avatar_url: string | null; position: string | null }[])[0]
+
+  // 직원 접속로그 — 대표만 본다. 날짜 구분은 KST 기준(자정 넘긴 접속은 시작한 날로).
+  const owner = isOwnerAdmin(admin)
+  const [summaryRows, dayRows] = owner
+    ? await Promise.all([
+        sql`
+          SELECT name,
+                 SUM(CASE WHEN (started_at AT TIME ZONE 'Asia/Seoul')::date = (now() AT TIME ZONE 'Asia/Seoul')::date
+                          THEN EXTRACT(EPOCH FROM (ended_at - started_at)) ELSE 0 END)::int AS today_sec,
+                 SUM(CASE WHEN started_at > now() - interval '7 days'
+                          THEN EXTRACT(EPOCH FROM (ended_at - started_at)) ELSE 0 END)::int AS week_sec,
+                 SUM(CASE WHEN started_at > now() - interval '30 days'
+                          THEN EXTRACT(EPOCH FROM (ended_at - started_at)) ELSE 0 END)::int AS month_sec,
+                 MAX(ended_at) AS last_at
+          FROM admin_sessions
+          GROUP BY name
+          ORDER BY month_sec DESC, name
+        `,
+        sql`
+          SELECT name,
+                 to_char((started_at AT TIME ZONE 'Asia/Seoul')::date, 'YYYY-MM-DD') AS day,
+                 SUM(EXTRACT(EPOCH FROM (ended_at - started_at)))::int AS seconds,
+                 COUNT(*)::int AS sessions,
+                 MIN(started_at) AS first_at,
+                 MAX(ended_at)   AS last_at
+          FROM admin_sessions
+          WHERE started_at > now() - interval '60 days'
+          GROUP BY name, (started_at AT TIME ZONE 'Asia/Seoul')::date
+          ORDER BY day DESC, name
+          LIMIT 200
+        `,
+      ])
+    : [[], []]
 
   return (
     <PageContainer>
@@ -71,6 +105,16 @@ export default async function SettingsPage() {
           종류를 삭제해도 계정은 남고, 그 종류를 쓰던 계정은 <b>기타</b>로 옮겨집니다.
         </p>
       </section>
+
+      {owner && (
+        <section className="mt-10">
+          <AccessLogTable summary={summaryRows as AccessSummary[]} days={dayRows as AccessDay[]} />
+          <p className="mt-3 text-xs text-ink-muted">
+            어드민 화면을 열어 둔 시간을 기준으로 집계합니다. 하트비트가 <b>10분</b> 넘게 끊기면 다음 접속으로 나뉩니다.
+            자리를 비워도 창이 떠 있으면 접속으로 잡히니, 로그인 시각이 아니라 <b>화면을 띄워 둔 시간</b>으로 보세요.
+          </p>
+        </section>
+      )}
     </PageContainer>
   )
 }
