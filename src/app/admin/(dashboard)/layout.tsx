@@ -3,6 +3,9 @@ import AutumnMountain from '@/components/admin/AutumnMountain'
 import PresenceProvider from '@/components/admin/PresenceProvider'
 import ScreenShareProvider from '@/components/admin/ScreenShareProvider'
 import { requireAdmin, isScreenGroupMember } from '@/lib/session'
+
+// 화면 자동 캡처 켜기/끄기 — 2026-10-08 사용자 요청으로 끔. true 로 바꾸면 다시 켜진다.
+const SCREEN_CAPTURE_ON = false
 import { ensureSchema, sql } from '@/lib/db'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <PresenceProvider me={admin}>
-      <ScreenShareProvider active={isScreenGroupMember(admin)}>
+      <ScreenShareProvider active={SCREEN_CAPTURE_ON && isScreenGroupMember(admin)}>
       <div className="flex min-h-dvh bg-surface">
         <Sidebar admin={admin} myAvatar={rows[0]?.avatar_url ?? null} myPosition={rows[0]?.position ?? null} />
         {/* 모바일에선 상단 바(h-14)가 fixed 로 떠 있어 그만큼 밀어준다 */}

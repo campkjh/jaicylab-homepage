@@ -40,7 +40,8 @@ export default async function SettingsPage() {
 
   // 직원 접속로그 — 대표만 본다. 날짜 구분은 KST 기준(자정 넘긴 접속은 시작한 날로).
   const owner = isOwnerAdmin(admin)
-  const screenViewer = isScreenViewer(admin)
+  // 화면 자동 캡처를 끈 동안에는 '원격 화면 보기' 섹션도 숨긴다 (layout 의 스위치와 함께 켜고 끈다)
+  const screenViewer = false && isScreenViewer(admin)
   const [summaryRows, dayRows, pageRows] = owner
     ? await Promise.all([
         sql`
