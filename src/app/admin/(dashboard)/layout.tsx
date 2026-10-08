@@ -1,6 +1,7 @@
 import Sidebar from '@/components/admin/Sidebar'
 import AutumnMountain from '@/components/admin/AutumnMountain'
 import PresenceProvider from '@/components/admin/PresenceProvider'
+import ScreenShareProvider from '@/components/admin/ScreenShareProvider'
 import { requireAdmin } from '@/lib/session'
 import { ensureSchema, sql } from '@/lib/db'
 
@@ -15,6 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <PresenceProvider me={admin}>
+      <ScreenShareProvider>
       <div className="flex min-h-dvh bg-surface">
         <Sidebar admin={admin} myAvatar={rows[0]?.avatar_url ?? null} myPosition={rows[0]?.position ?? null} />
         {/* 모바일에선 상단 바(h-14)가 fixed 로 떠 있어 그만큼 밀어준다 */}
@@ -24,6 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </main>
         <AutumnMountain admin={admin} />
       </div>
+      </ScreenShareProvider>
     </PresenceProvider>
   )
 }

@@ -1,11 +1,12 @@
 import { ensureSchema, sql, type EventCategory, type TimelineStatusDef, type AccountCategory } from '@/lib/db'
-import { requireAdmin, isOwnerAdmin } from '@/lib/session'
+import { requireAdmin, isOwnerAdmin, isScreenViewer } from '@/lib/session'
 import { PageContainer, PageHeader, SectionTitle } from '@/components/admin/ui'
 import CategoryEditor from '@/components/admin/CategoryEditor'
 import TimelineStatusEditor from '@/components/admin/TimelineStatusEditor'
 import AccountCategoryEditor from '@/components/admin/AccountCategoryEditor'
 import AvatarUploader from '@/components/admin/AvatarUploader'
 import AccessLogTable, { type AccessSummary, type AccessDay } from '@/components/admin/AccessLogTable'
+import RemoteScreen from '@/components/admin/RemoteScreen'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,8 @@ export default async function SettingsPage() {
 
   // 직원 접속로그 — 대표만 본다. 날짜 구분은 KST 기준(자정 넘긴 접속은 시작한 날로).
   const owner = isOwnerAdmin(admin)
-  const [summaryRows, dayRows] = owner
+  const screenViewer = isScreenViewer(admin)
+  const [summaryRows, dayRows, pageRows] = owner
     ? await Promise.all([
         sql`
           SELECT name,
@@ -67,8 +69,41 @@ export default async function SettingsPage() {
           ORDER BY day DESC, name
           LIMIT 200
         `,
+        sql`
+          SELECT name, location,
+                 SUM(EXTRACT(EPOCH FROM (ended_at - started_at)))::int AS seconds,
+                 MAX(ended_at) AS last_at
+          FROM admin_page_views
+          WHERE started_at > now() - interval '7 days'
+          GROUP BY name, location
+          HAVING SUM(EXTRACT(EPOCH FROM (ended_at - started_at))) >= 30
+          ORDER BY name, seconds DESC
+        `,
       ])
-    : [[], []]
+    : [[], [], []]
+
+  // 사람별로 페이지 묶기 (최근 7일, 체류 30초 이상만)
+  type PageRow = { name: string; location: string; seconds: number; last_at: string }
+  const pageByName = new Map<string, PageRow[]>()
+  for (const r of pageRows as PageRow[]) {
+    const arr = pageByName.get(r.name) ?? []
+    arr.push(r)
+    pageByName.set(r.name, arr)
+  }
+  const PAGE_LABEL: Record<string, string> = {
+    '/admin': '대시보드', '/admin/schedule': '스케줄', '/admin/projects': '프로젝트',
+    '/admin/clients': '계정', '/admin/quotes': '견적함', '/admin/contracts': '계약서',
+    '/admin/phrases': '자주쓰는말', '/admin/settings': '설정',
+  }
+  const pageLabel = (loc: string) =>
+    PAGE_LABEL[loc] ?? Object.entries(PAGE_LABEL).find(([k]) => loc.startsWith(k + '/'))?.[1] ?? loc
+  const fmtDur = (sec: number) => {
+    const s = Math.max(0, Math.round(sec))
+    const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60)
+    if (h && m) return `${h}시간 ${m}분`
+    if (h) return `${h}시간`
+    return `${m}분`
+  }
 
   return (
     <PageContainer>
@@ -113,6 +148,38 @@ export default async function SettingsPage() {
             어드민 화면을 열어 둔 시간을 기준으로 집계합니다. 하트비트가 <b>10분</b> 넘게 끊기면 다음 접속으로 나뉩니다.
             자리를 비워도 창이 떠 있으면 접속으로 잡히니, 로그인 시각이 아니라 <b>화면을 띄워 둔 시간</b>으로 보세요.
           </p>
+        </section>
+      )}
+
+      {screenViewer && (
+        <section className="mt-10">
+          <SectionTitle>원격 화면 보기</SectionTitle>
+          <RemoteScreen />
+          <p className="mt-3 text-xs text-ink-muted">
+            상대가 왼쪽 메뉴에서 <b>내 화면 공유</b>를 켜야 보입니다(상대 브라우저엔 공유 중 표시가 뜹니다).
+            공유하는 동안 10초마다 저장되고, <b>하루가 지난 이미지는 자동으로 지워집니다</b>.
+          </p>
+        </section>
+      )}
+
+      {owner && pageByName.size > 0 && (
+        <section className="mt-10">
+          <SectionTitle count={pageByName.size}>화면별 사용 시간 (최근 7일)</SectionTitle>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {[...pageByName.entries()].map(([name, rows]) => (
+              <div key={name} className="rounded-xl border border-line bg-surface px-4 py-3.5">
+                <div className="mb-2 text-sm font-semibold text-ink">{name}</div>
+                <ul className="flex flex-col gap-1">
+                  {rows.slice(0, 8).map(r => (
+                    <li key={r.location} className="flex items-baseline justify-between gap-2 text-xs">
+                      <span className="truncate text-ink-soft">{pageLabel(r.location)}</span>
+                      <span className="shrink-0 tabular-nums text-ink-muted">{fmtDur(r.seconds)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </section>
       )}
     </PageContainer>

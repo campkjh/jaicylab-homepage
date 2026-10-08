@@ -136,6 +136,27 @@ const DDL = [
   )`,
   `CREATE INDEX IF NOT EXISTS admin_sessions_name_ended_idx ON admin_sessions (name, ended_at DESC)`,
 
+  // 화면 공유 프레임. 본인이 '화면 공유'를 켜는 동안 10초마다 한 장씩 쌓이고,
+  // 하루가 지난 것은 업로드할 때마다 함께 지운다(이미지는 비공개 Blob, 여기엔 경로만).
+  `CREATE TABLE IF NOT EXISTS screen_frames (
+    id       serial PRIMARY KEY,
+    name     text NOT NULL,
+    pathname text NOT NULL,
+    taken_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS screen_frames_name_taken_idx ON screen_frames (name, taken_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS screen_frames_taken_idx ON screen_frames (taken_at)`,
+
+  // 페이지별 활동 로그. 하트비트의 location 을 이어 붙여 '어느 화면을 언제부터 언제까지' 봤는지 남긴다.
+  `CREATE TABLE IF NOT EXISTS admin_page_views (
+    id         serial PRIMARY KEY,
+    name       text NOT NULL,
+    location   text NOT NULL,
+    started_at timestamptz NOT NULL DEFAULT now(),
+    ended_at   timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS admin_page_views_name_ended_idx ON admin_page_views (name, ended_at DESC)`,
+
   `CREATE TABLE IF NOT EXISTS meal_entries (
     id         serial PRIMARY KEY,
     meal_date  date NOT NULL,

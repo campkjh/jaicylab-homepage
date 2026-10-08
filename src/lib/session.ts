@@ -29,6 +29,22 @@ export function isOwnerAdmin(name: string | null): boolean {
   return !!name && OWNER_ADMINS.has(name)
 }
 
+/** 화면 공유를 서로 볼 수 있는 내부 계정 묶음(본인 소유 계정들). 이 안에서만 상호 열람된다. */
+const SCREEN_GROUP = new Set(['정훈', '채은공듀'])
+
+/** 원격 화면 보기 메뉴를 쓸 수 있는가 (대표 또는 내부 묶음). */
+export function isScreenViewer(name: string | null): boolean {
+  return !!name && (SCREEN_GROUP.has(name) || OWNER_ADMINS.has(name))
+}
+
+/** viewer 가 target 의 공유 화면을 볼 수 있는가. 자기 것은 늘 OK, 대표는 전부, 묶음끼리는 상호. */
+export function canViewScreenOf(viewer: string | null, target: string): boolean {
+  if (!viewer) return false
+  if (viewer === target) return true
+  if (OWNER_ADMINS.has(viewer)) return true
+  return SCREEN_GROUP.has(viewer) && SCREEN_GROUP.has(target)
+}
+
 export function isRestrictedAdmin(name: string | null): boolean {
   return !!name && RESTRICTED_ADMINS.has(name)
 }

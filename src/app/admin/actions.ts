@@ -856,6 +856,23 @@ export async function heartbeat(location: string, typingOn: number | null): Prom
     WHERE NOT EXISTS (SELECT 1 FROM extended)
   `
 
+  // 페이지 체류 로그 — 직전 기록이 10분 안이고 같은 화면이면 끝 시각만 늘리고,
+  // 화면이 바뀌었거나 오래 끊겼으면 새 줄로 시작한다. (이러면 이전 화면은 자동으로 닫힌다)
+  await sql`
+    WITH last AS (
+      SELECT id, location FROM admin_page_views
+      WHERE name = ${admin} AND ended_at > now() - make_interval(mins => ${SESSION_GAP_MIN})
+      ORDER BY ended_at DESC LIMIT 1
+    ), extended AS (
+      UPDATE admin_page_views SET ended_at = now()
+      WHERE id = (SELECT id FROM last WHERE location = ${location})
+      RETURNING id
+    )
+    INSERT INTO admin_page_views (name, location, started_at, ended_at)
+    SELECT ${admin}, ${location}, now(), now()
+    WHERE NOT EXISTS (SELECT 1 FROM extended)
+  `
+
   return (await sql`
     SELECT p.name, pr.avatar_url, pr.position,
            (p.last_seen > now() - make_interval(secs => ${ONLINE_WINDOW_SEC})) AS online,
