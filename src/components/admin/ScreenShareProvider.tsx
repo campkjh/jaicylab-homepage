@@ -1,107 +1,82 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { toJpeg } from 'html-to-image'
 
 /** 10초마다 한 장 캡처한다. */
 const CAPTURE_MS = 10_000
-/** 긴 변이 이 크기를 넘지 않게 줄여 올린다(용량 절약). */
+/** 긴 변이 이 크기를 넘지 않게 줄여 올린다(용량·부하 절약). */
 const MAX_EDGE = 1280
 
-type Ctx = {
-  sharing: boolean
-  starting: boolean
-  start: () => void
-  stop: () => void
-}
+/**
+ * 어드민 화면 자동 기록. 트리거 없이, 화면을 열어 둔 동안 어드민 페이지가 제 모습을
+ * 10초마다 그려서 저장한다. (브라우저 화면 공유가 아니라 이 페이지의 DOM 을 그리는 방식이라
+ *  클릭·공유 표시가 없다. 대신 어드민 화면 안쪽만 담기고 다른 탭·다른 앱은 담기지 않는다.)
+ * active=false 면(=캡처 대상 아님) 아무것도 하지 않는다.
+ */
+export default function ScreenShareProvider({
+  active,
+  children,
+}: {
+  active: boolean
+  children: React.ReactNode
+}) {
+  const busy = useRef(false)
 
-const ScreenShareContext = createContext<Ctx>({ sharing: false, starting: false, start: () => {}, stop: () => {} })
-export const useScreenShare = () => useContext(ScreenShareContext)
+  useEffect(() => {
+    if (!active) return
+    let alive = true
 
-export default function ScreenShareProvider({ children }: { children: React.ReactNode }) {
-  const [sharing, setSharing] = useState(false)
-  const [starting, setStarting] = useState(false)
-  const streamRef = useRef<MediaStream | null>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const cleanup = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = null
-    streamRef.current?.getTracks().forEach(t => t.stop())
-    streamRef.current = null
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-      videoRef.current = null
+    const capture = async () => {
+      // 탭이 숨겨져 있으면(다른 탭/최소화) 굳이 찍지 않는다
+      if (!alive || busy.current || document.hidden) return
+      busy.current = true
+      try {
+        const scale = Math.min(1, MAX_EDGE / Math.max(window.innerWidth, 1))
+        // 장식 레이어·외부 이미지·영상은 빼고(느리고 CORS 로 막힘), 폰트 임베드도 끈다(시스템 폰트로 그림)
+        const skip = (node: HTMLElement): boolean => {
+          if (node.getAttribute?.('data-no-capture') === '1') return false
+          if (node.tagName === 'VIDEO' || node.tagName === 'IFRAME' || node.tagName === 'CANVAS') return false
+          if (node.tagName === 'IMG') {
+            const src = (node as HTMLImageElement).currentSrc || (node as HTMLImageElement).src
+            if (src && !src.startsWith('data:') && !src.startsWith(location.origin)) return false
+          }
+          return true
+        }
+        const render = toJpeg(document.body, {
+          quality: 0.55,
+          pixelRatio: scale,
+          backgroundColor: '#f7ead0',
+          skipFonts: true,
+          cacheBust: false,
+          filter: node => !(node instanceof HTMLElement) || skip(node),
+        })
+        // 한 장이 오래 걸리면 포기한다(다음 주기에 다시) — 절대 멈춰 있지 않게
+        const dataUrl = await Promise.race([
+          render,
+          new Promise<string>((_, rej) => setTimeout(() => rej(new Error('capture timeout')), 8000)),
+        ])
+        const blob = await (await fetch(dataUrl)).blob()
+        if (!alive) return
+        const fd = new FormData()
+        fd.append('file', new File([blob], 'frame.jpg', { type: 'image/jpeg' }))
+        await fetch('/api/admin/screen', { method: 'POST', body: fd })
+      } catch {
+        // 한 번 실패(타임아웃·CORS 등)는 다음 주기에 다시 시도된다
+      } finally {
+        busy.current = false
+      }
     }
-    setSharing(false)
-    setStarting(false)
-  }, [])
 
-  const captureOnce = useCallback(async () => {
-    const video = videoRef.current
-    if (!video || video.videoWidth === 0) return
-    const scale = Math.min(1, MAX_EDGE / Math.max(video.videoWidth, video.videoHeight))
-    const w = Math.round(video.videoWidth * scale)
-    const h = Math.round(video.videoHeight * scale)
-    const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
-    canvas.getContext('2d')?.drawImage(video, 0, 0, w, h)
-    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/jpeg', 0.6))
-    if (!blob) return
-    const fd = new FormData()
-    fd.append('file', new File([blob], 'frame.jpg', { type: 'image/jpeg' }))
-    try {
-      await fetch('/api/admin/screen', { method: 'POST', body: fd })
-    } catch {
-      // 업로드 한 번 실패는 다음 주기에 다시 시도된다
+    // 첫 장은 페이지가 자리잡은 뒤에
+    const first = setTimeout(() => void capture(), 2500)
+    const timer = setInterval(() => void capture(), CAPTURE_MS)
+    return () => {
+      alive = false
+      clearTimeout(first)
+      clearInterval(timer)
     }
-  }, [])
+  }, [active])
 
-  const start = useCallback(async () => {
-    if (sharing || starting) return
-    setStarting(true)
-    try {
-      // 브라우저가 공유할 화면을 고르게 하고(동의), 공유 중엔 브라우저가 표시줄을 띄운다.
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 1 }, audio: false })
-      streamRef.current = stream
-      const video = document.createElement('video')
-      video.srcObject = stream
-      video.muted = true
-      await video.play().catch(() => {})
-      videoRef.current = video
-      // 브라우저 '공유 중지'를 누르면 트랙이 끝난다 → 깔끔히 정리
-      stream.getVideoTracks()[0]?.addEventListener('ended', cleanup)
-      setSharing(true)
-      setStarting(false)
-      void captureOnce()
-      timerRef.current = setInterval(() => void captureOnce(), CAPTURE_MS)
-    } catch {
-      // 사용자가 공유 선택을 취소한 경우 등
-      cleanup()
-    }
-  }, [sharing, starting, captureOnce, cleanup])
-
-  const stop = useCallback(() => cleanup(), [cleanup])
-
-  useEffect(() => () => cleanup(), [cleanup])
-
-  return (
-    <ScreenShareContext.Provider value={{ sharing, starting, start, stop }}>
-      {children}
-      {sharing && (
-        <button
-          type="button"
-          onClick={stop}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-ink/90 px-3.5 py-2 text-xs font-medium text-white shadow-lg backdrop-blur transition hover:bg-black"
-        >
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-2 animate-ping rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex size-2 rounded-full bg-red-500" />
-          </span>
-          화면 공유 중 · 중지
-        </button>
-      )}
-    </ScreenShareContext.Provider>
-  )
+  return <>{children}</>
 }

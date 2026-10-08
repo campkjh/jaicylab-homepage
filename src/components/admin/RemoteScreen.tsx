@@ -65,7 +65,7 @@ export default function RemoteScreen() {
     return (
       <div className="rounded-xl border border-line bg-surface p-6 text-center">
         <p className="text-sm text-ink-muted">최근 하루 안에 공유된 화면이 없어요.</p>
-        <p className="mt-1 text-xs text-ink-muted">상대가 왼쪽 메뉴에서 <b>내 화면 공유</b>를 켜면 여기에 바로 보입니다.</p>
+        <p className="mt-1 text-xs text-ink-muted">정훈·채은공듀가 어드민 화면을 열면 10초 안에 여기에 자동으로 나타납니다.</p>
       </div>
     )
   }

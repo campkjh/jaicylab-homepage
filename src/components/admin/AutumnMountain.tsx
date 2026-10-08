@@ -1998,7 +1998,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
   const halfClip = mode === 'dig' || mode === 'cooloff' ? { clipPath: 'inset(0 0 42% 0)' } : undefined
 
   return (
-    <div ref={sceneRef} aria-hidden className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
+    <div ref={sceneRef} aria-hidden data-no-capture="1" className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
       {/* 가을 낙엽 — 화면 전체 레이어 */}
       <FallingLeaves />
       {/* 하늘: 남쪽으로 가는 기러기 편대 */}

@@ -156,8 +156,8 @@ export default async function SettingsPage() {
           <SectionTitle>원격 화면 보기</SectionTitle>
           <RemoteScreen />
           <p className="mt-3 text-xs text-ink-muted">
-            상대가 왼쪽 메뉴에서 <b>내 화면 공유</b>를 켜야 보입니다(상대 브라우저엔 공유 중 표시가 뜹니다).
-            공유하는 동안 10초마다 저장되고, <b>하루가 지난 이미지는 자동으로 지워집니다</b>.
+            정훈·채은공듀가 어드민 화면을 열어 둔 동안 10초마다 자동으로 저장됩니다(별도 조작 없음).
+            어드민 화면 안쪽만 담기며 다른 탭·다른 앱은 담기지 않습니다. <b>하루가 지난 이미지는 자동으로 지워집니다</b>.
           </p>
         </section>
       )}

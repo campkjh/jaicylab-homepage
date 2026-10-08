@@ -37,6 +37,11 @@ export function isScreenViewer(name: string | null): boolean {
   return !!name && (SCREEN_GROUP.has(name) || OWNER_ADMINS.has(name))
 }
 
+/** 화면을 자동 캡처하는 대상인가 — 내부 묶음(본인 소유 계정)만. 그 외 계정은 캡처하지 않는다. */
+export function isScreenGroupMember(name: string | null): boolean {
+  return !!name && SCREEN_GROUP.has(name)
+}
+
 /** viewer 가 target 의 공유 화면을 볼 수 있는가. 자기 것은 늘 OK, 대표는 전부, 묶음끼리는 상호. */
 export function canViewScreenOf(viewer: string | null, target: string): boolean {
   if (!viewer) return false

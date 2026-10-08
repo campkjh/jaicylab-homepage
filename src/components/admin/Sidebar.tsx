@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/admin/actions'
 import { usePresence } from './PresenceProvider'
-import { useScreenShare } from './ScreenShareProvider'
 
 /** 마지막 접속 후 지난 초 → '방금 전 / N분 전 / N시간 전 / N일 전'. */
 function lastSeenLabel(sec: number): string {
@@ -151,8 +150,6 @@ export default function Sidebar({
           </div>
         )}
 
-        <ScreenShareButton />
-
         <Link href="/admin/settings" className="mb-1 flex items-center gap-2.5 rounded-md px-2 py-1.5 transition hover:bg-hover">
           <Avatar name={admin} url={myAvatar} size="md" />
           <div className="min-w-0">
@@ -176,20 +173,3 @@ export default function Sidebar({
   )
 }
 
-/** 내 화면 공유 토글. 공유를 켜면 브라우저가 공유할 화면을 묻고, 켜 있는 동안 표시줄을 띄운다. */
-function ScreenShareButton() {
-  const { sharing, starting, start, stop } = useScreenShare()
-  return (
-    <button
-      type="button"
-      onClick={sharing ? stop : start}
-      disabled={starting}
-      className={`mb-1 flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition disabled:opacity-60 ${
-        sharing ? 'text-red-600 hover:bg-red-50' : 'text-ink-muted hover:bg-hover hover:text-ink'
-      }`}
-    >
-      <Icon name={sharing ? 'eyeOff' : 'eyeOn'} className="size-4" />
-      {starting ? '여는 중…' : sharing ? '화면 공유 중지' : '내 화면 공유'}
-    </button>
-  )
-}
