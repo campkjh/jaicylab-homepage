@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 /* 공개 사이트는 다크지만 관리자는 라이트 테마를 따로 쓴다.
-   (2026-10-24: 가을 → 할로윈 — 으스스한 보랏빛 바탕 + 호박 주황 브랜드.
-    표·카드 같은 작업 면은 읽기 쉽게 흰색을 유지하고, 바탕·장식만 할로윈으로) */
+   (2026-11-09: 할로윈 → 빼빼로 데이 — 달콤한 핑크 바탕 + 초코 브라운 브랜드.
+    표·카드 같은 작업 면은 읽기 쉽게 흰색을 유지하고, 바탕·장식만 빼빼로로) */
 @theme {
-  --color-ink: #2b2538;
-  --color-ink-soft: #5c5273;
-  --color-ink-muted: #8d84a3;
-  --color-line: #e3dcf0;
-  --color-surface: #fffdfb;
-  --color-canvas: #ece7f5;
-  --color-hover: #e5ddf2;
-  --color-brand: #e8731c;
-  --color-brand-soft: #fce6d4;
+  --color-ink: #4a2f2a;
+  --color-ink-soft: #8a5c52;
+  --color-ink-muted: #bb978e;
+  --color-line: #f6dfe4;
+  --color-surface: #fffdfc;
+  --color-canvas: #fdeef1;
+  --color-hover: #fbe2e8;
+  --color-brand: #e05a7d;
+  --color-brand-soft: #fce0e8;
 }
 
 :root {
@@ -55,15 +55,15 @@ body {
 .rich-body ol { list-style: decimal; padding-left: 1.25rem; }
 .rich-body a { color: #2563eb; text-decoration: underline; }
 
-/* 노션 느낌의 얇은 스크롤바 (할로윈 라벤더 톤) */
+/* 노션 느낌의 얇은 스크롤바 (빼빼로 핑크 톤) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #cdc2e6; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #b9abda; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: #f2c3cf; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #ea9fb2; background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ── 할로윈 도트 장식 ─────────────────────────────── */
+/* ── 빼빼로 데이 도트 장식 ─────────────────────────────── */
 
-/* 박쥐·유령: 화면 위에서 좌우로 흔들리며 떠다닌다 (leafFall 재사용, 상시 은은하게) */
+/* 하트·빼빼로: 화면 위에서 좌우로 흔들리며 떨어진다 (leafFall 재사용, 상시 은은하게) */
 @keyframes leafFall {
   0%   { transform: translate(0, -30px) rotate(0deg); opacity: 0; }
   6%   { opacity: 0.95; }
