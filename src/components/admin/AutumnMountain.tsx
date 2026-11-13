@@ -1,23 +1,23 @@
 'use client'
 
 /*
- * 빼빼로 데이 도트 장식 + 꽃게 펫. (2026-11-09: 할로윈 → 빼빼로 데이 — 하트달·떨어지는 하트·초코 언덕·빼빼로·딸기·우유)
+ * 겨울 "소복한 설원 밤" 도트 장식 + 꽃게 펫. (2026-11-13: 빼빼로 데이 → 설원 밤 — 보름달·내리는 눈·눈 쌓인 전나무·눈더미·눈사람 탑·이글루·밤 모닥불)
  * 꽃게는 40ms 물리 루프로 돌아다니며: 클릭하면 말대꾸(친화력 증감), 드래그로 옮길 수 있고,
- * 헬리콥터로 타임라인까지 올라갔다 추락하고, 서핑하고, 오늘 날짜 칸에서 썬탠하고,
+ * 헬리콥터로 타임라인까지 올라갔다 추락하고, 눈썰매를 타고, 오늘 날짜 칸에서 달맞이하고,
  * 오늘 식단을 보며 침을 흘리고, 17시가 넘으면 차 옆에서 퇴근 준비를 하고, 비 오면 우산을 쓴다.
- * 장식은 클릭을 막지 않지만 꽃게 본체만 pointer-events 를 받는다.
+ * 장식은 클릭을 막지 않지만 꽃게 본체만 pointer-events 를 받는다. (리스킨은 색·픽셀·대사만; 물리/애니/상호작용은 불변)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-// 가을 산 팔레트 (2026-09-11: 바다 → 산). 능선은 멀수록 옅고 푸르게(대기원근).
-const GROUND = '#efd3bf' // 쿠키 크럼블 바닥
-const GROUND_DOT = '#e0bda4'
-const GROUND_LEAF = '#e05a7d22' // 바닥에 흩뿌린 딸기 스프링클
-const RIDGE_NEAR = '#8a5338' // 근경 — 진한 초코 언덕
-const RIDGE_MID = '#c98a63' // 중경 — 밀크 초코 언덕
-const RIDGE_FAR = '#f2c3cf' // 원경 — 딸기 크림 언덕
+// 설원 밤 팔레트. 깊은 남색 캔버스 위에 달빛 받은 설원·능선(멀수록 달빛 안개로 옅게, 대기원근).
+const GROUND = '#c8d5ee' // 달빛에 뽀얗게 빛나는 눈바닥
+const GROUND_DOT = '#a7b8de' // 눈결 그늘 점
+const GROUND_LEAF = '#dcefff55' // 바닥에 반짝이는 눈결정
+const RIDGE_NEAR = '#33436c' // 근경 — 가장 짙은 밤 능선
+const RIDGE_MID = '#566d9e' // 중경 — 달빛 어린 능선
+const RIDGE_FAR = '#8ea4cf' // 원경 — 달빛 안개에 녹는 능선
 
 const GROUND_Y = 2
 const RIDGE_Y = 30 // 능선 위 높이 — 비탈 미끄럼/계곡 담그기 때 게가 올라가는 y
@@ -59,35 +59,35 @@ const LINES = {
   pokeLow: ['...', '흥.', '너랑 말 안 해 {n}', '저리 가...', '건들지 마라 진짜', '(못 들은 척)', '오늘은 대화하고 싶지 않아'],
   pokeHigh: ['헤헤 {n} 왔구나', '오늘도 와줬네~', '심심했는데 잘 왔어', '{n} 최고야', '이따 빼빼로 탑 같이 쌓을래?', '너 오면 기분 좋아', '집게 하이파이브!'],
   pet: ['기분 좋다~', '오~ 부드러운 손길', '우리 좀 친해진 듯?', '한 번 더 쓰다듬어도 돼', '헤헤헤', '등딱지 광나지?'],
-  idle: ['오늘 하루도 달달하게~', '하트 달 예쁘다...', '빼빼로 다발 밑은 위험해...', '하트 맞으면 간지러워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '오늘 빼빼로 데이네~', '옆으로 걷는 게 제일 빨라', '빼빼로 세는 중... 하나, 둘...', '다람쥐한테 빼빼로 뺏겼어', '이 과자나라 관리자가 나야', '점심 뭐 먹었어?', '달콤한 냄새가 솔솔 나', '빼빼로 하나만 주라~'],
-  suntan: ['가을볕 쬐는 중... 방해 금지', '선크림 발랐으니까 괜찮아', '단풍 뷰 명당은 여기야', '가을볕에 등딱지 말리는 중~', '치이익... 익는 소리 아니지?'],
+  idle: ['오늘 하루도 포근하게~', '달빛이 참 곱다...', '큰 전나무 밑은 눈 쏟아져 위험해...', '눈송이 맞으면 간지러워', '오늘 할 일 다 끝냈어?', '{n} 일해라~', '오늘 밤 눈이 소복소복 와~', '옆으로 걷는 게 제일 빨라', '눈송이 세는 중... 하나, 둘...', '다람쥐가 솔방울 물고 갔어', '이 설원 관리자가 나야', '점심 뭐 먹었어?', '눈 냄새가 알싸하게 나', '따뜻한 코코아 한 잔 어때~'],
+  suntan: ['달빛 쬐는 중... 방해 금지', '눈밭에 등 대고 별 보는 중', '설경 명당은 여기야', '달빛에 등딱지 식히는 중~', '아 시원해... 눈이 포근해'],
   drool: ['오늘 메뉴 맛있겠구나...', '한 입만... 안 될까?', '군침이 싹 도네', '이거 내 몫도 있는 거지?', '냄새만 맡을게...'],
-  surf: ['비탈 좋다!!', '낙엽 보드는 옆으로 타는 거야', '우와아아~~', '능선 끝까지 간다~', '이게 바로 꽃게 낙엽타기'],
+  surf: ['비탈 좋다!!', '눈썰매는 옆으로 타는 거야', '우와아아~~', '능선 끝까지 간다~', '이게 바로 꽃게 눈썰매'],
   heli: ['타임라인 점검하러 출동!', '날 수 있을 것 같아!', '위에서 보면 다 보인다구', '두두두두두두'],
   heliCrash: ['아야야...', '다신 안 탄다...', '착륙은 원래 어려운 거야', '헬기 면허 따야겠다...', '별이 보여...'],
   car: ['슬슬 퇴근 준비...', '차 시동 걸어놨어', '6시 되면 바로 출발이야', '{n} 퇴근 안 해?', '트렁크에 모래 좀 싣고...', '내일 또 보자~', '퇴근길 막히기 전에 가야지'],
   rain: ['비 온다...', '우산 챙겼지 {n}?', '꿉꿉해...', '빗소리 좋다~', '등딱지에 빗방울 통통', '이런 날엔 파전에... 아니 아무것도 아니야'],
   drop: ['여기가 어디야?!', '함부로 옮기지 마!', '우와 순간이동?!', '어지러워...', '오? 여기 뷰 좋은데?', '납치는 신고감이야 {n}', '내려줘서 고마워...?'],
-  acorn: ['앗 하트!!', '머리에 하트가 톡!', '빼빼로 다발 밑은 피했어야 했는데...', '두근두근...', '간지러워!!'],
+  acorn: ['앗 눈덩이!!', '머리에 눈이 톡!', '전나무 밑은 피했어야 했는데...', '으 차가워!', '간지러워!!'],
   hot: ['나도 삶아지는 걸까..?', '어디선가 맛있는 냄새가 나...', '등딱지가 노릇노릇해지는 기분이야', '이러다 대게 아니라 찐게 된다', '계곡물도 미지근해...', '선크림이 버터처럼 녹아', '가을에 32도라니 말이 돼?', '아지랑이가 보여...'],
-  wind: ['바람이 너무 세!!', '집게로 나뭇가지 꽉 잡는 중', '낙엽이 눈에 들어가!!', '오늘은 낮게 다녀야겠어', '산바람이 사나운데?'],
+  wind: ['바람이 너무 세!!', '집게로 나뭇가지 꽉 잡는 중', '눈보라가 눈에 들어가!!', '오늘은 낮게 다녀야겠어', '산바람이 사나운데?'],
   thunder: ['천둥이다!! 숨어야 해!!', '번개 무서워...', '찌릿찌릿한 예감이 들어...', '피뢰침 없나?!', '하늘이 화났나 봐'],
   zapped: ['짜릿하다...⚡', '머리가 파마머리 됐어...', '충전 100% 완료...?', '번개 맛은 좀 맵네...', '지지직... 재부팅 중...'],
   blownStart: ['으아아 바람이!!', '날아간다아아아~~!!', '집게로 못 버티겠어!!', '누가 좀 잡아줘~~!'],
   blownCrash: ['쿵!! 아야...', '어디까지 날아온 거야...', '바람 반대로 걸을걸...', '착지 실패...'],
-  dig: ['낙엽 더미에 숨으면 아무도 몰라', '낙엽 속은 포근하다~', '잠수 아니고 잠엽(낙엽)이야', '나 찾아봐라~'],
-  digOut: ['푸하!! 답답했다', '낙엽 목욕 완료!', '아무도 못 찾았지?'],
+  dig: ['눈더미에 숨으면 아무도 몰라', '눈 속은 의외로 포근하다~', '잠수 아니고 잠설(눈)이야', '나 찾아봐라~'],
+  digOut: ['푸하!! 차가웠다', '눈 목욕 완료!', '아무도 못 찾았지?'],
   nap: ['잠깐 낮잠... 쿨쿨', '5분만 잘게...', '바람 소리 들으니 졸려...', '자장자장...'],
   napWake: ['누구야!!', '깜짝이야!! 자고 있었잖아!', '5분만 더...', '꿈에서 새우깡 먹고 있었는데!!'],
   dance: ['게다리 춤 타임!!', '옆으로 옆으로~ 옆으로 옆으로~', '흥이 났다 흥이 났어', '{n} 너도 춰봐'],
-  admire: ['이 빼빼로 탑, 내가 쌓은 거임', '달콤하게 멋지다...', '이 과자나라 빼빼로 탑 주인은 나야', '무너지지 마라...', '점점 높아지고 있어', '이 정도면 빼빼로 좀 주겠지'],
-  build: ['영차... 영차...', '빼빼로 한 상자만 더!', '집게로 상자를 고르고~', '빼빼로 탑 장인이 나야', '조금만 더 높이!', '초코 빼빼로가 최고지', '완벽한 빼빼로 탑을 쌓을 거야', '무너지지 마라 제발...'],
-  smashLow: ['앗! 내 빼빼로 탑...', '이제 막 시작했는데', '뭐야~ 다시 쌓지 뭐', '한 층밖에 안 됐는데...'],
-  smashMid: ['내 빼빼로 탑이... 왜...', '{n} 너무해...', '몇 층이나 쌓았는데!!', '아니 왜 무너뜨리는 거야ㅠㅠ', '반나절 걸린 건데...'],
+  admire: ['이 눈사람 탑, 내가 쌓은 거임', '포근하게 멋지다...', '이 설원 눈사람 주인은 나야', '무너지지 마라...', '점점 높아지고 있어', '이 정도면 칭찬 좀 받겠지'],
+  build: ['영차... 영차...', '눈덩이 하나만 더!', '집게로 눈을 꾹꾹 뭉치고~', '눈사람 탑 장인이 나야', '조금만 더 높이!', '눈은 야무지게 뭉쳐야 제맛', '완벽한 눈사람 탑을 쌓을 거야', '무너지지 마라 제발...'],
+  smashLow: ['앗! 내 눈사람 탑...', '이제 막 시작했는데', '뭐야~ 다시 쌓지 뭐', '한 층밖에 안 됐는데...'],
+  smashMid: ['내 눈사람 탑이... 왜...', '{n} 너무해...', '몇 층이나 쌓았는데!!', '아니 왜 무너뜨리는 거야ㅠㅠ', '반나절 걸린 건데...'],
   smashHigh: ['안돼애애애ㅠㅠㅠ', '내 인생의 역작이...', '몇 시간을 쌓았는데...!!', '{n}... 우리 이제 끝이야', '다신 안 쌓을 거야 흑흑', '집게가 부들부들 떨려...', '이건 만행이야...'],
   cooloff: ['계곡물 시원하다~~', '어푸어푸', '역시 게는 계곡이지', '더위 탈출 성공!'],
   morning: ['좋은 아침~ {n}', '모닝 약수 한 모금', '오늘도 화이팅이야', '아침 산공기가 제일 맑아'],
-  night: ['야근이야 {n}...? 나 졸려', '별이 예쁘다', '이제 그만 자자~', '밤산은 낭만이지'],
+  night: ['야근이야 {n}...? 나 졸려', '별이 쏟아진다', '이제 그만 자자~', '눈 오는 밤은 낭만이지'],
   friday: ['불금이다!!!', '내일 쉬는 날이지?!', '금요일엔 게도 신난다', '주말 계획 있어 {n}?'],
   crisp: ['으아아아 또 맞았어!!', '이번엔 진짜다...', '몸이... 타들어가...', '지지직...!!'],
   respawn: ['쇼쇼속~ 부활!', '푸하!! 다시 태어났다', '땅 파고 올라왔지롱', '재에서 부활한 불사조 게', '나 죽지 않아~', '깜짝 놀랐지 {n}?'],
@@ -101,8 +101,8 @@ const LINES = {
   recall: ['어제 배운 단어 {w}!', '{w}... 이거 맞지?', '{n}가 알려준 {w} 아직 기억해', '오늘의 단어는 {w}!', '{w}... 발음이 어려워', '나 {w} 알아! 똑똑하지?'],
 }
 
-/** 클릭 메뉴에서 줄 수 있는 간식 (이모지) */
-const SNACKS = ['🍫', '🍓', '🥛', '🍪', '💗', '🍬']
+/** 클릭 메뉴에서 줄 수 있는 간식 (이모지) — 겨울밤 야식 */
+const SNACKS = ['☕', '🍵', '🍠', '🥟', '🍢', '🌰']
 
 // ─────────────────────────── 픽셀 파츠
 
@@ -297,92 +297,111 @@ function Drool() {
   )
 }
 
-/** 참나무에서 떨어지는 도토리 — 게 머리에 맞는 그 녀석 */
-/** 떨어지는 하트 — 빼빼로 다발에서 톡 떨어져 게 머리에 맞는다 */
+/** 떨어지는 눈뭉치 — 큰 전나무에서 톡 떨어져 게 머리에 맞는다(펫이 줍는 눈싸움 공) */
 function Acorn() {
   return (
     <svg viewBox="0 0 10 10" className="pixelated h-[10px] w-[10px]" aria-hidden>
-      <rect x="1" y="0" width="3" height="2" fill="#e05a7d" />
-      <rect x="6" y="0" width="3" height="2" fill="#e05a7d" />
-      <rect x="0" y="2" width="10" height="2" fill="#e05a7d" />
-      <rect x="1" y="4" width="8" height="2" fill="#e05a7d" />
-      <rect x="2" y="6" width="6" height="1" fill="#e05a7d" />
-      <rect x="3" y="7" width="4" height="1" fill="#e05a7d" />
-      <rect x="4" y="8" width="2" height="1" fill="#e05a7d" />
-      <rect x="2" y="1" width="1" height="1" fill="#ffffff" opacity="0.8" />
+      <rect x="3" y="0" width="4" height="1" fill="#eaf3ff" />
+      <rect x="2" y="1" width="6" height="1" fill="#eaf3ff" />
+      <rect x="1" y="2" width="8" height="2" fill="#eaf3ff" />
+      <rect x="1" y="4" width="8" height="2" fill="#d4e6ff" />
+      <rect x="2" y="6" width="6" height="1" fill="#bcd0f2" />
+      <rect x="3" y="7" width="4" height="1" fill="#bcd0f2" />
+      <rect x="4" y="8" width="2" height="1" fill="#a7b8de" />
+      <rect x="2" y="2" width="2" height="1" fill="#ffffff" opacity="0.9" />
     </svg>
   )
 }
 
-/** 빼빼로 다발 — 컵에 빼빼로가 가득. 게가 지나면 하트가 톡 떨어진다 */
+/** 눈 소복이 쌓인 큰 전나무 — 장식 없는 침엽수. 게가 지나면 가지에서 눈송이가 톡 떨어진다 */
 function OakTree() {
-  const sticks = [
-    { x: 30, h: 76, choc: '#6b4226' },
-    { x: 37, h: 86, choc: '#7a4a2c' },
-    { x: 44, h: 70, choc: '#e05a7d' }, // 딸기 빼빼로
-    { x: 51, h: 88, choc: '#6b4226' },
-    { x: 58, h: 74, choc: '#7a4a2c' },
-    { x: 65, h: 82, choc: '#e8d8c0' }, // 화이트 빼빼로
+  const PINE = '#2c5a46'
+  const PINE_DARK = '#214536'
+  const SNOW = '#eaf3ff'
+  const cx = 48
+  // 세 단 삼각: 위는 좁고 아래로 넓어진다. 단마다 윗가지에 소복한 눈.
+  const tiers = [
+    { top: 6, bottom: 30, halfTop: 1, halfBot: 12 },
+    { top: 24, bottom: 52, halfTop: 4, halfBot: 20 },
+    { top: 46, bottom: 74, halfTop: 8, halfBot: 27 },
   ]
+  const rows: React.ReactNode[] = []
+  tiers.forEach((t, ti) => {
+    const h = t.bottom - t.top
+    for (let y = t.top; y < t.bottom; y++) {
+      const half = Math.round(t.halfTop + (t.halfBot - t.halfTop) * ((y - t.top) / h))
+      rows.push(<rect key={`p${ti}-${y}`} x={cx - half} y={y} width={half * 2} height={1} fill={PINE} />)
+      rows.push(<rect key={`d${ti}-${y}`} x={cx + Math.max(1, half - 4)} y={y} width={Math.min(half, 4)} height={1} fill={PINE_DARK} />)
+    }
+    // 각 단 봉우리에 얹힌 눈
+    for (let k = 0; k < 4; k++) {
+      const half = Math.round(t.halfTop + (t.halfBot - t.halfTop) * (k / h))
+      rows.push(<rect key={`s${ti}-${k}`} x={cx - half} y={t.top + k} width={half * 2} height={1} fill={k === 0 ? '#ffffff' : SNOW} />)
+    }
+  })
   return (
     <svg viewBox="0 0 96 96" className="pixelated h-[96px] w-[96px]" aria-hidden>
-      {/* 빼빼로 막대들 */}
       <g className="palm-sway">
-        {sticks.map((st, i) => (
-          <g key={i}>
-            {/* 과자 막대(연노랑) 아래쪽 + 코팅 위쪽 */}
-            <rect x={st.x} y={96 - st.h} width="4" height={st.h - 18} fill={st.choc} />
-            <rect x={st.x} y={96 - st.h} width="1" height={st.h - 18} fill="#ffffff" opacity="0.25" />
-            <rect x={st.x} y={96 - 18} width="4" height={8} fill="#f2d9a6" />
-            {/* 토핑 알갱이 */}
-            <rect x={st.x + 1} y={96 - st.h + 4} width="1" height="1" fill="#fff4f7" />
-            <rect x={st.x + 2} y={96 - st.h + 12} width="1" height="1" fill="#fff4f7" />
-          </g>
-        ))}
+        {rows}
+        {/* 가지에 걸쳐 쌓인 눈뭉치 */}
+        <rect x="30" y="50" width="6" height="2" fill={SNOW} />
+        <rect x="58" y="44" width="6" height="2" fill={SNOW} />
+        <rect x="34" y="66" width="7" height="2" fill={SNOW} />
+        <rect x="55" y="64" width="7" height="2" fill={SNOW} />
       </g>
-      {/* 컵 */}
-      <rect x="26" y="78" width="44" height="4" fill="#f5b8c6" />
-      <rect x="28" y="82" width="40" height="12" fill="#ef8aa6" />
-      <rect x="28" y="82" width="4" height="12" fill="#f7c4d1" />
-      <rect x="30" y="94" width="36" height="2" fill="#d96f8e" />
-      {/* 컵에 그려진 하트 */}
-      <rect x="44" y="85" width="2" height="1" fill="#fff4f7" />
-      <rect x="48" y="85" width="2" height="1" fill="#fff4f7" />
-      <rect x="43" y="86" width="8" height="2" fill="#fff4f7" />
-      <rect x="45" y="88" width="4" height="1" fill="#fff4f7" />
+      {/* 줄기 */}
+      <rect x="44" y="72" width="8" height="18" fill="#4a3426" />
+      <rect x="44" y="72" width="2" height="18" fill="#5c4634" />
+      {/* 밑동 눈더미 */}
+      <rect x="28" y="86" width="40" height="6" fill="#d7e0f2" />
+      <rect x="28" y="85" width="40" height="1" fill="#e8f1ff" />
+      <rect x="30" y="91" width="36" height="2" fill="#c3d2ef" />
     </svg>
   )
 }
 
-/** 작은 빼빼로 컵 — 반대편 배경 소품 */
+/** 작은 눈 덮인 어린 전나무 — 반대편 배경 소품 */
 function GinkgoTree() {
-  const sticks = [
-    { x: 24, h: 58, choc: '#6b4226' },
-    { x: 30, h: 66, choc: '#e05a7d' },
-    { x: 36, h: 54, choc: '#7a4a2c' },
-    { x: 42, h: 62, choc: '#e8d8c0' },
+  const PINE = '#2c5a46'
+  const PINE_DARK = '#214536'
+  const SNOW = '#eaf3ff'
+  const cx = 34
+  const tiers = [
+    { top: 8, bottom: 32, halfTop: 1, halfBot: 11 },
+    { top: 28, bottom: 58, halfTop: 5, halfBot: 19 },
   ]
+  const rows: React.ReactNode[] = []
+  tiers.forEach((t, ti) => {
+    const h = t.bottom - t.top
+    for (let y = t.top; y < t.bottom; y++) {
+      const half = Math.round(t.halfTop + (t.halfBot - t.halfTop) * ((y - t.top) / h))
+      rows.push(<rect key={`p${ti}-${y}`} x={cx - half} y={y} width={half * 2} height={1} fill={PINE} />)
+      rows.push(<rect key={`d${ti}-${y}`} x={cx + Math.max(1, half - 3)} y={y} width={Math.min(half, 3)} height={1} fill={PINE_DARK} />)
+    }
+    for (let k = 0; k < 3; k++) {
+      const half = Math.round(t.halfTop + (t.halfBot - t.halfTop) * (k / h))
+      rows.push(<rect key={`s${ti}-${k}`} x={cx - half} y={t.top + k} width={half * 2} height={1} fill={k === 0 ? '#ffffff' : SNOW} />)
+    }
+  })
   return (
     <svg viewBox="0 0 68 80" className="pixelated h-[80px] w-[68px]" aria-hidden>
       <g className="palm-sway">
-        {sticks.map((st, i) => (
-          <g key={i}>
-            <rect x={st.x} y={80 - st.h} width="4" height={st.h - 14} fill={st.choc} />
-            <rect x={st.x} y={80 - st.h} width="1" height={st.h - 14} fill="#ffffff" opacity="0.25" />
-            <rect x={st.x} y={80 - 14} width="4" height={6} fill="#f2d9a6" />
-          </g>
-        ))}
+        {rows}
+        <rect x="24" y="50" width="5" height="2" fill={SNOW} />
+        <rect x="40" y="46" width="5" height="2" fill={SNOW} />
       </g>
-      <rect x="20" y="62" width="30" height="4" fill="#f5b8c6" />
-      <rect x="22" y="66" width="26" height="10" fill="#ef8aa6" />
-      <rect x="22" y="66" width="3" height="10" fill="#f7c4d1" />
-      <rect x="24" y="76" width="22" height="2" fill="#d96f8e" />
+      {/* 줄기 */}
+      <rect x="31" y="56" width="6" height="16" fill="#4a3426" />
+      {/* 밑동 눈더미 */}
+      <rect x="20" y="70" width="28" height="5" fill="#d7e0f2" />
+      <rect x="20" y="69" width="28" height="1" fill="#e8f1ff" />
+      <rect x="22" y="75" width="24" height="2" fill="#c3d2ef" />
     </svg>
   )
 }
 
-/** 빼빼로 꽂이 — 바닥에 꽂힌 얇은 빼빼로 막대들. 살랑인다. */
-function Reeds({ n = 4, tone = '#7a4a2c' }: { n?: number; tone?: string }) {
+/** 서리 맞은 마른 갈대 — 눈밭 위로 삐죽 솟아 살랑인다. 끝엔 흰 서릿발. */
+function Reeds({ n = 4, tone = '#6b7a9c' }: { n?: number; tone?: string }) {
   const W = n * 9 + 8
   const H = 34
   return (
@@ -396,12 +415,12 @@ function Reeds({ n = 4, tone = '#7a4a2c' }: { n?: number; tone?: string }) {
           const plume = 13 // 이삭 길이
           return (
             <g key={i}>
-              {/* 줄기 */}
-              <rect x={x} y={baseY + stemH - 6} width="2" height="6" fill="#f2d9a6" />
-              {/* 잎 한 장 — 밑동에서 비스듬히 */}
+              {/* 줄기 밑동 */}
+              <rect x={x} y={baseY + stemH - 6} width="2" height="6" fill="#8595b5" />
+              {/* 마른 줄기 — 밑동에서 비스듬히 */}
               <rect x={x} y={baseY} width="2" height={stemH - 6} fill={tone} />
-              <rect x={x} y={baseY} width="1" height={stemH - 6} fill="#ffffff" opacity="0.25" />
-              {/* 깃털 이삭 — 아래는 통통, 위로 갈수록 1px 로 수렴 */}
+              <rect x={x} y={baseY} width="1" height={stemH - 6} fill="#ffffff" opacity="0.2" />
+              {/* 서릿발 이삭 — 아래는 통통, 위로 갈수록 1px 로 수렴. 끝은 흰 서리 */}
               {Array.from({ length: plume }, (_, k) => {
                 const t = k / (plume - 1)
                 const w = Math.max(1, Math.round(4 - t * 3))
@@ -413,7 +432,7 @@ function Reeds({ n = 4, tone = '#7a4a2c' }: { n?: number; tone?: string }) {
                     y={baseY - k}
                     width={w}
                     height="1"
-                    fill={t > 0.6 ? '#fff4f7' : '#e05a7d'}
+                    fill={t > 0.5 ? '#eef6ff' : '#9fb0cf'}
                   />
                 )
               })}
@@ -428,92 +447,89 @@ function Reeds({ n = 4, tone = '#7a4a2c' }: { n?: number; tone?: string }) {
   )
 }
 
-/** 딸기우유 팩 — 게가 뒤에 숨는 곳 */
+/** 소복이 쌓인 눈더미(눈두둑) — 게가 뒤에 숨는 포근한 둔덕. 윗면은 달빛, 아랫면은 푸른 그늘 */
 function LeafPile() {
   return (
     <svg viewBox="0 0 20 26" className="pixelated h-[26px] w-[20px]" aria-hidden>
-      {/* 팩 지붕(접힌 삼각) */}
-      <rect x="8" y="0" width="4" height="2" fill="#f5b8c6" />
-      <rect x="6" y="2" width="8" height="2" fill="#f7c4d1" />
-      {/* 몸통 */}
-      <rect x="4" y="4" width="12" height="20" fill="#fdeef1" />
-      <rect x="4" y="4" width="3" height="20" fill="#ffffff" />
-      <rect x="13" y="4" width="3" height="20" fill="#f3d3da" />
-      {/* 라벨 띠(딸기 핑크) */}
-      <rect x="4" y="10" width="12" height="6" fill="#ef8aa6" />
-      {/* 라벨 속 딸기 한 알 */}
-      <rect x="8" y="11" width="4" height="3" fill="#e05a7d" />
-      <rect x="9" y="10" width="2" height="1" fill="#6fae57" />
-      <rect x="9" y="12" width="1" height="1" fill="#fff4f7" />
-      {/* 빨대 */}
-      <rect x="11" y="-0" width="1" height="4" fill="#d96f8e" />
+      {/* 봉긋한 눈더미 */}
+      <rect x="7" y="7" width="6" height="2" fill="#e8f1ff" />
+      <rect x="4" y="9" width="12" height="2" fill="#e8f1ff" />
+      <rect x="2" y="11" width="16" height="3" fill="#dce8fb" />
+      <rect x="1" y="14" width="18" height="4" fill="#c3d2ef" />
+      <rect x="0" y="18" width="20" height="4" fill="#a7b8de" />
+      <rect x="0" y="22" width="20" height="3" fill="#95a8d2" />
+      {/* 윗면 달빛 글린트 */}
+      <rect x="7" y="7" width="3" height="1" fill="#ffffff" />
+      <rect x="5" y="10" width="4" height="1" fill="#ffffff" opacity="0.8" />
+      {/* 반짝이는 눈결정 */}
+      <rect x="13" y="13" width="1" height="1" fill="#ffffff" />
+      <rect x="4" y="16" width="1" height="1" fill="#eaf4ff" />
+      <rect x="15" y="19" width="1" height="1" fill="#eaf4ff" />
     </svg>
   )
 }
 
-/** 빼빼로 한 개 — 길에 떨어진 막대 과자. tone 으로 코팅 색(초코/딸기)을 바꾼다. */
-function Chestnut({ tone = '#6b4226', dark = '#e05a7d' }: { tone?: string; dark?: string }) {
+/** 작은 눈뭉치 — 길에 뒹구는 둥근 눈덩이. tone=눈빛, dark=움푹 그늘 자국. */
+function Chestnut({ tone = '#dbe7ff', dark = '#a7b8de' }: { tone?: string; dark?: string }) {
   return (
     <svg viewBox="0 0 16 6" className="pixelated h-[6px] w-[16px]" aria-hidden>
-      {/* 손잡이(과자) */}
-      <rect x="0" y="2" width="5" height="2" fill="#f2d9a6" />
-      {/* 코팅(초코/딸기) */}
-      <rect x="5" y="2" width="11" height="2" fill={tone} />
-      <rect x="5" y="2" width="11" height="1" fill="#ffffff" opacity="0.2" />
-      {/* 토핑 알갱이 */}
-      <rect x="8" y="2" width="1" height="1" fill={dark} />
-      <rect x="12" y="3" width="1" height="1" fill="#fff4f7" />
+      {/* 눈덩이 윗면 */}
+      <rect x="5" y="0" width="6" height="1" fill={tone} />
+      <rect x="3" y="1" width="10" height="2" fill={tone} />
+      {/* 아랫면 그늘 */}
+      <rect x="2" y="3" width="12" height="2" fill={dark} />
+      <rect x="4" y="5" width="8" height="1" fill={dark} />
+      {/* 달빛 글린트 */}
+      <rect x="5" y="1" width="3" height="1" fill="#ffffff" opacity="0.85" />
     </svg>
   )
 }
 
-/** 딸기 한 알 — 길에 놓인 새빨간 딸기 */
+/** 솔방울 한 개 — 눈 위에 놓인, 서리 살짝 묻은 겨울 숲 오브제 */
 function Mushroom() {
   return (
     <svg viewBox="0 0 14 16" className="pixelated h-[16px] w-[14px]" aria-hidden>
-      {/* 꼭지(잎) */}
-      <rect x="4" y="0" width="6" height="2" fill="#5a9a44" />
-      <rect x="3" y="1" width="3" height="2" fill="#6fae57" />
-      <rect x="8" y="1" width="3" height="2" fill="#6fae57" />
-      <rect x="6" y="1" width="2" height="2" fill="#4f8a3d" />
-      {/* 딸기 몸통(아래로 뾰족) */}
-      <rect x="2" y="3" width="10" height="4" fill="#e23e5e" />
-      <rect x="2" y="7" width="10" height="3" fill="#e23e5e" />
-      <rect x="3" y="10" width="8" height="2" fill="#d6304f" />
-      <rect x="4" y="12" width="6" height="2" fill="#d6304f" />
-      <rect x="6" y="14" width="2" height="2" fill="#c42742" />
-      {/* 하이라이트 */}
-      <rect x="3" y="4" width="3" height="2" fill="#f27088" />
-      {/* 씨앗 */}
-      <rect x="5" y="5" width="1" height="1" fill="#ffe08a" />
-      <rect x="8" y="6" width="1" height="1" fill="#ffe08a" />
-      <rect x="4" y="8" width="1" height="1" fill="#ffe08a" />
-      <rect x="9" y="9" width="1" height="1" fill="#ffe08a" />
-      <rect x="6" y="11" width="1" height="1" fill="#ffe08a" />
+      {/* 윗면 서리 */}
+      <rect x="5" y="0" width="4" height="1" fill="#eaf4ff" />
+      <rect x="4" y="1" width="6" height="1" fill="#eaf4ff" />
+      {/* 솔방울 몸통(아래로 뾰족) */}
+      <rect x="3" y="2" width="8" height="3" fill="#8a6240" />
+      <rect x="3" y="5" width="8" height="3" fill="#7a5436" />
+      <rect x="4" y="8" width="6" height="3" fill="#6b4a30" />
+      <rect x="5" y="11" width="4" height="2" fill="#5c3f28" />
+      <rect x="6" y="13" width="2" height="2" fill="#4f351f" />
+      {/* 비늘 무늬(밝은 점) */}
+      <rect x="5" y="3" width="1" height="1" fill="#a97b4f" />
+      <rect x="8" y="4" width="1" height="1" fill="#a97b4f" />
+      <rect x="4" y="6" width="1" height="1" fill="#a97b4f" />
+      <rect x="7" y="6" width="1" height="1" fill="#a97b4f" />
+      <rect x="9" y="7" width="1" height="1" fill="#a97b4f" />
+      <rect x="5" y="9" width="1" height="1" fill="#a97b4f" />
+      <rect x="8" y="9" width="1" height="1" fill="#a97b4f" />
     </svg>
   )
 }
 
 /**
- * 게가 쌓는 빼빼로 탑. level(1~60)이 올라갈수록 빼빼로 상자가 계속 위로 쌓인다.
+ * 게가 쌓는 눈사람 탑. level(1~60)이 올라갈수록 눈덩이가 계속 위로 쌓인다.
  * 위로 갈수록 작아지고, 클릭하면 무너뜨릴 수 있다(onSmash).
  */
 function Cairn({ level, smashing, onSmash }: { level: number; smashing: boolean; onSmash: () => void }) {
   if (level <= 0 && !smashing) return null
   const L = Math.max(1, level)
-  const STONE_H = 6 // 돌 한 층 — 너무 납작하면 계단처럼 보인다
-  const BASE_H = 7 // 바닥 받침돌
-  const baseW = 24 + Math.min(L, 10) // 폭은 좁게: 케언은 넓적한 탑이 아니라 갸름한 돌무더기
+  const STONE_H = 6 // 눈덩이 한 층 — 너무 납작하면 계단처럼 보인다
+  const BASE_H = 7 // 바닥 받침 눈덩이
+  const baseW = 24 + Math.min(L, 10) // 폭은 좁게: 넓적한 탑이 아니라 갸름하게 포갠 눈덩이
   const topW = 9
-  const H = BASE_H + L * STONE_H + 10 // 꼭대기 꼭지 공간
+  const H = BASE_H + L * STONE_H + 10 // 꼭대기 머리 공간
   const cx = baseW / 2
-  const TONES = ['#6b4226', '#e05a7d', '#e8d8c0'] // 빼빼로 상자 3톤(초코·딸기·화이트)
+  const TONES = ['#eaf3ff', '#cdddf7', '#a9c0e8'] // 눈덩이 3톤(달빛면·중간·그늘)
 
   const rects: React.ReactNode[] = []
-  // 바닥 받침 상자
-  rects.push(<rect key="base-t" x={2} y={H - BASE_H} width={baseW - 4} height={1} fill="#8a5338" />)
-  rects.push(<rect key="base" x={0} y={H - BASE_H + 1} width={baseW} height={BASE_H - 2} fill="#6b4226" />)
-  rects.push(<rect key="base-b" x={2} y={H - 1} width={baseW - 4} height={1} fill="#4f2f1c" />)
+  // 바닥 받침 눈덩이
+  rects.push(<rect key="base-t" x={2} y={H - BASE_H} width={baseW - 4} height={1} fill="#cdddf7" />)
+  rects.push(<rect key="base" x={0} y={H - BASE_H + 1} width={baseW} height={BASE_H - 2} fill="#a9c0e8" />)
+  rects.push(<rect key="base-b" x={2} y={H - 1} width={baseW - 4} height={1} fill="#8ba0cc" />)
   // 돌을 위로 계속 쌓는다. 각 돌은 [윗면 좁게 / 배 넓게 / 밑면 좁게] 3단으로 그려
   // 각진 계단이 아니라 둥근 강돌이 포개진 모양이 된다.
   for (let i = 0; i < L; i++) {
@@ -523,22 +539,28 @@ function Cairn({ level, smashing, onSmash }: { level: number; smashing: boolean;
     const y = H - BASE_H - (i + 1) * STONE_H
     const x = Math.round(cx - w / 2) + [(-2), 1, 2, -1, 0][i % 5] // 어긋나게 쌓아 손맛
     const tone = TONES[i % 3]
-    rects.push(<rect key={`s${i}`} x={x + 2} y={y} width={w - 4} height={1} fill="#ffffff" opacity={0.3} />)
+    rects.push(<rect key={`s${i}`} x={x + 2} y={y} width={w - 4} height={1} fill="#ffffff" opacity={0.5} />)
     rects.push(<rect key={`t${i}`} x={x + 1} y={y + 1} width={w - 2} height={1} fill={tone} />)
     rects.push(<rect key={`b${i}`} x={x} y={y + 2} width={w} height={2} fill={tone} />)
-    rects.push(<rect key={`u${i}`} x={x + 1} y={y + 4} width={w - 2} height={1} fill="#00000033" />)
-    // 몇 층마다 상자 앞면 작은 하트 라벨
+    rects.push(<rect key={`u${i}`} x={x + 1} y={y + 4} width={w - 2} height={1} fill="#1b224022" />)
+    // 몇 층마다 눈덩이 앞면 숯 단추
     if (i % 3 === 1 && w > 14) {
-      rects.push(<rect key={`h${i}`} x={x + Math.floor(w / 2) - 1} y={y + 2} width={2} height={1} fill="#fff4f7" />)
+      rects.push(<rect key={`h${i}`} x={x + Math.floor(w / 2) - 1} y={y + 2} width={2} height={1} fill="#4a5775" />)
     }
   }
-  // 꼭대기: 리본 하트
+  // 꼭대기: 눈사람 머리(숯 눈·당근 코·가지 팔)
   const topY = H - BASE_H - L * STONE_H
-  rects.push(<rect key="h1" x={cx - 3} y={topY - 5} width={2} height={1} fill="#e05a7d" />)
-  rects.push(<rect key="h2" x={cx + 1} y={topY - 5} width={2} height={1} fill="#e05a7d" />)
-  rects.push(<rect key="h3" x={cx - 3} y={topY - 4} width={6} height={2} fill="#e05a7d" />)
-  rects.push(<rect key="h4" x={cx - 2} y={topY - 2} width={4} height={1} fill="#e05a7d" />)
-  rects.push(<rect key="h5" x={cx - 1} y={topY - 1} width={2} height={1} fill="#e05a7d" />)
+  // 가지 팔 — 맨 윗 눈덩이에서 양옆으로
+  rects.push(<rect key="arm-l" x={cx - 9} y={topY + 2} width={5} height={1} fill="#4a3426" />)
+  rects.push(<rect key="arm-r" x={cx + 4} y={topY + 2} width={5} height={1} fill="#4a3426" />)
+  // 머리(작은 눈덩이)
+  rects.push(<rect key="hd-t" x={cx - 3} y={topY - 6} width={6} height={1} fill="#ffffff" />)
+  rects.push(<rect key="hd" x={cx - 4} y={topY - 5} width={8} height={4} fill="#eaf3ff" />)
+  rects.push(<rect key="hd-b" x={cx - 3} y={topY - 1} width={6} height={1} fill="#cdddf7" />)
+  // 숯 눈 + 당근 코
+  rects.push(<rect key="ey1" x={cx - 2} y={topY - 4} width={1} height={1} fill="#1b2240" />)
+  rects.push(<rect key="ey2" x={cx + 1} y={topY - 4} width={1} height={1} fill="#1b2240" />)
+  rects.push(<rect key="nose" x={cx} y={topY - 3} width={2} height={1} fill="#ff8a3c" />)
 
   return (
     <svg
@@ -547,71 +569,76 @@ function Cairn({ level, smashing, onSmash }: { level: number; smashing: boolean;
       className={`pixelated pointer-events-auto cursor-pointer ${smashing ? 'cairn-smash' : ''}`}
       onClick={onSmash}
       role="button"
-      aria-label="빼빼로 탑 무너뜨리기"
+      aria-label="눈사람 탑 무너뜨리기"
     >
       {rects}
     </svg>
   )
 }
 
-/** 초코 퐁듀 — 냄비 속 초콜릿이 보글보글, 딸기 꼬치가 담겨 있다 */
+/** 눈밭의 밤 모닥불 — 차가운 푸른 밤 속 유일한 따뜻한 발광 초점. 둘레엔 데워진 눈 */
 function Campfire() {
   return (
     <svg viewBox="0 0 24 24" className="pixelated h-[24px] w-[24px]" aria-hidden>
-      {/* 끓는 초코 (흔들림) */}
+      {/* 데워진 눈 둘레 */}
+      <rect x="2" y="20" width="20" height="3" fill="#dbe4f5" />
+      <rect x="2" y="19" width="20" height="1" fill="#eef4ff" />
+      {/* 불꽃 (타닥타닥 흔들림) */}
       <g className="fire-flicker">
-        <rect x="6" y="10" width="12" height="3" fill="#7a4a2c" />
-        <rect x="7" y="9" width="4" height="2" fill="#94603a" />
-        <rect x="13" y="9" width="3" height="2" fill="#94603a" />
+        <rect x="9" y="6" width="6" height="4" fill="#ff7a3c" />
+        <rect x="8" y="10" width="8" height="6" fill="#ff7a3c" />
+        <rect x="10" y="3" width="3" height="4" fill="#ffb347" />
+        <rect x="10" y="9" width="4" height="5" fill="#ffd98a" />
+        <rect x="11" y="12" width="2" height="3" fill="#fff3c0" />
+        <rect x="7" y="13" width="2" height="3" fill="#ff9b4d" />
+        <rect x="15" y="12" width="2" height="4" fill="#ff9b4d" />
       </g>
-      {/* 딸기 꼬치 */}
-      <rect x="10" y="3" width="1" height="7" fill="#c9a063" />
-      <rect x="8" y="2" width="4" height="3" fill="#e23e5e" />
-      <rect x="9" y="1" width="2" height="1" fill="#5a9a44" />
-      {/* 냄비 */}
-      <rect x="4" y="12" width="16" height="2" fill="#f2c3cf" />
-      <rect x="3" y="13" width="18" height="2" fill="#ef8aa6" />
-      <rect x="4" y="15" width="16" height="4" fill="#e05a7d" />
-      <rect x="6" y="19" width="12" height="2" fill="#d6304f" />
-      {/* 광택·다리 */}
-      <rect x="4" y="13" width="2" height="4" fill="#f7c4d1" />
-      <rect x="6" y="21" width="2" height="2" fill="#d6304f" />
-      <rect x="16" y="21" width="2" height="2" fill="#d6304f" />
-      {/* 피어오르는 김(달콤) */}
-      <rect className="ember-rise" x="8" y="6" width="1" height="2" fill="#c9a063" />
-      <rect className="ember-rise" x="15" y="5" width="1" height="2" fill="#b0824f" style={{ animationDelay: '0.8s' }} />
+      {/* 장작 */}
+      <rect x="4" y="18" width="16" height="2" fill="#4a3426" />
+      <rect x="5" y="17" width="5" height="1" fill="#5c4230" />
+      <rect x="14" y="17" width="5" height="1" fill="#5c4230" />
+      <rect x="6" y="18" width="12" height="1" fill="#3a281a" />
+      {/* 피어오르는 불똥 */}
+      <rect className="ember-rise" x="8" y="5" width="1" height="2" fill="#ffcf7a" />
+      <rect className="ember-rise" x="15" y="4" width="1" height="2" fill="#ff9b4d" style={{ animationDelay: '0.8s' }} />
     </svg>
   )
 }
 
-/** 초코 하트 — 반질반질한 큼직한 초콜릿 하트 */
+/** 이글루(눈집) — 눈벽돌 돔 + 어두운 아치 입구. 포근한 밤 쉼터 */
 function Tent() {
   return (
     <svg viewBox="0 0 34 30" className="pixelated h-[30px] w-[34px]" aria-hidden>
-      {/* 봉우리 */}
-      <rect x="6" y="2" width="9" height="4" fill="#6b4226" />
-      <rect x="19" y="2" width="9" height="4" fill="#6b4226" />
-      {/* 몸통 */}
-      <rect x="4" y="6" width="26" height="6" fill="#6b4226" />
-      <rect x="6" y="12" width="22" height="4" fill="#5c3821" />
-      <rect x="9" y="16" width="16" height="4" fill="#5c3821" />
-      <rect x="12" y="20" width="10" height="3" fill="#4f2f1c" />
-      <rect x="15" y="23" width="4" height="2" fill="#4f2f1c" />
-      {/* 반질 하이라이트 */}
-      <rect x="8" y="4" width="5" height="3" fill="#8a5a38" />
-      <rect x="7" y="7" width="3" height="3" fill="#8a5a38" />
-      {/* 화이트 초코 드리즐 */}
-      <rect x="18" y="5" width="1" height="4" fill="#f2e6d6" />
-      <rect x="19" y="9" width="1" height="3" fill="#f2e6d6" />
-      <rect x="18" y="12" width="1" height="3" fill="#f2e6d6" />
-      <rect x="22" y="7" width="1" height="4" fill="#f2e6d6" />
+      {/* 돔 (눈벽돌) */}
+      <rect x="10" y="2" width="14" height="3" fill="#d7e3fb" />
+      <rect x="6" y="5" width="22" height="3" fill="#cfdcf6" />
+      <rect x="3" y="8" width="28" height="4" fill="#d7e3fb" />
+      <rect x="2" y="12" width="30" height="5" fill="#cfdcf6" />
+      <rect x="2" y="17" width="30" height="6" fill="#c3d2ef" />
+      {/* 윗광(달빛) */}
+      <rect x="12" y="2" width="6" height="1" fill="#f3f7ff" />
+      <rect x="7" y="5" width="8" height="1" fill="#eaf1ff" />
+      {/* 벽돌 이음선 */}
+      <rect x="2" y="11" width="30" height="1" fill="#a7b8de" />
+      <rect x="2" y="16" width="30" height="1" fill="#a7b8de" />
+      <rect x="12" y="8" width="1" height="3" fill="#a7b8de" />
+      <rect x="20" y="8" width="1" height="3" fill="#a7b8de" />
+      <rect x="8" y="12" width="1" height="4" fill="#a7b8de" />
+      <rect x="17" y="12" width="1" height="4" fill="#a7b8de" />
+      <rect x="25" y="12" width="1" height="4" fill="#a7b8de" />
+      {/* 아치 입구(어두움) */}
+      <rect x="14" y="13" width="6" height="1" fill="#b7c6e6" />
+      <rect x="13" y="14" width="8" height="2" fill="#1a2440" />
+      <rect x="12" y="16" width="10" height="7" fill="#1a2440" />
+      {/* 바닥 눈 */}
+      <rect x="2" y="23" width="30" height="2" fill="#aebfe0" />
     </svg>
   )
 }
 
-/** 둥둥 떠가는 하트 무리 — 두근두근 커졌다 작아진다 */
+/** 밤하늘을 가로지르는 겨울 철새 떼 — 달빛 받은 실루엣 V자 무리 */
 function GooseFlock() {
-  const tones = ['#f07698', '#e05a7d', '#f5b8c6', '#ef8aa6', '#f07698']
+  const tones = ['#1b2744', '#2c3650', '#3a4a74', '#333d58', '#1b2744']
   return (
     <svg viewBox="0 0 56 22" className="pixelated h-[22px] w-[56px]" aria-hidden>
       {[
@@ -636,16 +663,20 @@ function GooseFlock() {
   )
 }
 
-/** 다람쥐 — 낙엽 사이에서 포르르 뛰어오른다 */
+/** 다람쥐 — 눈밭 사이에서 포르르 뛰어오른다. 겨울 채비(목도리·솔방울·서리 꼬리) */
 function Squirrel() {
   return (
     <svg viewBox="0 0 20 16" className="pixelated h-[16px] w-[20px]" aria-hidden>
-      {/* 꼬리 */}
+      {/* 꼬리 (끝에 서리) */}
       <rect x="14" y="2" width="5" height="9" fill="#a8713e" />
       <rect x="16" y="0" width="4" height="5" fill="#c08a52" />
+      <rect x="16" y="0" width="4" height="1" fill="#e8eefb" />
       {/* 몸통 */}
       <rect x="5" y="5" width="10" height="7" fill="#b07a45" />
       <rect x="6" y="10" width="8" height="3" fill="#c9975e" />
+      {/* 아이스블루 목도리 */}
+      <rect x="4" y="9" width="9" height="2" fill="#7cc2f0" />
+      <rect x="4" y="11" width="3" height="2" fill="#5fb0e6" />
       {/* 머리 */}
       <rect x="1" y="4" width="6" height="6" fill="#b07a45" />
       <rect x="1" y="2" width="2" height="3" fill="#96652f" />
@@ -654,8 +685,9 @@ function Squirrel() {
       {/* 다리 */}
       <rect x="6" y="12" width="3" height="3" fill="#96652f" />
       <rect x="11" y="12" width="3" height="3" fill="#96652f" />
-      {/* 물고 있는 도토리 */}
-      <rect x="0" y="8" width="3" height="3" fill="#c98a4b" />
+      {/* 물고 있는 솔방울 */}
+      <rect x="0" y="8" width="3" height="3" fill="#6b4a30" />
+      <rect x="0" y="8" width="3" height="1" fill="#8a6240" />
     </svg>
   )
 }
@@ -705,31 +737,34 @@ function Car() {
   )
 }
 
-/** 하트 달 — 하늘에 은은히 빛나는 커다란 분홍 하트 + 반짝임 */
+/** 보름달 — 하늘에 은은히 빛나는 둥근 달 + 은청색 달무리 + 옅은 크레이터 (설원 밤의 주광원) */
 function Sun() {
   return (
     <svg viewBox="0 0 40 40" className="pixelated h-[40px] w-[40px]" aria-hidden>
-      {/* 바깥 번짐(핑크 글로우) */}
+      {/* 바깥 달무리 (은청색 맥동) */}
       <g className="sun-rays">
-        <rect x="4" y="6" width="32" height="30" rx="15" fill="#f5b8c6" opacity="0.25" />
+        <rect x="4" y="6" width="32" height="30" rx="15" fill="#aebdde" opacity="0.22" />
       </g>
-      {/* 하트 봉우리 */}
-      <rect x="8" y="8" width="8" height="4" fill="#f07698" />
-      <rect x="24" y="8" width="8" height="4" fill="#f07698" />
-      {/* 하트 몸통 */}
-      <rect x="6" y="12" width="28" height="6" fill="#f07698" />
-      <rect x="8" y="18" width="24" height="4" fill="#f07698" />
-      <rect x="11" y="22" width="18" height="4" fill="#f07698" />
-      <rect x="14" y="26" width="12" height="3" fill="#f07698" />
-      <rect x="17" y="29" width="6" height="3" fill="#f07698" />
-      <rect x="19" y="32" width="2" height="2" fill="#f07698" />
+      {/* 달 몸체 (둥근 디스크) */}
+      <rect x="14" y="8" width="12" height="2" fill="#eef4ff" />
+      <rect x="11" y="10" width="18" height="2" fill="#eef4ff" />
+      <rect x="9" y="12" width="22" height="3" fill="#eef4ff" />
+      <rect x="8" y="15" width="24" height="4" fill="#eef4ff" />
+      <rect x="8" y="19" width="24" height="4" fill="#e6eeff" />
+      <rect x="9" y="23" width="22" height="3" fill="#dde8fb" />
+      <rect x="11" y="26" width="18" height="2" fill="#dde8fb" />
+      <rect x="14" y="28" width="12" height="2" fill="#d4e0f5" />
       {/* 하이라이트 */}
-      <rect x="10" y="10" width="5" height="4" fill="#f9c0cf" />
-      <rect x="9" y="14" width="3" height="4" fill="#f9c0cf" />
-      {/* 옆 반짝임 */}
-      <rect x="33" y="6" width="2" height="2" fill="#fff4f7" />
-      <rect x="32" y="5" width="1" height="1" fill="#fff4f7" />
-      <rect x="34" y="5" width="1" height="1" fill="#fff4f7" />
+      <rect x="12" y="11" width="6" height="3" fill="#ffffff" />
+      {/* 크레이터 */}
+      <rect x="22" y="14" width="3" height="2" fill="#cdd9f2" />
+      <rect x="15" y="20" width="4" height="3" fill="#cdd9f2" />
+      <rect x="24" y="22" width="2" height="2" fill="#cdd9f2" />
+      {/* 옆 반짝임(별) */}
+      <rect x="34" y="6" width="2" height="2" fill="#ffffff" />
+      <rect x="33" y="5" width="1" height="1" fill="#ffffff" />
+      <rect x="35" y="5" width="1" height="1" fill="#ffffff" />
+      <rect x="4" y="30" width="1" height="1" fill="#eaf1ff" />
     </svg>
   )
 }
@@ -798,18 +833,17 @@ function HeatSteam() {
   )
 }
 
-/** 강풍: 화면을 가로질러 날아가는 모래 먼지 */
-/** 낙엽: 화면 전체에 은은하게 흩날린다 (가을 상시 장식). 도트 잎 3색. */
+/** 내리는 눈: 화면 전체에 하늘하늘 흩날린다 (설원 밤 상시 장식). 눈송이 3색. */
 const LEAVES = [
-  { left: '6%', dur: 17, delay: 0, tone: '#e05a7d', flip: false },
-  { left: '22%', dur: 21, delay: 6, tone: '#f28ba6', flip: true },
-  { left: '38%', dur: 15, delay: 11, tone: '#8a5338', flip: false },
-  { left: '57%', dur: 19, delay: 3, tone: '#e05a7d', flip: true },
-  { left: '73%', dur: 16, delay: 9, tone: '#f5b8c6', flip: false },
-  { left: '90%', dur: 22, delay: 14, tone: '#c98a63', flip: true },
+  { left: '6%', dur: 17, delay: 0, tone: '#eef6ff', flip: false },
+  { left: '22%', dur: 21, delay: 6, tone: '#d4e6ff', flip: true },
+  { left: '38%', dur: 15, delay: 11, tone: '#bcd0f2', flip: false },
+  { left: '57%', dur: 19, delay: 3, tone: '#eef6ff', flip: true },
+  { left: '73%', dur: 16, delay: 9, tone: '#d4e6ff', flip: false },
+  { left: '90%', dur: 22, delay: 14, tone: '#bcd0f2', flip: true },
 ] as const
 
-/** 떨어지는 작은 하트 — 가장자리에 밝은 하이라이트 */
+/** 하늘하늘 떨어지는 눈송이 — 여섯 갈래 결정 + 중심 글린트 */
 function BatDot({ tone, flip }: { tone: string; flip: boolean }) {
   return (
     <svg
@@ -818,17 +852,20 @@ function BatDot({ tone, flip }: { tone: string; flip: boolean }) {
       style={flip ? { transform: 'scaleX(-1)' } : undefined}
       aria-hidden
     >
-      {/* 위쪽 두 봉우리 */}
-      <rect x="1" y="0" width="3" height="2" fill={tone} />
-      <rect x="6" y="0" width="3" height="2" fill={tone} />
-      {/* 몸통 */}
-      <rect x="0" y="2" width="10" height="2" fill={tone} />
-      <rect x="1" y="4" width="8" height="2" fill={tone} />
-      <rect x="2" y="6" width="6" height="1" fill={tone} />
-      <rect x="3" y="7" width="4" height="1" fill={tone} />
-      <rect x="4" y="8" width="2" height="1" fill={tone} />
-      {/* 반짝임 */}
-      <rect x="2" y="1" width="1" height="1" fill="#ffffff" opacity="0.8" />
+      {/* 세로·가로 축 */}
+      <rect x="4" y="0" width="2" height="9" fill={tone} />
+      <rect x="0" y="4" width="10" height="1" fill={tone} />
+      {/* 대각 가지 */}
+      <rect x="1" y="1" width="1" height="1" fill={tone} />
+      <rect x="8" y="1" width="1" height="1" fill={tone} />
+      <rect x="1" y="7" width="1" height="1" fill={tone} />
+      <rect x="8" y="7" width="1" height="1" fill={tone} />
+      <rect x="2" y="2" width="1" height="1" fill={tone} />
+      <rect x="7" y="2" width="1" height="1" fill={tone} />
+      <rect x="2" y="6" width="1" height="1" fill={tone} />
+      <rect x="7" y="6" width="1" height="1" fill={tone} />
+      {/* 중심 글린트 */}
+      <rect x="4" y="4" width="2" height="1" fill="#ffffff" />
     </svg>
   )
 }
@@ -2043,9 +2080,9 @@ export default function AutumnMountain({ admin }: { admin: string }) {
 
   return (
     <div ref={sceneRef} aria-hidden data-no-capture="1" className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
-      {/* 떨어지는 하트 — 화면 전체 레이어 */}
+      {/* 내리는 눈 — 화면 전체 레이어 */}
       <FallingLeaves />
-      {/* 하늘: 둥둥 떠가는 하트 무리 */}
+      {/* 하늘: 밤하늘을 가로지르는 겨울 철새 떼 */}
       <div className="gull-drift absolute bottom-[150px]" style={{ animationDuration: '46s' }}>
         <GooseFlock />
       </div>
@@ -2053,19 +2090,19 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         <GooseFlock />
       </div>
 
-      {/* 하늘의 하트 달 */}
+      {/* 하늘의 보름달 */}
       <div className="absolute right-[190px] bottom-[104px]">
         <Sun />
       </div>
 
-      {/* 다람쥐가 과자 더미에서 폴짝 */}
+      {/* 다람쥐가 눈더미에서 폴짝 */}
       {squirrelHop && (
         <div key={squirrelHop.key} className="squirrel-hop absolute bottom-[30px]" style={{ left: squirrelHop.left }}>
           <Squirrel />
         </div>
       )}
 
-      {/* ── 초코·딸기 크림 언덕 세 겹 (원경→근경) + 설탕 안개 ── */}
+      {/* ── 달빛 능선 세 겹 (원경→근경) + 눈안개 ── */}
       <div className="absolute inset-x-0 bottom-[20px] overflow-hidden">
         <RidgeStrip id="ridge-far" d={RIDGE_PATH.far} tileW={480} tileH={112} fill={RIDGE_FAR} opacity={0.62} />
       </div>
@@ -2087,7 +2124,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         <RidgeStrip id="ridge-near" d={RIDGE_PATH.near} tileW={256} tileH={46} fill={RIDGE_NEAR} />
       </div>
 
-      {/* 쿠키 크럼블 바닥 */}
+      {/* 소복한 눈바닥 */}
       <div
         className="h-[26px] w-full"
         style={{
@@ -2098,7 +2135,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         }}
       />
 
-      {/* 빼빼로 데이 소품들 */}
+      {/* 설원 밤 소품들 */}
       <div ref={treeRef} className="absolute right-6 bottom-[18px] hidden sm:block">
         <OakTree />
       </div>
@@ -2109,13 +2146,13 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         <Reeds n={5} />
       </div>
       <div className="absolute bottom-[20px] left-[46%] hidden md:block">
-        <Reeds n={3} tone="#d7cbb0" />
+        <Reeds n={3} tone="#8597b8" />
       </div>
       <div className="absolute bottom-[6px] left-[16%]">
         <Chestnut />
       </div>
       <div className="absolute bottom-[4px] left-[38%]">
-        <Chestnut tone="#e05a7d" dark="#fff4f7" />
+        <Chestnut tone="#e7eefb" dark="#c3d2ef" />
       </div>
       <div className="absolute bottom-[6px] left-[27%]">
         <Mushroom />
@@ -2126,7 +2163,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
       <div className="absolute bottom-[4px] left-[86%] hidden lg:block">
         <LeafPile />
       </div>
-      {/* 빼빼로 탑: 게가 점점 쌓고, 클릭하면 무너뜨릴 수 있다. 앵커 div 는 항상 존재(게 목표점) */}
+      {/* 눈사람 탑: 게가 점점 쌓고, 클릭하면 무너뜨릴 수 있다. 앵커 div 는 항상 존재(게 목표점) */}
       <div ref={cairnAnchorRef} className="absolute bottom-[8px] left-[55%] hidden md:block">
         <Cairn level={cairnLevel} smashing={cairnSmashing} onSmash={smashCairn} />
       </div>
@@ -2144,7 +2181,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         </div>
       )}
 
-      {/* 빼빼로 다발에서 톡 떨어지는 하트 */}
+      {/* 전나무에서 톡 떨어지는 눈뭉치 */}
       {acornDrop && (
         <div className="acorn-fall absolute bottom-[64px]" style={{ left: acornDrop.left }}>
           <Acorn />
@@ -2194,7 +2231,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
         {bubble && (
           <div
             key={bubble.key}
-            className="animate-fade-up absolute bottom-[calc(100%+14px)] left-1/2 z-10 w-max max-w-[190px] -translate-x-1/2 rounded-md border-2 border-ink bg-white px-2 py-1 text-center text-[11px] leading-snug font-medium text-ink shadow-[2px_2px_0_rgba(61,53,39,0.35)]"
+            className="animate-fade-up absolute bottom-[calc(100%+14px)] left-1/2 z-10 w-max max-w-[190px] -translate-x-1/2 rounded-md border-2 border-[#28334f] bg-[#f3f7ff] px-2 py-1 text-center text-[11px] leading-snug font-medium text-[#1b2440] shadow-[2px_2px_0_rgba(8,14,32,0.5)]"
           >
             {bubble.text}
             <span className="absolute -bottom-[7px] left-1/2 -ml-[4px] block size-[8px] rotate-45 border-r-2 border-b-2 border-ink bg-white" />

@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
-/* 공개 사이트는 다크지만 관리자는 라이트 테마를 따로 쓴다.
-   (2026-11-09: 할로윈 → 빼빼로 데이 — 달콤한 핑크 바탕 + 초코 브라운 브랜드.
-    표·카드 같은 작업 면은 읽기 쉽게 흰색을 유지하고, 바탕·장식만 빼빼로로) */
+/* 공개 사이트도 관리자도 어둡지만 관리자는 자체 팔레트를 따로 쓴다.
+   (2026-11-13: 빼빼로 데이 → 겨울 "소복한 설원 밤" — 깊은 남색 밤하늘 + 달빛 아이스블루 브랜드.
+    장식 씬이 fixed bottom-0 라 달·눈송이가 캔버스를 그대로 하늘로 쓴다 → 밤이 성립하려면 캔버스가 다크여야 한다.
+    카드·작업 면은 캔버스보다 살짝 띄운 슬레이트 + 테두리로 경계를 준다. 본문 글자는 눈부심 없는 스노우 화이트) */
 @theme {
-  --color-ink: #4a2f2a;
-  --color-ink-soft: #8a5c52;
-  --color-ink-muted: #bb978e;
-  --color-line: #f6dfe4;
-  --color-surface: #fffdfc;
-  --color-canvas: #fdeef1;
-  --color-hover: #fbe2e8;
-  --color-brand: #e05a7d;
-  --color-brand-soft: #fce0e8;
+  --color-ink: #eef3fb;
+  --color-ink-soft: #b4c2db;
+  --color-ink-muted: #8291b2;
+  --color-line: #28334f;
+  --color-surface: #172038;
+  --color-canvas: #0b1226;
+  --color-hover: #1f2a48;
+  --color-brand: #79b8ec;
+  --color-brand-soft: #1e3253;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html,
@@ -53,12 +54,12 @@ body {
 }
 .rich-body ul { list-style: disc; padding-left: 1.25rem; }
 .rich-body ol { list-style: decimal; padding-left: 1.25rem; }
-.rich-body a { color: #2563eb; text-decoration: underline; }
+.rich-body a { color: #79b8ec; text-decoration: underline; }
 
-/* 노션 느낌의 얇은 스크롤바 (빼빼로 핑크 톤) */
+/* 노션 느낌의 얇은 스크롤바 (설원 밤 아이스 슬레이트 톤) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #f2c3cf; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #ea9fb2; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: #3a4a74; border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #4a5a84; background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 /* ── 빼빼로 데이 도트 장식 ─────────────────────────────── */
