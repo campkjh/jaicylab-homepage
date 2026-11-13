@@ -30,7 +30,7 @@ export default function Avatar({
         />
       ) : (
         <span
-          className={`${SIZES[size]} flex items-center justify-center rounded-full bg-brand-soft font-semibold text-emerald-700`}
+          className={`${SIZES[size]} flex items-center justify-center rounded-full bg-brand-soft font-semibold text-brand`}
         >
           {name.slice(0, 1)}
         </span>

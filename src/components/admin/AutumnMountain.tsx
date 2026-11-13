@@ -886,6 +886,60 @@ function FallingLeaves() {
   )
 }
 
+/** 밤하늘 별밭 — 하늘 영역(위쪽)에 흩뿌려져 반짝인다. 위치는 결정적(인덱스 기반). */
+const STARS = Array.from({ length: 38 }, (_, i) => ({
+  top: ((i * 59 + 4) % 66) + 2, // 2..68% — 하늘 위주, 바닥 설원은 피한다
+  left: ((i * 73 + 11) % 96) + 2,
+  size: i % 6 === 0 ? 2 : 1,
+  dur: 1.8 + (i % 5) * 0.5, // 1.8..3.8s
+  delay: (i % 13) * 0.33,
+}))
+
+/** 별똥별 — 대각선으로 길게 가로지르며 중간마다 하나씩 떨어진다. */
+const SHOOTING = [
+  { top: '7%', left: '14%', sx: 360, sy: 200, rot: 29, dur: 7, delay: 1.2 },
+  { top: '5%', left: '60%', sx: 300, sy: 150, rot: 27, dur: 9.5, delay: 4.6 },
+  { top: '20%', left: '40%', sx: 430, sy: 165, rot: 21, dur: 12, delay: 8.3 },
+] as const
+
+/** 반짝이는 별 + 별똥별 레이어 (전체 화면, 눈보다 뒤) */
+function StarField() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[3] overflow-hidden" aria-hidden>
+      {STARS.map((s, i) => (
+        <span
+          key={i}
+          className="star-twinkle"
+          style={{
+            top: `${s.top}%`,
+            left: `${s.left}%`,
+            width: s.size,
+            height: s.size,
+            animationDuration: `${s.dur}s`,
+            animationDelay: `${s.delay}s`,
+          }}
+        />
+      ))}
+      {SHOOTING.map((s, i) => (
+        <span
+          key={`sh${i}`}
+          className="shooting-star"
+          style={{
+            top: s.top,
+            left: s.left,
+            ['--sx' as string]: `${s.sx}px`,
+            ['--sy' as string]: `${s.sy}px`,
+            animationDuration: `${s.dur}s`,
+            animationDelay: `${s.delay}s`,
+          }}
+        >
+          <i style={{ transform: `rotate(${s.rot}deg)` }} />
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function WindDust() {
   return (
     <>
@@ -2080,6 +2134,8 @@ export default function AutumnMountain({ admin }: { admin: string }) {
 
   return (
     <div ref={sceneRef} aria-hidden data-no-capture="1" className="pointer-events-none fixed right-0 bottom-0 left-0 z-[5] select-none lg:left-[228px]">
+      {/* 반짝이는 별 + 별똥별 — 눈보다 뒤쪽 하늘 레이어 */}
+      <StarField />
       {/* 내리는 눈 — 화면 전체 레이어 */}
       <FallingLeaves />
       {/* 하늘: 밤하늘을 가로지르는 겨울 철새 떼 */}
@@ -2347,7 +2403,7 @@ export default function AutumnMountain({ admin }: { admin: string }) {
                 </button>
                 <button
                   onClick={submitWord}
-                  className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-white transition hover:bg-black"
+                  className="rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-canvas transition hover:brightness-90"
                 >
                   가르치기
                 </button>

@@ -39,7 +39,7 @@ export default async function ContractsPage() {
         action={
           <Link
             href="/admin/contracts/new"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3.5 text-sm font-medium text-white transition hover:bg-black"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3.5 text-sm font-medium text-canvas transition hover:brightness-90"
           >
             + 새 계약서
           </Link>

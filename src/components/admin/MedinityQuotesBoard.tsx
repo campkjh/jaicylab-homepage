@@ -6,16 +6,16 @@ import { type MedinityQuote } from '@/lib/types'
 import { deleteMedinityQuote, updateMedinityQuoteStatus } from '@/app/admin/actions'
 
 const STATUS: Record<string, { label: string; chip: string }> = {
-  new: { label: '신규', chip: 'bg-sky-50 text-sky-700' },
-  contacted: { label: '연락함', chip: 'bg-amber-50 text-amber-700' },
-  done: { label: '완료', chip: 'bg-emerald-50 text-emerald-700' },
+  new: { label: '신규', chip: 'bg-sky-500/15 text-sky-200' },
+  contacted: { label: '연락함', chip: 'bg-amber-500/15 text-amber-200' },
+  done: { label: '완료', chip: 'bg-emerald-500/15 text-emerald-200' },
 }
 
 // 홈 요청관리 단계(고객이 직접 넘김: 견적문의 → 개발의뢰 → 개발완료)
 const REQ_STATUS: Record<string, { label: string; chip: string }> = {
-  inquiry: { label: '견적 문의', chip: 'bg-slate-100 text-slate-600' },
-  requested: { label: '개발 의뢰', chip: 'bg-indigo-50 text-indigo-700' },
-  done: { label: '개발 완료', chip: 'bg-emerald-50 text-emerald-700' },
+  inquiry: { label: '견적 문의', chip: 'bg-slate-500/20 text-slate-300' },
+  requested: { label: '개발 의뢰', chip: 'bg-indigo-500/20 text-indigo-200' },
+  done: { label: '개발 완료', chip: 'bg-emerald-500/15 text-emerald-200' },
 }
 
 // 개발의뢰 정보 한 줄 표시용

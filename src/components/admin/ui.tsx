@@ -2,11 +2,11 @@ import type { ProjectStatus } from '@/lib/types'
 import { STATUS_LABEL } from '@/lib/types'
 
 const STATUS_STYLE: Record<ProjectStatus, string> = {
-  planning: 'bg-slate-100 text-slate-600',
-  in_progress: 'bg-brand-soft text-emerald-700',
-  review: 'bg-amber-50 text-amber-700',
-  done: 'bg-blue-50 text-blue-700',
-  paused: 'bg-zinc-100 text-zinc-500',
+  planning: 'bg-slate-500/20 text-slate-300',
+  in_progress: 'bg-emerald-500/15 text-emerald-200',
+  review: 'bg-amber-500/15 text-amber-200',
+  done: 'bg-blue-500/15 text-blue-200',
+  paused: 'bg-zinc-500/20 text-zinc-400',
 }
 
 export function StatusBadge({ status }: { status: ProjectStatus }) {
@@ -114,9 +114,9 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' }) {
   const styles = {
-    primary: 'bg-ink text-white hover:bg-black',
+    primary: 'bg-ink text-canvas hover:brightness-90',
     ghost: 'border border-line bg-surface text-ink-soft hover:bg-hover',
-    danger: 'border border-red-200 bg-surface text-red-600 hover:bg-red-50',
+    danger: 'border border-red-500/30 bg-surface text-red-300 hover:bg-red-500/10',
   }[variant]
   return (
     <button

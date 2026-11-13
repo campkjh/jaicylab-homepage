@@ -261,6 +261,39 @@ body {
 @keyframes palmSway { from { transform: translateX(0); } to { transform: translateX(2px); } }
 .palm-sway { animation: palmSway 2.8s steps(3) infinite alternate; }
 
+/* ── 설원 밤하늘: 반짝이는 별 + 별똥별 ───────────────────── */
+/* 별: 깜빡이며 밝아졌다 흐려지고, 아주 살짝 커졌다 작아진다 */
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.12; transform: scale(0.7); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+.star-twinkle {
+  position: absolute;
+  border-radius: 9999px;
+  background: #eaf3ff;
+  box-shadow: 0 0 3px #cdddf7;
+  animation: starTwinkle ease-in-out infinite;
+}
+
+/* 별똥별: 대각선으로 꼬리를 남기며 가로지르고 사라진다.
+   대부분의 시간은 숨어 있어(투명) '중간마다' 하나씩 떨어진다. */
+@keyframes shootingStar {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  3%   { opacity: 1; }
+  12%  { opacity: 1; }
+  17%  { opacity: 0; transform: translate(var(--sx), var(--sy)); }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)); }
+}
+.shooting-star { position: absolute; animation: shootingStar linear infinite; }
+.shooting-star i {
+  display: block;
+  height: 2px;
+  width: 72px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(234, 243, 255, 0) 0%, rgba(205, 221, 247, 0.6) 62%, #ffffff 100%);
+  box-shadow: 0 0 6px 1px rgba(234, 243, 255, 0.5);
+}
+
 /* ───────── 표준계약서 문서 (미리보기 + 인쇄) ───────── */
 /* 화면: A4 비율 흰 문서. .contract-page 사이에 옅은 구분선. */
 .contract-print { width: 794px; max-width: 100%; margin: 0 auto; color: #191f28; }

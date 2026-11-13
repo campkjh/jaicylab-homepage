@@ -41,7 +41,7 @@ function shiftYm(ym: string, offset: number): string {
 function dayNumberClass(cell: DayCell): string {
   if (cell.isToday) return 'bg-brand font-semibold text-white'
   const red = Boolean(cell.holiday) || cell.isSunday
-  const tone = red ? 'text-red-600' : cell.isSaturday ? 'text-blue-600' : 'text-ink-soft'
+  const tone = red ? 'text-red-400' : cell.isSaturday ? 'text-blue-400' : 'text-ink-soft'
   return cell.inMonth ? tone : `${tone} opacity-40`
 }
 
@@ -67,7 +67,7 @@ function EventChip({ event, onClick }: { event: ScheduleEvent; onClick: () => vo
       onClick={onClick}
       draggable
       onDragStart={e => setDragPayload(e, { kind: 'event', id: event.id, date: event.event_date })}
-      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${EVENT_COLOR[event.color]?.chip ?? EVENT_COLOR.blue.chip}`}
+      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-125 active:cursor-grabbing ${EVENT_COLOR[event.color]?.chip ?? EVENT_COLOR.blue.chip}`}
     >
       <span className="min-w-0 flex-1 truncate">{event.title}</span>
       {event.event_time && <span className="hidden shrink-0 tabular-nums opacity-70 sm:inline">{event.event_time}</span>}
@@ -83,7 +83,7 @@ function MealChip({ meal, onClick }: { meal: MealEntry; onClick: () => void }) {
       data-meal={meal.meal_date}
       data-meal-title={meal.title}
       onDragStart={e => setDragPayload(e, { kind: 'meal', id: meal.id, date: meal.meal_date })}
-      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-95 active:cursor-grabbing ${MEAL_SLOT[meal.slot].chip}`}
+      className={`flex w-full cursor-grab items-center gap-1 rounded px-1.5 py-0.5 text-left text-[11px] transition hover:brightness-125 active:cursor-grabbing ${MEAL_SLOT[meal.slot].chip}`}
     >
       {meal.image_url && <img src={meal.image_url} alt="" className="size-3.5 shrink-0 rounded-sm object-cover" />}
       <span className="min-w-0 flex-1 truncate">{meal.title}</span>
@@ -867,7 +867,7 @@ function EventForm({
 
           <PropertyRow icon={<Icon name="tag" className="size-3.5" />} label="카테고리">
             <div className="flex items-center gap-2">
-              <span className={`size-2.5 shrink-0 rounded-full ${active ? EVENT_COLOR[active.color].dot : 'bg-zinc-300'}`} />
+              <span className={`size-2.5 shrink-0 rounded-full ${active ? EVENT_COLOR[active.color].dot : 'bg-zinc-600'}`} />
               <select
                 value={categoryId}
                 onChange={e => {
@@ -900,7 +900,7 @@ function EventForm({
               await deleteEvent(fd)
               onDone([...touched.current])
             }}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/30 px-3 text-sm font-medium text-red-300 transition hover:bg-red-500/10"
           >
             <Icon name="bin" className="size-4" />
             삭제

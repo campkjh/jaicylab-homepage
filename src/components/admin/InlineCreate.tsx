@@ -17,7 +17,7 @@ export default function InlineCreate({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-white transition hover:bg-black"
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-canvas transition hover:brightness-90"
       >
         <Icon name="plus" className="size-4" />
         {label}

@@ -83,7 +83,7 @@ function PhraseCard({ phrase }: { phrase: QuickPhrase }) {
       <button
         onClick={copy}
         className={`mt-3 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition ${
-          copied ? 'bg-brand-soft text-emerald-700' : 'bg-ink text-white hover:bg-black'
+          copied ? 'bg-brand-soft text-emerald-200' : 'bg-ink text-canvas hover:brightness-90'
         }`}
       >
         <Icon name="copy" className="size-4" />
@@ -105,7 +105,7 @@ export default function PhrasesBoard({ phrases }: { phrases: QuickPhrase[] }) {
         </div>
         <button
           onClick={() => setCreating(v => !v)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-white transition hover:bg-black"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-canvas transition hover:brightness-90"
         >
           <Icon name={creating ? 'x' : 'plus'} className="size-4" />
           새 문구

@@ -268,7 +268,7 @@ export default function TimelinePanel({
           <button
             onClick={submit}
             disabled={pending || !title.trim()}
-            className="inline-flex h-8 items-center justify-center rounded-lg bg-ink text-xs font-medium text-white transition hover:bg-black disabled:opacity-50"
+            className="inline-flex h-8 items-center justify-center rounded-lg bg-ink text-xs font-medium text-canvas transition hover:brightness-90 disabled:opacity-50"
           >
             추가
           </button>

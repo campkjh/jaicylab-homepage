@@ -15,7 +15,7 @@ function dueLabel(due: string | null): { text: string; tone: string } | null {
   today.setHours(0, 0, 0, 0)
   const d = new Date(`${due}T00:00:00`) // 'YYYY-MM-DD'만 주면 UTC로 해석된다
   const diff = Math.round((d.getTime() - today.getTime()) / 86_400_000)
-  if (diff < 0) return { text: `${Math.abs(diff)}일 지남`, tone: 'text-red-600' }
+  if (diff < 0) return { text: `${Math.abs(diff)}일 지남`, tone: 'text-red-400' }
   if (diff === 0) return { text: '오늘', tone: 'text-brand' }
   if (diff === 1) return { text: '내일', tone: 'text-ink-soft' }
   return { text: `${diff}일 남음`, tone: 'text-ink-muted' }

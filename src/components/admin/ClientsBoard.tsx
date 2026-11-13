@@ -205,7 +205,7 @@ export default function ClientsBoard({ clients, categories }: { clients: ClientW
         </div>
         <button
           onClick={() => setCreating(v => !v)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-white transition hover:bg-black"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-canvas transition hover:brightness-90"
         >
           <Icon name={creating ? 'x' : 'plus'} className="size-4" />
           새 클라이언트

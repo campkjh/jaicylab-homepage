@@ -219,7 +219,7 @@ function ProjectRow({
             <input type="hidden" name="id" value={project.id} />
             <button
               type="submit"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 px-2.5 text-xs font-medium text-red-600 transition hover:bg-red-50"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-500/30 px-2.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
             >
               <Icon name="bin" className="size-3.5" />
               프로젝트 삭제
@@ -259,7 +259,7 @@ export default function ProjectsBoard({
         </div>
         <button
           onClick={() => setCreating(v => !v)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-white transition hover:bg-black"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-ink px-3 text-sm font-medium text-canvas transition hover:brightness-90"
         >
           <Icon name={creating ? 'x' : 'plus'} className="size-4" />
           새 프로젝트

@@ -196,10 +196,10 @@ export type PresenceUser = {
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
 export const MEAL_SLOT: Record<MealSlot, { label: string; chip: string; dot: string }> = {
-  breakfast: { label: '아침', chip: 'bg-amber-50 text-amber-700', dot: 'bg-amber-400' },
-  lunch: { label: '점심', chip: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500' },
-  dinner: { label: '저녁', chip: 'bg-indigo-50 text-indigo-700', dot: 'bg-indigo-500' },
-  snack: { label: '간식', chip: 'bg-pink-50 text-pink-700', dot: 'bg-pink-400' },
+  breakfast: { label: '아침', chip: 'bg-amber-500/15 text-amber-200', dot: 'bg-amber-400' },
+  lunch: { label: '점심', chip: 'bg-emerald-500/15 text-emerald-200', dot: 'bg-emerald-500' },
+  dinner: { label: '저녁', chip: 'bg-indigo-500/20 text-indigo-200', dot: 'bg-indigo-500' },
+  snack: { label: '간식', chip: 'bg-pink-500/15 text-pink-200', dot: 'bg-pink-400' },
 }
 
 export type MealEntry = {
@@ -213,14 +213,14 @@ export type MealEntry = {
   created_by: string | null
 }
 
-/** 첨부 디자인처럼 옅은 파스텔 칩. 배경/글자색을 한 쌍으로 묶어둔다. */
+/** 다크 설원 밤 칩: 반투명 색틴트 배경 + 밝은 글자 한 쌍. 점(dot)은 채도 높은 원색 유지. */
 export const EVENT_COLOR: Record<EventColor, { chip: string; dot: string; label: string }> = {
-  blue: { chip: 'bg-blue-50 text-blue-700', dot: 'bg-blue-500', label: '파랑' },
-  green: { chip: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500', label: '초록' },
-  red: { chip: 'bg-red-50 text-red-600', dot: 'bg-red-500', label: '빨강' },
-  amber: { chip: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500', label: '주황' },
-  purple: { chip: 'bg-violet-50 text-violet-700', dot: 'bg-violet-500', label: '보라' },
-  gray: { chip: 'bg-zinc-100 text-zinc-600', dot: 'bg-zinc-400', label: '회색' },
+  blue: { chip: 'bg-blue-500/15 text-blue-200', dot: 'bg-blue-500', label: '파랑' },
+  green: { chip: 'bg-emerald-500/15 text-emerald-200', dot: 'bg-emerald-500', label: '초록' },
+  red: { chip: 'bg-red-500/15 text-red-200', dot: 'bg-red-500', label: '빨강' },
+  amber: { chip: 'bg-amber-500/15 text-amber-200', dot: 'bg-amber-500', label: '주황' },
+  purple: { chip: 'bg-violet-500/18 text-violet-200', dot: 'bg-violet-500', label: '보라' },
+  gray: { chip: 'bg-zinc-500/20 text-zinc-300', dot: 'bg-zinc-400', label: '회색' },
 }
 
 export const STATUS_LABEL: Record<ProjectStatus, string> = {

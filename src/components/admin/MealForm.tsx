@@ -71,7 +71,7 @@ export default function MealForm({
                 type="button"
                 onClick={() => setSlot(s)}
                 className={`flex-1 rounded-lg border py-1.5 text-xs transition ${
-                  slot === s ? 'border-brand bg-brand-soft font-medium text-emerald-700' : 'border-line text-ink-soft hover:bg-hover'
+                  slot === s ? 'border-brand bg-brand-soft font-medium text-ink' : 'border-line text-ink-soft hover:bg-hover'
                 }`}
               >
                 {MEAL_SLOT[s].label}
@@ -142,7 +142,7 @@ export default function MealForm({
                 await deleteMeal(fd)
                 onDone([meal.meal_date])
               }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-red-500/30 px-3 text-sm font-medium text-red-300 transition hover:bg-red-500/10"
             >
               <Icon name="bin" className="size-4" />
               삭제

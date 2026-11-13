@@ -80,7 +80,7 @@ export default function RemoteScreen() {
             type="button"
             onClick={() => setPicked(s.name)}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-              picked === s.name ? 'bg-ink text-white' : 'bg-hover text-ink-soft hover:bg-line'
+              picked === s.name ? 'bg-ink text-canvas' : 'bg-hover text-ink-soft hover:bg-line'
             }`}
           >
             {s.live ? (
@@ -109,7 +109,7 @@ export default function RemoteScreen() {
       {/* 상태줄 + 지난 기록 넘기기 */}
       <div className="mt-2 flex items-center gap-2 text-xs text-ink-muted">
         {live && idx === 0 ? (
-          <span className="flex items-center gap-1 font-medium text-red-600">
+          <span className="flex items-center gap-1 font-medium text-red-400">
             <span className="size-1.5 rounded-full bg-red-500" /> LIVE
           </span>
         ) : (
